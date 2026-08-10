@@ -1,0 +1,18 @@
+// Coresight block - RP specific registers
+
+module sh.sysl.rp2350.coresight_trace
+
+// The peripheral's base address. Every offset below is from here.
+const BASE: u32 = 0x50700000
+
+// Control and status register
+const CTRL_STATUS_OFFSET: u32 = 0x00000000
+const CTRL_STATUS_TRACE_CAPTURE_FIFO_OVERFLOW_MASK: u32 = 0x00000002
+const CTRL_STATUS_TRACE_CAPTURE_FIFO_OVERFLOW_SHIFT: u32 = 1
+const CTRL_STATUS_TRACE_CAPTURE_FIFO_FLUSH_MASK: u32 = 0x00000001
+const CTRL_STATUS_TRACE_CAPTURE_FIFO_FLUSH_SHIFT: u32 = 0
+
+// FIFO for trace data captured from the TPIU
+const TRACE_CAPTURE_FIFO_OFFSET: u32 = 0x00000004
+const TRACE_CAPTURE_FIFO_RDATA_MASK: u32 = 0xffffffff
+const TRACE_CAPTURE_FIFO_RDATA_SHIFT: u32 = 0

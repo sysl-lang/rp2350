@@ -1,0 +1,85 @@
+// Register block for various chip control signals
+
+module sh.sysl.rp2350.syscfg
+
+// The peripheral's base address. Every offset below is from here.
+const BASE: u32 = 0x40008000
+
+// Configuration for processors
+const PROC_CONFIG_OFFSET: u32 = 0x00000000
+const PROC_CONFIG_PROC1_HALTED_MASK: u32 = 0x00000002
+const PROC_CONFIG_PROC1_HALTED_SHIFT: u32 = 1
+const PROC_CONFIG_PROC0_HALTED_MASK: u32 = 0x00000001
+const PROC_CONFIG_PROC0_HALTED_SHIFT: u32 = 0
+
+// For each bit, if 1, bypass the input synchronizer between that GPIO and the GPIO input register
+// in the SIO. The input synchronizers should generally be unbypassed, to avoid injecting
+// metastabilities into processors. If you're feeling brave, you can bypass to save two cycles of
+// input latency. This register applies to GPIO 0...31.
+const PROC_IN_SYNC_BYPASS_OFFSET: u32 = 0x00000004
+const PROC_IN_SYNC_BYPASS_GPIO_MASK: u32 = 0xffffffff
+const PROC_IN_SYNC_BYPASS_GPIO_SHIFT: u32 = 0
+
+// For each bit, if 1, bypass the input synchronizer between that GPIO and the GPIO input register
+// in the SIO. The input synchronizers should generally be unbypassed, to avoid injecting
+// metastabilities into processors. If you're feeling brave, you can bypass to save two cycles of
+// input latency. This register applies to GPIO 32...47. USB GPIO 56..57 QSPI GPIO 58..63
+const PROC_IN_SYNC_BYPASS_HI_OFFSET: u32 = 0x00000008
+const PROC_IN_SYNC_BYPASS_HI_QSPI_SD_MASK: u32 = 0xf0000000
+const PROC_IN_SYNC_BYPASS_HI_QSPI_SD_SHIFT: u32 = 28
+const PROC_IN_SYNC_BYPASS_HI_QSPI_CSN_MASK: u32 = 0x08000000
+const PROC_IN_SYNC_BYPASS_HI_QSPI_CSN_SHIFT: u32 = 27
+const PROC_IN_SYNC_BYPASS_HI_QSPI_SCK_MASK: u32 = 0x04000000
+const PROC_IN_SYNC_BYPASS_HI_QSPI_SCK_SHIFT: u32 = 26
+const PROC_IN_SYNC_BYPASS_HI_USB_DM_MASK: u32 = 0x02000000
+const PROC_IN_SYNC_BYPASS_HI_USB_DM_SHIFT: u32 = 25
+const PROC_IN_SYNC_BYPASS_HI_USB_DP_MASK: u32 = 0x01000000
+const PROC_IN_SYNC_BYPASS_HI_USB_DP_SHIFT: u32 = 24
+const PROC_IN_SYNC_BYPASS_HI_GPIO_MASK: u32 = 0x0000ffff
+const PROC_IN_SYNC_BYPASS_HI_GPIO_SHIFT: u32 = 0
+
+// Directly control the chip SWD debug port
+const DBGFORCE_OFFSET: u32 = 0x0000000c
+const DBGFORCE_ATTACH_MASK: u32 = 0x00000008
+const DBGFORCE_ATTACH_SHIFT: u32 = 3
+const DBGFORCE_SWCLK_MASK: u32 = 0x00000004
+const DBGFORCE_SWCLK_SHIFT: u32 = 2
+const DBGFORCE_SWDI_MASK: u32 = 0x00000002
+const DBGFORCE_SWDI_SHIFT: u32 = 1
+const DBGFORCE_SWDO_MASK: u32 = 0x00000001
+const DBGFORCE_SWDO_SHIFT: u32 = 0
+
+// Control PD pins to memories. Set high to put memories to a low power state. In this state the
+// memories will retain contents but not be accessible Use with caution
+const MEMPOWERDOWN_OFFSET: u32 = 0x00000010
+const MEMPOWERDOWN_BOOTRAM_MASK: u32 = 0x00001000
+const MEMPOWERDOWN_BOOTRAM_SHIFT: u32 = 12
+const MEMPOWERDOWN_ROM_MASK: u32 = 0x00000800
+const MEMPOWERDOWN_ROM_SHIFT: u32 = 11
+const MEMPOWERDOWN_USB_MASK: u32 = 0x00000400
+const MEMPOWERDOWN_USB_SHIFT: u32 = 10
+const MEMPOWERDOWN_SRAM9_MASK: u32 = 0x00000200
+const MEMPOWERDOWN_SRAM9_SHIFT: u32 = 9
+const MEMPOWERDOWN_SRAM8_MASK: u32 = 0x00000100
+const MEMPOWERDOWN_SRAM8_SHIFT: u32 = 8
+const MEMPOWERDOWN_SRAM7_MASK: u32 = 0x00000080
+const MEMPOWERDOWN_SRAM7_SHIFT: u32 = 7
+const MEMPOWERDOWN_SRAM6_MASK: u32 = 0x00000040
+const MEMPOWERDOWN_SRAM6_SHIFT: u32 = 6
+const MEMPOWERDOWN_SRAM5_MASK: u32 = 0x00000020
+const MEMPOWERDOWN_SRAM5_SHIFT: u32 = 5
+const MEMPOWERDOWN_SRAM4_MASK: u32 = 0x00000010
+const MEMPOWERDOWN_SRAM4_SHIFT: u32 = 4
+const MEMPOWERDOWN_SRAM3_MASK: u32 = 0x00000008
+const MEMPOWERDOWN_SRAM3_SHIFT: u32 = 3
+const MEMPOWERDOWN_SRAM2_MASK: u32 = 0x00000004
+const MEMPOWERDOWN_SRAM2_SHIFT: u32 = 2
+const MEMPOWERDOWN_SRAM1_MASK: u32 = 0x00000002
+const MEMPOWERDOWN_SRAM1_SHIFT: u32 = 1
+const MEMPOWERDOWN_SRAM0_MASK: u32 = 0x00000001
+const MEMPOWERDOWN_SRAM0_SHIFT: u32 = 0
+
+// Auxiliary system control register
+const AUXCTRL_OFFSET: u32 = 0x00000014
+const AUXCTRL_AUXCTRL_MASK: u32 = 0x000000ff
+const AUXCTRL_AUXCTRL_SHIFT: u32 = 0

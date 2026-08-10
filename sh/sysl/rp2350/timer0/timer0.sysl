@@ -1,0 +1,148 @@
+// Controls time and alarms time is a 64 bit value indicating the time since power-on timeh is the
+// top 32 bits of time & timel is the bottom 32 bits to change time write to timelw before timehw
+// to read time read from timelr before timehr An alarm is set by setting alarm_enable and writing
+// to the corresponding alarm register When an alarm is pending, the corresponding alarm_running
+// signal will be high An alarm can be cancelled before it has finished by clearing the
+// alarm_enable When an alarm fires, the corresponding alarm_irq is set and alarm_running is
+// cleared To clear the interrupt write a 1 to the corresponding alarm_irq The timer can be locked
+// to prevent writing
+
+module sh.sysl.rp2350.timer0
+
+// The peripheral's base address. Every offset below is from here.
+const BASE: u32 = 0x400b0000
+
+// Write to bits 63:32 of time always write timelw before timehw
+const TIMEHW_OFFSET: u32 = 0x00000000
+const TIMEHW_TIMEHW_MASK: u32 = 0xffffffff
+const TIMEHW_TIMEHW_SHIFT: u32 = 0
+
+// Write to bits 31:0 of time writes do not get copied to time until timehw is written
+const TIMELW_OFFSET: u32 = 0x00000004
+const TIMELW_TIMELW_MASK: u32 = 0xffffffff
+const TIMELW_TIMELW_SHIFT: u32 = 0
+
+// Read from bits 63:32 of time always read timelr before timehr
+const TIMEHR_OFFSET: u32 = 0x00000008
+const TIMEHR_TIMEHR_MASK: u32 = 0xffffffff
+const TIMEHR_TIMEHR_SHIFT: u32 = 0
+
+// Read from bits 31:0 of time
+const TIMELR_OFFSET: u32 = 0x0000000c
+const TIMELR_TIMELR_MASK: u32 = 0xffffffff
+const TIMELR_TIMELR_SHIFT: u32 = 0
+
+// Arm alarm 0, and configure the time it will fire. Once armed, the alarm fires when TIMER_ALARM0
+// == TIMELR. The alarm will disarm itself once it fires, and can be disarmed early using the ARMED
+// status register.
+const ALARM0_OFFSET: u32 = 0x00000010
+const ALARM0_ALARM0_MASK: u32 = 0xffffffff
+const ALARM0_ALARM0_SHIFT: u32 = 0
+
+// Arm alarm 1, and configure the time it will fire. Once armed, the alarm fires when TIMER_ALARM1
+// == TIMELR. The alarm will disarm itself once it fires, and can be disarmed early using the ARMED
+// status register.
+const ALARM1_OFFSET: u32 = 0x00000014
+const ALARM1_ALARM1_MASK: u32 = 0xffffffff
+const ALARM1_ALARM1_SHIFT: u32 = 0
+
+// Arm alarm 2, and configure the time it will fire. Once armed, the alarm fires when TIMER_ALARM2
+// == TIMELR. The alarm will disarm itself once it fires, and can be disarmed early using the ARMED
+// status register.
+const ALARM2_OFFSET: u32 = 0x00000018
+const ALARM2_ALARM2_MASK: u32 = 0xffffffff
+const ALARM2_ALARM2_SHIFT: u32 = 0
+
+// Arm alarm 3, and configure the time it will fire. Once armed, the alarm fires when TIMER_ALARM3
+// == TIMELR. The alarm will disarm itself once it fires, and can be disarmed early using the ARMED
+// status register.
+const ALARM3_OFFSET: u32 = 0x0000001c
+const ALARM3_ALARM3_MASK: u32 = 0xffffffff
+const ALARM3_ALARM3_SHIFT: u32 = 0
+
+// Indicates the armed/disarmed status of each alarm. A write to the corresponding ALARMx register
+// arms the alarm. Alarms automatically disarm upon firing, but writing ones here will disarm
+// immediately without waiting to fire.
+const ARMED_OFFSET: u32 = 0x00000020
+const ARMED_ARMED_MASK: u32 = 0x0000000f
+const ARMED_ARMED_SHIFT: u32 = 0
+
+// Raw read from bits 63:32 of time (no side effects)
+const TIMERAWH_OFFSET: u32 = 0x00000024
+const TIMERAWH_TIMERAWH_MASK: u32 = 0xffffffff
+const TIMERAWH_TIMERAWH_SHIFT: u32 = 0
+
+// Raw read from bits 31:0 of time (no side effects)
+const TIMERAWL_OFFSET: u32 = 0x00000028
+const TIMERAWL_TIMERAWL_MASK: u32 = 0xffffffff
+const TIMERAWL_TIMERAWL_SHIFT: u32 = 0
+
+// Set bits high to enable pause when the corresponding debug ports are active
+const DBGPAUSE_OFFSET: u32 = 0x0000002c
+const DBGPAUSE_DBG1_MASK: u32 = 0x00000004
+const DBGPAUSE_DBG1_SHIFT: u32 = 2
+const DBGPAUSE_DBG0_MASK: u32 = 0x00000002
+const DBGPAUSE_DBG0_SHIFT: u32 = 1
+
+// Set high to pause the timer
+const PAUSE_OFFSET: u32 = 0x00000030
+const PAUSE_PAUSE_MASK: u32 = 0x00000001
+const PAUSE_PAUSE_SHIFT: u32 = 0
+
+// Set locked bit to disable write access to timer Once set, cannot be cleared (without a reset)
+const LOCKED_OFFSET: u32 = 0x00000034
+const LOCKED_LOCKED_MASK: u32 = 0x00000001
+const LOCKED_LOCKED_SHIFT: u32 = 0
+
+// Selects the source for the timer. Defaults to the normal tick configured in the ticks block
+// (typically configured to 1 microsecond). Writing to 1 will ignore the tick and count clk_sys
+// cycles instead.
+const SOURCE_OFFSET: u32 = 0x00000038
+const SOURCE_CLK_SYS_MASK: u32 = 0x00000001
+const SOURCE_CLK_SYS_SHIFT: u32 = 0
+const SOURCE_CLK_SYS_TICK: u32 = 0
+const SOURCE_CLK_SYS_CLK_SYS: u32 = 1
+
+// Raw Interrupts
+const INTR_OFFSET: u32 = 0x0000003c
+const INTR_ALARM_3_MASK: u32 = 0x00000008
+const INTR_ALARM_3_SHIFT: u32 = 3
+const INTR_ALARM_2_MASK: u32 = 0x00000004
+const INTR_ALARM_2_SHIFT: u32 = 2
+const INTR_ALARM_1_MASK: u32 = 0x00000002
+const INTR_ALARM_1_SHIFT: u32 = 1
+const INTR_ALARM_0_MASK: u32 = 0x00000001
+const INTR_ALARM_0_SHIFT: u32 = 0
+
+// Interrupt Enable
+const INTE_OFFSET: u32 = 0x00000040
+const INTE_ALARM_3_MASK: u32 = 0x00000008
+const INTE_ALARM_3_SHIFT: u32 = 3
+const INTE_ALARM_2_MASK: u32 = 0x00000004
+const INTE_ALARM_2_SHIFT: u32 = 2
+const INTE_ALARM_1_MASK: u32 = 0x00000002
+const INTE_ALARM_1_SHIFT: u32 = 1
+const INTE_ALARM_0_MASK: u32 = 0x00000001
+const INTE_ALARM_0_SHIFT: u32 = 0
+
+// Interrupt Force
+const INTF_OFFSET: u32 = 0x00000044
+const INTF_ALARM_3_MASK: u32 = 0x00000008
+const INTF_ALARM_3_SHIFT: u32 = 3
+const INTF_ALARM_2_MASK: u32 = 0x00000004
+const INTF_ALARM_2_SHIFT: u32 = 2
+const INTF_ALARM_1_MASK: u32 = 0x00000002
+const INTF_ALARM_1_SHIFT: u32 = 1
+const INTF_ALARM_0_MASK: u32 = 0x00000001
+const INTF_ALARM_0_SHIFT: u32 = 0
+
+// Interrupt status after masking & forcing
+const INTS_OFFSET: u32 = 0x00000048
+const INTS_ALARM_3_MASK: u32 = 0x00000008
+const INTS_ALARM_3_SHIFT: u32 = 3
+const INTS_ALARM_2_MASK: u32 = 0x00000004
+const INTS_ALARM_2_SHIFT: u32 = 2
+const INTS_ALARM_1_MASK: u32 = 0x00000002
+const INTS_ALARM_1_SHIFT: u32 = 1
+const INTS_ALARM_0_MASK: u32 = 0x00000001
+const INTS_ALARM_0_SHIFT: u32 = 0

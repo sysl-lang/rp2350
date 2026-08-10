@@ -1,0 +1,837 @@
+// Predefined OTP data layout for RP2350
+
+module sh.sysl.rp2350.otp_data
+
+// The peripheral's base address. Every offset below is from here.
+const BASE: u32 = 0x40130000
+
+// Bits 15:0 of public device ID. (ECC) The CHIPID0..3 rows contain a 64-bit random identifier for
+// this chip, which can be read from the USB bootloader PICOBOOT interface or from the get_sys_info
+// ROM API. The number of random bits makes the occurrence of twins exceedingly unlikely: for
+// example, a fleet of a hundred million devices has a 99.97% probability of no twinned IDs. This
+// is estimated to be lower than the occurrence of process errors in the assignment of sequential
+// random IDs, and for practical purposes CHIPID may be treated as unique.
+const CHIPID0_OFFSET: u32 = 0x00000000
+const CHIPID0_CHIPID0_MASK: u32 = 0x0000ffff
+const CHIPID0_CHIPID0_SHIFT: u32 = 0
+
+// Bits 31:16 of public device ID (ECC)
+const CHIPID1_OFFSET: u32 = 0x00000002
+const CHIPID1_CHIPID1_MASK: u32 = 0x0000ffff
+const CHIPID1_CHIPID1_SHIFT: u32 = 0
+
+// Bits 47:32 of public device ID (ECC)
+const CHIPID2_OFFSET: u32 = 0x00000004
+const CHIPID2_CHIPID2_MASK: u32 = 0x0000ffff
+const CHIPID2_CHIPID2_SHIFT: u32 = 0
+
+// Bits 63:48 of public device ID (ECC)
+const CHIPID3_OFFSET: u32 = 0x00000006
+const CHIPID3_CHIPID3_MASK: u32 = 0x0000ffff
+const CHIPID3_CHIPID3_SHIFT: u32 = 0
+
+// Bits 15:0 of private per-device random number (ECC) The RANDID0..7 rows form a 128-bit random
+// number generated during device test. This ID is not exposed through the USB PICOBOOT GET_INFO
+// command or the ROM `get_sys_info()` API. However note that the USB PICOBOOT OTP access point can
+// read the entirety of page 0, so this value is not meaningfully private unless the USB PICOBOOT
+// interface is disabled via the DISABLE_BOOTSEL_USB_PICOBOOT_IFC flag in BOOT_FLAGS0.
+const RANDID0_OFFSET: u32 = 0x00000008
+const RANDID0_RANDID0_MASK: u32 = 0x0000ffff
+const RANDID0_RANDID0_SHIFT: u32 = 0
+
+// Bits 31:16 of private per-device random number (ECC)
+const RANDID1_OFFSET: u32 = 0x0000000a
+const RANDID1_RANDID1_MASK: u32 = 0x0000ffff
+const RANDID1_RANDID1_SHIFT: u32 = 0
+
+// Bits 47:32 of private per-device random number (ECC)
+const RANDID2_OFFSET: u32 = 0x0000000c
+const RANDID2_RANDID2_MASK: u32 = 0x0000ffff
+const RANDID2_RANDID2_SHIFT: u32 = 0
+
+// Bits 63:48 of private per-device random number (ECC)
+const RANDID3_OFFSET: u32 = 0x0000000e
+const RANDID3_RANDID3_MASK: u32 = 0x0000ffff
+const RANDID3_RANDID3_SHIFT: u32 = 0
+
+// Bits 79:64 of private per-device random number (ECC)
+const RANDID4_OFFSET: u32 = 0x00000010
+const RANDID4_RANDID4_MASK: u32 = 0x0000ffff
+const RANDID4_RANDID4_SHIFT: u32 = 0
+
+// Bits 95:80 of private per-device random number (ECC)
+const RANDID5_OFFSET: u32 = 0x00000012
+const RANDID5_RANDID5_MASK: u32 = 0x0000ffff
+const RANDID5_RANDID5_SHIFT: u32 = 0
+
+// Bits 111:96 of private per-device random number (ECC)
+const RANDID6_OFFSET: u32 = 0x00000014
+const RANDID6_RANDID6_MASK: u32 = 0x0000ffff
+const RANDID6_RANDID6_SHIFT: u32 = 0
+
+// Bits 127:112 of private per-device random number (ECC)
+const RANDID7_OFFSET: u32 = 0x00000016
+const RANDID7_RANDID7_MASK: u32 = 0x0000ffff
+const RANDID7_RANDID7_SHIFT: u32 = 0
+
+// Ring oscillator frequency in kHz, measured during manufacturing (ECC) This is measured at 1.1 V,
+// at room temperature, with the ROSC configuration registers in their reset state.
+const ROSC_CALIB_OFFSET: u32 = 0x00000020
+const ROSC_CALIB_ROSC_CALIB_MASK: u32 = 0x0000ffff
+const ROSC_CALIB_ROSC_CALIB_SHIFT: u32 = 0
+
+// Low-power oscillator frequency in Hz, measured during manufacturing (ECC) This is measured at
+// 1.1V, at room temperature, with the LPOSC trim register in its reset state.
+const LPOSC_CALIB_OFFSET: u32 = 0x00000022
+const LPOSC_CALIB_LPOSC_CALIB_MASK: u32 = 0x0000ffff
+const LPOSC_CALIB_LPOSC_CALIB_SHIFT: u32 = 0
+
+// The number of main user GPIOs (bank 0). Should read 48 in the QFN80 package, and 30 in the QFN60
+// package. (ECC)
+const NUM_GPIOS_OFFSET: u32 = 0x00000030
+const NUM_GPIOS_NUM_GPIOS_MASK: u32 = 0x000000ff
+const NUM_GPIOS_NUM_GPIOS_SHIFT: u32 = 0
+
+// Lower 16 bits of CRC32 of OTP addresses 0x00 through 0x6b (polynomial 0x4c11db7, input
+// reflected, output reflected, seed all-ones, final XOR all-ones) (ECC)
+const INFO_CRC0_OFFSET: u32 = 0x0000006c
+const INFO_CRC0_INFO_CRC0_MASK: u32 = 0x0000ffff
+const INFO_CRC0_INFO_CRC0_SHIFT: u32 = 0
+
+// Upper 16 bits of CRC32 of OTP addresses 0x00 through 0x6b (ECC)
+const INFO_CRC1_OFFSET: u32 = 0x0000006e
+const INFO_CRC1_INFO_CRC1_MASK: u32 = 0x0000ffff
+const INFO_CRC1_INFO_CRC1_SHIFT: u32 = 0
+
+// Stores information about external flash device(s). (ECC) Assumed to be valid if
+// BOOT_FLAGS0_FLASH_DEVINFO_ENABLE is set.
+const FLASH_DEVINFO_OFFSET: u32 = 0x000000a8
+const FLASH_DEVINFO_CS1_SIZE_MASK: u32 = 0x0000f000
+const FLASH_DEVINFO_CS1_SIZE_SHIFT: u32 = 12
+const FLASH_DEVINFO_CS1_SIZE_NONE: u32 = 0
+const FLASH_DEVINFO_CS1_SIZE_8K: u32 = 1
+const FLASH_DEVINFO_CS1_SIZE_16K: u32 = 2
+const FLASH_DEVINFO_CS1_SIZE_32K: u32 = 3
+const FLASH_DEVINFO_CS1_SIZE_64K: u32 = 4
+const FLASH_DEVINFO_CS1_SIZE_128K: u32 = 5
+const FLASH_DEVINFO_CS1_SIZE_256K: u32 = 6
+const FLASH_DEVINFO_CS1_SIZE_512K: u32 = 7
+const FLASH_DEVINFO_CS1_SIZE_1M: u32 = 8
+const FLASH_DEVINFO_CS1_SIZE_2M: u32 = 9
+const FLASH_DEVINFO_CS1_SIZE_4M: u32 = 10
+const FLASH_DEVINFO_CS1_SIZE_8M: u32 = 11
+const FLASH_DEVINFO_CS1_SIZE_16M: u32 = 12
+const FLASH_DEVINFO_CS0_SIZE_MASK: u32 = 0x00000f00
+const FLASH_DEVINFO_CS0_SIZE_SHIFT: u32 = 8
+const FLASH_DEVINFO_CS0_SIZE_NONE: u32 = 0
+const FLASH_DEVINFO_CS0_SIZE_8K: u32 = 1
+const FLASH_DEVINFO_CS0_SIZE_16K: u32 = 2
+const FLASH_DEVINFO_CS0_SIZE_32K: u32 = 3
+const FLASH_DEVINFO_CS0_SIZE_64K: u32 = 4
+const FLASH_DEVINFO_CS0_SIZE_128K: u32 = 5
+const FLASH_DEVINFO_CS0_SIZE_256K: u32 = 6
+const FLASH_DEVINFO_CS0_SIZE_512K: u32 = 7
+const FLASH_DEVINFO_CS0_SIZE_1M: u32 = 8
+const FLASH_DEVINFO_CS0_SIZE_2M: u32 = 9
+const FLASH_DEVINFO_CS0_SIZE_4M: u32 = 10
+const FLASH_DEVINFO_CS0_SIZE_8M: u32 = 11
+const FLASH_DEVINFO_CS0_SIZE_16M: u32 = 12
+const FLASH_DEVINFO_D8H_ERASE_SUPPORTED_MASK: u32 = 0x00000080
+const FLASH_DEVINFO_D8H_ERASE_SUPPORTED_SHIFT: u32 = 7
+const FLASH_DEVINFO_CS1_GPIO_MASK: u32 = 0x0000003f
+const FLASH_DEVINFO_CS1_GPIO_SHIFT: u32 = 0
+
+// Gap between partition table slot 0 and slot 1 at the start of flash (the default size is 4096
+// bytes) (ECC) Enabled by the OVERRIDE_FLASH_PARTITION_SLOT_SIZE bit in BOOT_FLAGS, the size is
+// 4096 * (value + 1)
+const FLASH_PARTITION_SLOT_SIZE_OFFSET: u32 = 0x000000aa
+const FLASH_PARTITION_SLOT_SIZE_FLASH_PARTITION_SLOT_SIZE_MASK: u32 = 0x0000ffff
+const FLASH_PARTITION_SLOT_SIZE_FLASH_PARTITION_SLOT_SIZE_SHIFT: u32 = 0
+
+// Pin configuration for LED status, used by USB bootloader. (ECC) Must be valid if
+// BOOT_FLAGS0_ENABLE_BOOTSEL_LED is set.
+const BOOTSEL_LED_CFG_OFFSET: u32 = 0x000000ac
+const BOOTSEL_LED_CFG_ACTIVELOW_MASK: u32 = 0x00000100
+const BOOTSEL_LED_CFG_ACTIVELOW_SHIFT: u32 = 8
+const BOOTSEL_LED_CFG_PIN_MASK: u32 = 0x0000003f
+const BOOTSEL_LED_CFG_PIN_SHIFT: u32 = 0
+
+// Optional PLL configuration for BOOTSEL mode. (ECC) This should be configured to produce an exact
+// 48 MHz based on the crystal oscillator frequency. User mode software may also use this value to
+// calculate the expected crystal frequency based on an assumed 48 MHz PLL output. If no
+// configuration is given, the crystal is assumed to be 12 MHz. The PLL frequency can be calculated
+// as: PLL out = (XOSC frequency / (REFDIV+1)) x FBDIV / (POSTDIV1 x POSTDIV2) Conversely the
+// crystal frequency can be calculated as: XOSC frequency = 48 MHz x (REFDIV+1) x (POSTDIV1 x
+// POSTDIV2) / FBDIV (Note the +1 on REFDIV is because the value stored in this OTP location is the
+// actual divisor value minus one.) Used if and only if ENABLE_BOOTSEL_NON_DEFAULT_PLL_XOSC_CFG is
+// set in BOOT_FLAGS0. That bit should be set only after this row and BOOTSEL_XOSC_CFG are both
+// correctly programmed.
+const BOOTSEL_PLL_CFG_OFFSET: u32 = 0x000000ae
+const BOOTSEL_PLL_CFG_REFDIV_MASK: u32 = 0x00008000
+const BOOTSEL_PLL_CFG_REFDIV_SHIFT: u32 = 15
+const BOOTSEL_PLL_CFG_POSTDIV2_MASK: u32 = 0x00007000
+const BOOTSEL_PLL_CFG_POSTDIV2_SHIFT: u32 = 12
+const BOOTSEL_PLL_CFG_POSTDIV1_MASK: u32 = 0x00000e00
+const BOOTSEL_PLL_CFG_POSTDIV1_SHIFT: u32 = 9
+const BOOTSEL_PLL_CFG_FBDIV_MASK: u32 = 0x000001ff
+const BOOTSEL_PLL_CFG_FBDIV_SHIFT: u32 = 0
+
+// Non-default crystal oscillator configuration for the USB bootloader. (ECC) These values may also
+// be used by user code configuring the crystal oscillator. Used if and only if
+// ENABLE_BOOTSEL_NON_DEFAULT_PLL_XOSC_CFG is set in BOOT_FLAGS0. That bit should be set only after
+// this row and BOOTSEL_PLL_CFG are both correctly programmed.
+const BOOTSEL_XOSC_CFG_OFFSET: u32 = 0x000000b0
+const BOOTSEL_XOSC_CFG_RANGE_MASK: u32 = 0x0000c000
+const BOOTSEL_XOSC_CFG_RANGE_SHIFT: u32 = 14
+const BOOTSEL_XOSC_CFG_RANGE_1_15MHZ: u32 = 0
+const BOOTSEL_XOSC_CFG_RANGE_10_30MHZ: u32 = 1
+const BOOTSEL_XOSC_CFG_RANGE_25_60MHZ: u32 = 2
+const BOOTSEL_XOSC_CFG_RANGE_40_100MHZ: u32 = 3
+const BOOTSEL_XOSC_CFG_STARTUP_MASK: u32 = 0x00003fff
+const BOOTSEL_XOSC_CFG_STARTUP_SHIFT: u32 = 0
+
+// Row index of the USB_WHITE_LABEL structure within OTP (ECC) The table has 16 rows, each of which
+// are also ECC and marked valid by the corresponding valid bit in USB_BOOT_FLAGS (ECC). The
+// entries are either _VALUEs where the 16 bit value is used as is, or _STRDEFs which acts as a
+// pointers to a string value. The value stored in a _STRDEF is two separate bytes: The low seven
+// bits of the first (LSB) byte indicates the number of characters in the string, and the top bit
+// of the first (LSB) byte if set to indicate that each character in the string is two bytes
+// (Unicode) versus one byte if unset. The second (MSB) byte represents the location of the string
+// data, and is encoded as the number of rows from this USB_WHITE_LABEL_ADDR; i.e. the row of the
+// start of the string is USB_WHITE_LABEL_ADDR value + msb_byte. In each case, the corresponding
+// valid bit enables replacing the default value for the corresponding item provided by the boot
+// rom. Note that Unicode _STRDEFs are only supported for USB_DEVICE_PRODUCT_STRDEF,
+// USB_DEVICE_SERIAL_NUMBER_STRDEF and USB_DEVICE_MANUFACTURER_STRDEF. Unicode values will be
+// ignored if specified for other fields, and non-unicode values for these three items will be
+// converted to Unicode characters by setting the upper 8 bits to zero. Note that if the
+// USB_WHITE_LABEL structure or the corresponding strings are not readable by BOOTSEL mode based on
+// OTP permissions, or if alignment requirements are not met, then the corresponding default values
+// are used. The index values indicate where each field is located (row USB_WHITE_LABEL_ADDR value
+// + index):
+const USB_WHITE_LABEL_ADDR_OFFSET: u32 = 0x000000b8
+const USB_WHITE_LABEL_ADDR_USB_WHITE_LABEL_ADDR_MASK: u32 = 0x0000ffff
+const USB_WHITE_LABEL_ADDR_USB_WHITE_LABEL_ADDR_SHIFT: u32 = 0
+const USB_WHITE_LABEL_ADDR_USB_WHITE_LABEL_ADDR_INDEX_USB_DEVICE_VID_VALUE: u32 = 0
+const USB_WHITE_LABEL_ADDR_USB_WHITE_LABEL_ADDR_INDEX_USB_DEVICE_PID_VALUE: u32 = 1
+const USB_WHITE_LABEL_ADDR_USB_WHITE_LABEL_ADDR_INDEX_USB_DEVICE_BCD_DEVICE_VALUE: u32 = 2
+const USB_WHITE_LABEL_ADDR_USB_WHITE_LABEL_ADDR_INDEX_USB_DEVICE_LANG_ID_VALUE: u32 = 3
+const USB_WHITE_LABEL_ADDR_USB_WHITE_LABEL_ADDR_INDEX_USB_DEVICE_MANUFACTURER_STRDEF: u32 = 4
+const USB_WHITE_LABEL_ADDR_USB_WHITE_LABEL_ADDR_INDEX_USB_DEVICE_PRODUCT_STRDEF: u32 = 5
+const USB_WHITE_LABEL_ADDR_USB_WHITE_LABEL_ADDR_INDEX_USB_DEVICE_SERIAL_NUMBER_STRDEF: u32 = 6
+const USB_WHITE_LABEL_ADDR_USB_WHITE_LABEL_ADDR_INDEX_USB_CONFIG_ATTRIBUTES_MAX_POWER_VALUES: u32 = 7
+const USB_WHITE_LABEL_ADDR_USB_WHITE_LABEL_ADDR_INDEX_VOLUME_LABEL_STRDEF: u32 = 8
+const USB_WHITE_LABEL_ADDR_USB_WHITE_LABEL_ADDR_INDEX_SCSI_INQUIRY_VENDOR_STRDEF: u32 = 9
+const USB_WHITE_LABEL_ADDR_USB_WHITE_LABEL_ADDR_INDEX_SCSI_INQUIRY_PRODUCT_STRDEF: u32 = 10
+const USB_WHITE_LABEL_ADDR_USB_WHITE_LABEL_ADDR_INDEX_SCSI_INQUIRY_VERSION_STRDEF: u32 = 11
+const USB_WHITE_LABEL_ADDR_USB_WHITE_LABEL_ADDR_INDEX_INDEX_HTM_REDIRECT_URL_STRDEF: u32 = 12
+const USB_WHITE_LABEL_ADDR_USB_WHITE_LABEL_ADDR_INDEX_INDEX_HTM_REDIRECT_NAME_STRDEF: u32 = 13
+const USB_WHITE_LABEL_ADDR_USB_WHITE_LABEL_ADDR_INDEX_INFO_UF2_TXT_MODEL_STRDEF: u32 = 14
+const USB_WHITE_LABEL_ADDR_USB_WHITE_LABEL_ADDR_INDEX_INFO_UF2_TXT_BOARD_ID_STRDEF: u32 = 15
+
+// OTP start row for the OTP boot image. (ECC) If OTP boot is enabled, the bootrom will load from
+// this location into SRAM and then directly enter the loaded image. Note that the image must be
+// signed if SECURE_BOOT_ENABLE is set. The image itself is assumed to be ECC-protected. This must
+// be an even number. Equivalently, the OTP boot image must start at a word-aligned location in the
+// ECC read data address window.
+const OTPBOOT_SRC_OFFSET: u32 = 0x000000bc
+const OTPBOOT_SRC_OTPBOOT_SRC_MASK: u32 = 0x0000ffff
+const OTPBOOT_SRC_OTPBOOT_SRC_SHIFT: u32 = 0
+
+// Length in rows of the OTP boot image. (ECC) OTPBOOT_LEN must be even. The total image size must
+// be a multiple of 4 bytes (32 bits).
+const OTPBOOT_LEN_OFFSET: u32 = 0x000000be
+const OTPBOOT_LEN_OTPBOOT_LEN_MASK: u32 = 0x0000ffff
+const OTPBOOT_LEN_OTPBOOT_LEN_SHIFT: u32 = 0
+
+// Bits 15:0 of the OTP boot image load destination (and entry point). (ECC) This must be a
+// location in main SRAM (main SRAM is addresses 0x20000000 through 0x20082000) and must be
+// word-aligned.
+const OTPBOOT_DST0_OFFSET: u32 = 0x000000c0
+const OTPBOOT_DST0_OTPBOOT_DST0_MASK: u32 = 0x0000ffff
+const OTPBOOT_DST0_OTPBOOT_DST0_SHIFT: u32 = 0
+
+// Bits 31:16 of the OTP boot image load destination (and entry point). (ECC) This must be a
+// location in main SRAM (main SRAM is addresses 0x20000000 through 0x20082000) and must be
+// word-aligned.
+const OTPBOOT_DST1_OFFSET: u32 = 0x000000c2
+const OTPBOOT_DST1_OTPBOOT_DST1_MASK: u32 = 0x0000ffff
+const OTPBOOT_DST1_OTPBOOT_DST1_SHIFT: u32 = 0
+
+// Bytes 0 and 1 of MAC address (ECC) The MAC is stored as bytes in network order, so bits 7:0 of
+// this register are the aa in aa:bb:cc:dd:ee:ff, and bits 15:8 are the bb. Multiple interfaces are
+// assigned consecutive addresses from the single MAC stored in OTP.
+const MAC0_OFFSET: u32 = 0x000000c4
+const MAC0_MAC0_MASK: u32 = 0x0000ffff
+const MAC0_MAC0_SHIFT: u32 = 0
+
+// Bytes 2 and 3 of MAC address (ECC) The MAC is stored as bytes in network order, so bits 7:0 of
+// this register are the cc in aa:bb:cc:dd:ee:ff, and bits 15:8 are the dd.
+const MAC1_OFFSET: u32 = 0x000000c6
+const MAC1_MAC1_MASK: u32 = 0x0000ffff
+const MAC1_MAC1_SHIFT: u32 = 0
+
+// Bytes 4 and 5 of MAC address (ECC) The MAC is stored as bytes in network order, so bits 7:0 of
+// this register are the ee in aa:bb:cc:dd:ee:ff, and bits 15:8 are the ff.
+const MAC2_OFFSET: u32 = 0x000000c8
+const MAC2_MAC2_MASK: u32 = 0x0000ffff
+const MAC2_MAC2_SHIFT: u32 = 0
+
+// Bits 15:0 of SHA-256 hash of boot key 0 (ECC)
+const BOOTKEY0_0_OFFSET: u32 = 0x00000100
+const BOOTKEY0_0_BOOTKEY0_0_MASK: u32 = 0x0000ffff
+const BOOTKEY0_0_BOOTKEY0_0_SHIFT: u32 = 0
+
+// Bits 31:16 of SHA-256 hash of boot key 0 (ECC)
+const BOOTKEY0_1_OFFSET: u32 = 0x00000102
+const BOOTKEY0_1_BOOTKEY0_1_MASK: u32 = 0x0000ffff
+const BOOTKEY0_1_BOOTKEY0_1_SHIFT: u32 = 0
+
+// Bits 47:32 of SHA-256 hash of boot key 0 (ECC)
+const BOOTKEY0_2_OFFSET: u32 = 0x00000104
+const BOOTKEY0_2_BOOTKEY0_2_MASK: u32 = 0x0000ffff
+const BOOTKEY0_2_BOOTKEY0_2_SHIFT: u32 = 0
+
+// Bits 63:48 of SHA-256 hash of boot key 0 (ECC)
+const BOOTKEY0_3_OFFSET: u32 = 0x00000106
+const BOOTKEY0_3_BOOTKEY0_3_MASK: u32 = 0x0000ffff
+const BOOTKEY0_3_BOOTKEY0_3_SHIFT: u32 = 0
+
+// Bits 79:64 of SHA-256 hash of boot key 0 (ECC)
+const BOOTKEY0_4_OFFSET: u32 = 0x00000108
+const BOOTKEY0_4_BOOTKEY0_4_MASK: u32 = 0x0000ffff
+const BOOTKEY0_4_BOOTKEY0_4_SHIFT: u32 = 0
+
+// Bits 95:80 of SHA-256 hash of boot key 0 (ECC)
+const BOOTKEY0_5_OFFSET: u32 = 0x0000010a
+const BOOTKEY0_5_BOOTKEY0_5_MASK: u32 = 0x0000ffff
+const BOOTKEY0_5_BOOTKEY0_5_SHIFT: u32 = 0
+
+// Bits 111:96 of SHA-256 hash of boot key 0 (ECC)
+const BOOTKEY0_6_OFFSET: u32 = 0x0000010c
+const BOOTKEY0_6_BOOTKEY0_6_MASK: u32 = 0x0000ffff
+const BOOTKEY0_6_BOOTKEY0_6_SHIFT: u32 = 0
+
+// Bits 127:112 of SHA-256 hash of boot key 0 (ECC)
+const BOOTKEY0_7_OFFSET: u32 = 0x0000010e
+const BOOTKEY0_7_BOOTKEY0_7_MASK: u32 = 0x0000ffff
+const BOOTKEY0_7_BOOTKEY0_7_SHIFT: u32 = 0
+
+// Bits 143:128 of SHA-256 hash of boot key 0 (ECC)
+const BOOTKEY0_8_OFFSET: u32 = 0x00000110
+const BOOTKEY0_8_BOOTKEY0_8_MASK: u32 = 0x0000ffff
+const BOOTKEY0_8_BOOTKEY0_8_SHIFT: u32 = 0
+
+// Bits 159:144 of SHA-256 hash of boot key 0 (ECC)
+const BOOTKEY0_9_OFFSET: u32 = 0x00000112
+const BOOTKEY0_9_BOOTKEY0_9_MASK: u32 = 0x0000ffff
+const BOOTKEY0_9_BOOTKEY0_9_SHIFT: u32 = 0
+
+// Bits 175:160 of SHA-256 hash of boot key 0 (ECC)
+const BOOTKEY0_10_OFFSET: u32 = 0x00000114
+const BOOTKEY0_10_BOOTKEY0_10_MASK: u32 = 0x0000ffff
+const BOOTKEY0_10_BOOTKEY0_10_SHIFT: u32 = 0
+
+// Bits 191:176 of SHA-256 hash of boot key 0 (ECC)
+const BOOTKEY0_11_OFFSET: u32 = 0x00000116
+const BOOTKEY0_11_BOOTKEY0_11_MASK: u32 = 0x0000ffff
+const BOOTKEY0_11_BOOTKEY0_11_SHIFT: u32 = 0
+
+// Bits 207:192 of SHA-256 hash of boot key 0 (ECC)
+const BOOTKEY0_12_OFFSET: u32 = 0x00000118
+const BOOTKEY0_12_BOOTKEY0_12_MASK: u32 = 0x0000ffff
+const BOOTKEY0_12_BOOTKEY0_12_SHIFT: u32 = 0
+
+// Bits 223:208 of SHA-256 hash of boot key 0 (ECC)
+const BOOTKEY0_13_OFFSET: u32 = 0x0000011a
+const BOOTKEY0_13_BOOTKEY0_13_MASK: u32 = 0x0000ffff
+const BOOTKEY0_13_BOOTKEY0_13_SHIFT: u32 = 0
+
+// Bits 239:224 of SHA-256 hash of boot key 0 (ECC)
+const BOOTKEY0_14_OFFSET: u32 = 0x0000011c
+const BOOTKEY0_14_BOOTKEY0_14_MASK: u32 = 0x0000ffff
+const BOOTKEY0_14_BOOTKEY0_14_SHIFT: u32 = 0
+
+// Bits 255:240 of SHA-256 hash of boot key 0 (ECC)
+const BOOTKEY0_15_OFFSET: u32 = 0x0000011e
+const BOOTKEY0_15_BOOTKEY0_15_MASK: u32 = 0x0000ffff
+const BOOTKEY0_15_BOOTKEY0_15_SHIFT: u32 = 0
+
+// Bits 15:0 of SHA-256 hash of boot key 1 (ECC)
+const BOOTKEY1_0_OFFSET: u32 = 0x00000120
+const BOOTKEY1_0_BOOTKEY1_0_MASK: u32 = 0x0000ffff
+const BOOTKEY1_0_BOOTKEY1_0_SHIFT: u32 = 0
+
+// Bits 31:16 of SHA-256 hash of boot key 1 (ECC)
+const BOOTKEY1_1_OFFSET: u32 = 0x00000122
+const BOOTKEY1_1_BOOTKEY1_1_MASK: u32 = 0x0000ffff
+const BOOTKEY1_1_BOOTKEY1_1_SHIFT: u32 = 0
+
+// Bits 47:32 of SHA-256 hash of boot key 1 (ECC)
+const BOOTKEY1_2_OFFSET: u32 = 0x00000124
+const BOOTKEY1_2_BOOTKEY1_2_MASK: u32 = 0x0000ffff
+const BOOTKEY1_2_BOOTKEY1_2_SHIFT: u32 = 0
+
+// Bits 63:48 of SHA-256 hash of boot key 1 (ECC)
+const BOOTKEY1_3_OFFSET: u32 = 0x00000126
+const BOOTKEY1_3_BOOTKEY1_3_MASK: u32 = 0x0000ffff
+const BOOTKEY1_3_BOOTKEY1_3_SHIFT: u32 = 0
+
+// Bits 79:64 of SHA-256 hash of boot key 1 (ECC)
+const BOOTKEY1_4_OFFSET: u32 = 0x00000128
+const BOOTKEY1_4_BOOTKEY1_4_MASK: u32 = 0x0000ffff
+const BOOTKEY1_4_BOOTKEY1_4_SHIFT: u32 = 0
+
+// Bits 95:80 of SHA-256 hash of boot key 1 (ECC)
+const BOOTKEY1_5_OFFSET: u32 = 0x0000012a
+const BOOTKEY1_5_BOOTKEY1_5_MASK: u32 = 0x0000ffff
+const BOOTKEY1_5_BOOTKEY1_5_SHIFT: u32 = 0
+
+// Bits 111:96 of SHA-256 hash of boot key 1 (ECC)
+const BOOTKEY1_6_OFFSET: u32 = 0x0000012c
+const BOOTKEY1_6_BOOTKEY1_6_MASK: u32 = 0x0000ffff
+const BOOTKEY1_6_BOOTKEY1_6_SHIFT: u32 = 0
+
+// Bits 127:112 of SHA-256 hash of boot key 1 (ECC)
+const BOOTKEY1_7_OFFSET: u32 = 0x0000012e
+const BOOTKEY1_7_BOOTKEY1_7_MASK: u32 = 0x0000ffff
+const BOOTKEY1_7_BOOTKEY1_7_SHIFT: u32 = 0
+
+// Bits 143:128 of SHA-256 hash of boot key 1 (ECC)
+const BOOTKEY1_8_OFFSET: u32 = 0x00000130
+const BOOTKEY1_8_BOOTKEY1_8_MASK: u32 = 0x0000ffff
+const BOOTKEY1_8_BOOTKEY1_8_SHIFT: u32 = 0
+
+// Bits 159:144 of SHA-256 hash of boot key 1 (ECC)
+const BOOTKEY1_9_OFFSET: u32 = 0x00000132
+const BOOTKEY1_9_BOOTKEY1_9_MASK: u32 = 0x0000ffff
+const BOOTKEY1_9_BOOTKEY1_9_SHIFT: u32 = 0
+
+// Bits 175:160 of SHA-256 hash of boot key 1 (ECC)
+const BOOTKEY1_10_OFFSET: u32 = 0x00000134
+const BOOTKEY1_10_BOOTKEY1_10_MASK: u32 = 0x0000ffff
+const BOOTKEY1_10_BOOTKEY1_10_SHIFT: u32 = 0
+
+// Bits 191:176 of SHA-256 hash of boot key 1 (ECC)
+const BOOTKEY1_11_OFFSET: u32 = 0x00000136
+const BOOTKEY1_11_BOOTKEY1_11_MASK: u32 = 0x0000ffff
+const BOOTKEY1_11_BOOTKEY1_11_SHIFT: u32 = 0
+
+// Bits 207:192 of SHA-256 hash of boot key 1 (ECC)
+const BOOTKEY1_12_OFFSET: u32 = 0x00000138
+const BOOTKEY1_12_BOOTKEY1_12_MASK: u32 = 0x0000ffff
+const BOOTKEY1_12_BOOTKEY1_12_SHIFT: u32 = 0
+
+// Bits 223:208 of SHA-256 hash of boot key 1 (ECC)
+const BOOTKEY1_13_OFFSET: u32 = 0x0000013a
+const BOOTKEY1_13_BOOTKEY1_13_MASK: u32 = 0x0000ffff
+const BOOTKEY1_13_BOOTKEY1_13_SHIFT: u32 = 0
+
+// Bits 239:224 of SHA-256 hash of boot key 1 (ECC)
+const BOOTKEY1_14_OFFSET: u32 = 0x0000013c
+const BOOTKEY1_14_BOOTKEY1_14_MASK: u32 = 0x0000ffff
+const BOOTKEY1_14_BOOTKEY1_14_SHIFT: u32 = 0
+
+// Bits 255:240 of SHA-256 hash of boot key 1 (ECC)
+const BOOTKEY1_15_OFFSET: u32 = 0x0000013e
+const BOOTKEY1_15_BOOTKEY1_15_MASK: u32 = 0x0000ffff
+const BOOTKEY1_15_BOOTKEY1_15_SHIFT: u32 = 0
+
+// Bits 15:0 of SHA-256 hash of boot key 2 (ECC)
+const BOOTKEY2_0_OFFSET: u32 = 0x00000140
+const BOOTKEY2_0_BOOTKEY2_0_MASK: u32 = 0x0000ffff
+const BOOTKEY2_0_BOOTKEY2_0_SHIFT: u32 = 0
+
+// Bits 31:16 of SHA-256 hash of boot key 2 (ECC)
+const BOOTKEY2_1_OFFSET: u32 = 0x00000142
+const BOOTKEY2_1_BOOTKEY2_1_MASK: u32 = 0x0000ffff
+const BOOTKEY2_1_BOOTKEY2_1_SHIFT: u32 = 0
+
+// Bits 47:32 of SHA-256 hash of boot key 2 (ECC)
+const BOOTKEY2_2_OFFSET: u32 = 0x00000144
+const BOOTKEY2_2_BOOTKEY2_2_MASK: u32 = 0x0000ffff
+const BOOTKEY2_2_BOOTKEY2_2_SHIFT: u32 = 0
+
+// Bits 63:48 of SHA-256 hash of boot key 2 (ECC)
+const BOOTKEY2_3_OFFSET: u32 = 0x00000146
+const BOOTKEY2_3_BOOTKEY2_3_MASK: u32 = 0x0000ffff
+const BOOTKEY2_3_BOOTKEY2_3_SHIFT: u32 = 0
+
+// Bits 79:64 of SHA-256 hash of boot key 2 (ECC)
+const BOOTKEY2_4_OFFSET: u32 = 0x00000148
+const BOOTKEY2_4_BOOTKEY2_4_MASK: u32 = 0x0000ffff
+const BOOTKEY2_4_BOOTKEY2_4_SHIFT: u32 = 0
+
+// Bits 95:80 of SHA-256 hash of boot key 2 (ECC)
+const BOOTKEY2_5_OFFSET: u32 = 0x0000014a
+const BOOTKEY2_5_BOOTKEY2_5_MASK: u32 = 0x0000ffff
+const BOOTKEY2_5_BOOTKEY2_5_SHIFT: u32 = 0
+
+// Bits 111:96 of SHA-256 hash of boot key 2 (ECC)
+const BOOTKEY2_6_OFFSET: u32 = 0x0000014c
+const BOOTKEY2_6_BOOTKEY2_6_MASK: u32 = 0x0000ffff
+const BOOTKEY2_6_BOOTKEY2_6_SHIFT: u32 = 0
+
+// Bits 127:112 of SHA-256 hash of boot key 2 (ECC)
+const BOOTKEY2_7_OFFSET: u32 = 0x0000014e
+const BOOTKEY2_7_BOOTKEY2_7_MASK: u32 = 0x0000ffff
+const BOOTKEY2_7_BOOTKEY2_7_SHIFT: u32 = 0
+
+// Bits 143:128 of SHA-256 hash of boot key 2 (ECC)
+const BOOTKEY2_8_OFFSET: u32 = 0x00000150
+const BOOTKEY2_8_BOOTKEY2_8_MASK: u32 = 0x0000ffff
+const BOOTKEY2_8_BOOTKEY2_8_SHIFT: u32 = 0
+
+// Bits 159:144 of SHA-256 hash of boot key 2 (ECC)
+const BOOTKEY2_9_OFFSET: u32 = 0x00000152
+const BOOTKEY2_9_BOOTKEY2_9_MASK: u32 = 0x0000ffff
+const BOOTKEY2_9_BOOTKEY2_9_SHIFT: u32 = 0
+
+// Bits 175:160 of SHA-256 hash of boot key 2 (ECC)
+const BOOTKEY2_10_OFFSET: u32 = 0x00000154
+const BOOTKEY2_10_BOOTKEY2_10_MASK: u32 = 0x0000ffff
+const BOOTKEY2_10_BOOTKEY2_10_SHIFT: u32 = 0
+
+// Bits 191:176 of SHA-256 hash of boot key 2 (ECC)
+const BOOTKEY2_11_OFFSET: u32 = 0x00000156
+const BOOTKEY2_11_BOOTKEY2_11_MASK: u32 = 0x0000ffff
+const BOOTKEY2_11_BOOTKEY2_11_SHIFT: u32 = 0
+
+// Bits 207:192 of SHA-256 hash of boot key 2 (ECC)
+const BOOTKEY2_12_OFFSET: u32 = 0x00000158
+const BOOTKEY2_12_BOOTKEY2_12_MASK: u32 = 0x0000ffff
+const BOOTKEY2_12_BOOTKEY2_12_SHIFT: u32 = 0
+
+// Bits 223:208 of SHA-256 hash of boot key 2 (ECC)
+const BOOTKEY2_13_OFFSET: u32 = 0x0000015a
+const BOOTKEY2_13_BOOTKEY2_13_MASK: u32 = 0x0000ffff
+const BOOTKEY2_13_BOOTKEY2_13_SHIFT: u32 = 0
+
+// Bits 239:224 of SHA-256 hash of boot key 2 (ECC)
+const BOOTKEY2_14_OFFSET: u32 = 0x0000015c
+const BOOTKEY2_14_BOOTKEY2_14_MASK: u32 = 0x0000ffff
+const BOOTKEY2_14_BOOTKEY2_14_SHIFT: u32 = 0
+
+// Bits 255:240 of SHA-256 hash of boot key 2 (ECC)
+const BOOTKEY2_15_OFFSET: u32 = 0x0000015e
+const BOOTKEY2_15_BOOTKEY2_15_MASK: u32 = 0x0000ffff
+const BOOTKEY2_15_BOOTKEY2_15_SHIFT: u32 = 0
+
+// Bits 15:0 of SHA-256 hash of boot key 3 (ECC)
+const BOOTKEY3_0_OFFSET: u32 = 0x00000160
+const BOOTKEY3_0_BOOTKEY3_0_MASK: u32 = 0x0000ffff
+const BOOTKEY3_0_BOOTKEY3_0_SHIFT: u32 = 0
+
+// Bits 31:16 of SHA-256 hash of boot key 3 (ECC)
+const BOOTKEY3_1_OFFSET: u32 = 0x00000162
+const BOOTKEY3_1_BOOTKEY3_1_MASK: u32 = 0x0000ffff
+const BOOTKEY3_1_BOOTKEY3_1_SHIFT: u32 = 0
+
+// Bits 47:32 of SHA-256 hash of boot key 3 (ECC)
+const BOOTKEY3_2_OFFSET: u32 = 0x00000164
+const BOOTKEY3_2_BOOTKEY3_2_MASK: u32 = 0x0000ffff
+const BOOTKEY3_2_BOOTKEY3_2_SHIFT: u32 = 0
+
+// Bits 63:48 of SHA-256 hash of boot key 3 (ECC)
+const BOOTKEY3_3_OFFSET: u32 = 0x00000166
+const BOOTKEY3_3_BOOTKEY3_3_MASK: u32 = 0x0000ffff
+const BOOTKEY3_3_BOOTKEY3_3_SHIFT: u32 = 0
+
+// Bits 79:64 of SHA-256 hash of boot key 3 (ECC)
+const BOOTKEY3_4_OFFSET: u32 = 0x00000168
+const BOOTKEY3_4_BOOTKEY3_4_MASK: u32 = 0x0000ffff
+const BOOTKEY3_4_BOOTKEY3_4_SHIFT: u32 = 0
+
+// Bits 95:80 of SHA-256 hash of boot key 3 (ECC)
+const BOOTKEY3_5_OFFSET: u32 = 0x0000016a
+const BOOTKEY3_5_BOOTKEY3_5_MASK: u32 = 0x0000ffff
+const BOOTKEY3_5_BOOTKEY3_5_SHIFT: u32 = 0
+
+// Bits 111:96 of SHA-256 hash of boot key 3 (ECC)
+const BOOTKEY3_6_OFFSET: u32 = 0x0000016c
+const BOOTKEY3_6_BOOTKEY3_6_MASK: u32 = 0x0000ffff
+const BOOTKEY3_6_BOOTKEY3_6_SHIFT: u32 = 0
+
+// Bits 127:112 of SHA-256 hash of boot key 3 (ECC)
+const BOOTKEY3_7_OFFSET: u32 = 0x0000016e
+const BOOTKEY3_7_BOOTKEY3_7_MASK: u32 = 0x0000ffff
+const BOOTKEY3_7_BOOTKEY3_7_SHIFT: u32 = 0
+
+// Bits 143:128 of SHA-256 hash of boot key 3 (ECC)
+const BOOTKEY3_8_OFFSET: u32 = 0x00000170
+const BOOTKEY3_8_BOOTKEY3_8_MASK: u32 = 0x0000ffff
+const BOOTKEY3_8_BOOTKEY3_8_SHIFT: u32 = 0
+
+// Bits 159:144 of SHA-256 hash of boot key 3 (ECC)
+const BOOTKEY3_9_OFFSET: u32 = 0x00000172
+const BOOTKEY3_9_BOOTKEY3_9_MASK: u32 = 0x0000ffff
+const BOOTKEY3_9_BOOTKEY3_9_SHIFT: u32 = 0
+
+// Bits 175:160 of SHA-256 hash of boot key 3 (ECC)
+const BOOTKEY3_10_OFFSET: u32 = 0x00000174
+const BOOTKEY3_10_BOOTKEY3_10_MASK: u32 = 0x0000ffff
+const BOOTKEY3_10_BOOTKEY3_10_SHIFT: u32 = 0
+
+// Bits 191:176 of SHA-256 hash of boot key 3 (ECC)
+const BOOTKEY3_11_OFFSET: u32 = 0x00000176
+const BOOTKEY3_11_BOOTKEY3_11_MASK: u32 = 0x0000ffff
+const BOOTKEY3_11_BOOTKEY3_11_SHIFT: u32 = 0
+
+// Bits 207:192 of SHA-256 hash of boot key 3 (ECC)
+const BOOTKEY3_12_OFFSET: u32 = 0x00000178
+const BOOTKEY3_12_BOOTKEY3_12_MASK: u32 = 0x0000ffff
+const BOOTKEY3_12_BOOTKEY3_12_SHIFT: u32 = 0
+
+// Bits 223:208 of SHA-256 hash of boot key 3 (ECC)
+const BOOTKEY3_13_OFFSET: u32 = 0x0000017a
+const BOOTKEY3_13_BOOTKEY3_13_MASK: u32 = 0x0000ffff
+const BOOTKEY3_13_BOOTKEY3_13_SHIFT: u32 = 0
+
+// Bits 239:224 of SHA-256 hash of boot key 3 (ECC)
+const BOOTKEY3_14_OFFSET: u32 = 0x0000017c
+const BOOTKEY3_14_BOOTKEY3_14_MASK: u32 = 0x0000ffff
+const BOOTKEY3_14_BOOTKEY3_14_SHIFT: u32 = 0
+
+// Bits 255:240 of SHA-256 hash of boot key 3 (ECC)
+const BOOTKEY3_15_OFFSET: u32 = 0x0000017e
+const BOOTKEY3_15_BOOTKEY3_15_MASK: u32 = 0x0000ffff
+const BOOTKEY3_15_BOOTKEY3_15_SHIFT: u32 = 0
+
+// Bits 15:0 of OTP access key 1 (ECC)
+const KEY1_0_OFFSET: u32 = 0x00001e90
+const KEY1_0_KEY1_0_MASK: u32 = 0x0000ffff
+const KEY1_0_KEY1_0_SHIFT: u32 = 0
+
+// Bits 31:16 of OTP access key 1 (ECC)
+const KEY1_1_OFFSET: u32 = 0x00001e92
+const KEY1_1_KEY1_1_MASK: u32 = 0x0000ffff
+const KEY1_1_KEY1_1_SHIFT: u32 = 0
+
+// Bits 47:32 of OTP access key 1 (ECC)
+const KEY1_2_OFFSET: u32 = 0x00001e94
+const KEY1_2_KEY1_2_MASK: u32 = 0x0000ffff
+const KEY1_2_KEY1_2_SHIFT: u32 = 0
+
+// Bits 63:48 of OTP access key 1 (ECC)
+const KEY1_3_OFFSET: u32 = 0x00001e96
+const KEY1_3_KEY1_3_MASK: u32 = 0x0000ffff
+const KEY1_3_KEY1_3_SHIFT: u32 = 0
+
+// Bits 79:64 of OTP access key 1 (ECC)
+const KEY1_4_OFFSET: u32 = 0x00001e98
+const KEY1_4_KEY1_4_MASK: u32 = 0x0000ffff
+const KEY1_4_KEY1_4_SHIFT: u32 = 0
+
+// Bits 95:80 of OTP access key 1 (ECC)
+const KEY1_5_OFFSET: u32 = 0x00001e9a
+const KEY1_5_KEY1_5_MASK: u32 = 0x0000ffff
+const KEY1_5_KEY1_5_SHIFT: u32 = 0
+
+// Bits 111:96 of OTP access key 1 (ECC)
+const KEY1_6_OFFSET: u32 = 0x00001e9c
+const KEY1_6_KEY1_6_MASK: u32 = 0x0000ffff
+const KEY1_6_KEY1_6_SHIFT: u32 = 0
+
+// Bits 127:112 of OTP access key 1 (ECC)
+const KEY1_7_OFFSET: u32 = 0x00001e9e
+const KEY1_7_KEY1_7_MASK: u32 = 0x0000ffff
+const KEY1_7_KEY1_7_SHIFT: u32 = 0
+
+// Bits 15:0 of OTP access key 2 (ECC)
+const KEY2_0_OFFSET: u32 = 0x00001ea0
+const KEY2_0_KEY2_0_MASK: u32 = 0x0000ffff
+const KEY2_0_KEY2_0_SHIFT: u32 = 0
+
+// Bits 31:16 of OTP access key 2 (ECC)
+const KEY2_1_OFFSET: u32 = 0x00001ea2
+const KEY2_1_KEY2_1_MASK: u32 = 0x0000ffff
+const KEY2_1_KEY2_1_SHIFT: u32 = 0
+
+// Bits 47:32 of OTP access key 2 (ECC)
+const KEY2_2_OFFSET: u32 = 0x00001ea4
+const KEY2_2_KEY2_2_MASK: u32 = 0x0000ffff
+const KEY2_2_KEY2_2_SHIFT: u32 = 0
+
+// Bits 63:48 of OTP access key 2 (ECC)
+const KEY2_3_OFFSET: u32 = 0x00001ea6
+const KEY2_3_KEY2_3_MASK: u32 = 0x0000ffff
+const KEY2_3_KEY2_3_SHIFT: u32 = 0
+
+// Bits 79:64 of OTP access key 2 (ECC)
+const KEY2_4_OFFSET: u32 = 0x00001ea8
+const KEY2_4_KEY2_4_MASK: u32 = 0x0000ffff
+const KEY2_4_KEY2_4_SHIFT: u32 = 0
+
+// Bits 95:80 of OTP access key 2 (ECC)
+const KEY2_5_OFFSET: u32 = 0x00001eaa
+const KEY2_5_KEY2_5_MASK: u32 = 0x0000ffff
+const KEY2_5_KEY2_5_SHIFT: u32 = 0
+
+// Bits 111:96 of OTP access key 2 (ECC)
+const KEY2_6_OFFSET: u32 = 0x00001eac
+const KEY2_6_KEY2_6_MASK: u32 = 0x0000ffff
+const KEY2_6_KEY2_6_SHIFT: u32 = 0
+
+// Bits 127:112 of OTP access key 2 (ECC)
+const KEY2_7_OFFSET: u32 = 0x00001eae
+const KEY2_7_KEY2_7_MASK: u32 = 0x0000ffff
+const KEY2_7_KEY2_7_SHIFT: u32 = 0
+
+// Bits 15:0 of OTP access key 3 (ECC)
+const KEY3_0_OFFSET: u32 = 0x00001eb0
+const KEY3_0_KEY3_0_MASK: u32 = 0x0000ffff
+const KEY3_0_KEY3_0_SHIFT: u32 = 0
+
+// Bits 31:16 of OTP access key 3 (ECC)
+const KEY3_1_OFFSET: u32 = 0x00001eb2
+const KEY3_1_KEY3_1_MASK: u32 = 0x0000ffff
+const KEY3_1_KEY3_1_SHIFT: u32 = 0
+
+// Bits 47:32 of OTP access key 3 (ECC)
+const KEY3_2_OFFSET: u32 = 0x00001eb4
+const KEY3_2_KEY3_2_MASK: u32 = 0x0000ffff
+const KEY3_2_KEY3_2_SHIFT: u32 = 0
+
+// Bits 63:48 of OTP access key 3 (ECC)
+const KEY3_3_OFFSET: u32 = 0x00001eb6
+const KEY3_3_KEY3_3_MASK: u32 = 0x0000ffff
+const KEY3_3_KEY3_3_SHIFT: u32 = 0
+
+// Bits 79:64 of OTP access key 3 (ECC)
+const KEY3_4_OFFSET: u32 = 0x00001eb8
+const KEY3_4_KEY3_4_MASK: u32 = 0x0000ffff
+const KEY3_4_KEY3_4_SHIFT: u32 = 0
+
+// Bits 95:80 of OTP access key 3 (ECC)
+const KEY3_5_OFFSET: u32 = 0x00001eba
+const KEY3_5_KEY3_5_MASK: u32 = 0x0000ffff
+const KEY3_5_KEY3_5_SHIFT: u32 = 0
+
+// Bits 111:96 of OTP access key 3 (ECC)
+const KEY3_6_OFFSET: u32 = 0x00001ebc
+const KEY3_6_KEY3_6_MASK: u32 = 0x0000ffff
+const KEY3_6_KEY3_6_SHIFT: u32 = 0
+
+// Bits 127:112 of OTP access key 3 (ECC)
+const KEY3_7_OFFSET: u32 = 0x00001ebe
+const KEY3_7_KEY3_7_MASK: u32 = 0x0000ffff
+const KEY3_7_KEY3_7_SHIFT: u32 = 0
+
+// Bits 15:0 of OTP access key 4 (ECC)
+const KEY4_0_OFFSET: u32 = 0x00001ec0
+const KEY4_0_KEY4_0_MASK: u32 = 0x0000ffff
+const KEY4_0_KEY4_0_SHIFT: u32 = 0
+
+// Bits 31:16 of OTP access key 4 (ECC)
+const KEY4_1_OFFSET: u32 = 0x00001ec2
+const KEY4_1_KEY4_1_MASK: u32 = 0x0000ffff
+const KEY4_1_KEY4_1_SHIFT: u32 = 0
+
+// Bits 47:32 of OTP access key 4 (ECC)
+const KEY4_2_OFFSET: u32 = 0x00001ec4
+const KEY4_2_KEY4_2_MASK: u32 = 0x0000ffff
+const KEY4_2_KEY4_2_SHIFT: u32 = 0
+
+// Bits 63:48 of OTP access key 4 (ECC)
+const KEY4_3_OFFSET: u32 = 0x00001ec6
+const KEY4_3_KEY4_3_MASK: u32 = 0x0000ffff
+const KEY4_3_KEY4_3_SHIFT: u32 = 0
+
+// Bits 79:64 of OTP access key 4 (ECC)
+const KEY4_4_OFFSET: u32 = 0x00001ec8
+const KEY4_4_KEY4_4_MASK: u32 = 0x0000ffff
+const KEY4_4_KEY4_4_SHIFT: u32 = 0
+
+// Bits 95:80 of OTP access key 4 (ECC)
+const KEY4_5_OFFSET: u32 = 0x00001eca
+const KEY4_5_KEY4_5_MASK: u32 = 0x0000ffff
+const KEY4_5_KEY4_5_SHIFT: u32 = 0
+
+// Bits 111:96 of OTP access key 4 (ECC)
+const KEY4_6_OFFSET: u32 = 0x00001ecc
+const KEY4_6_KEY4_6_MASK: u32 = 0x0000ffff
+const KEY4_6_KEY4_6_SHIFT: u32 = 0
+
+// Bits 127:112 of OTP access key 4 (ECC)
+const KEY4_7_OFFSET: u32 = 0x00001ece
+const KEY4_7_KEY4_7_MASK: u32 = 0x0000ffff
+const KEY4_7_KEY4_7_SHIFT: u32 = 0
+
+// Bits 15:0 of OTP access key 5 (ECC)
+const KEY5_0_OFFSET: u32 = 0x00001ed0
+const KEY5_0_KEY5_0_MASK: u32 = 0x0000ffff
+const KEY5_0_KEY5_0_SHIFT: u32 = 0
+
+// Bits 31:16 of OTP access key 5 (ECC)
+const KEY5_1_OFFSET: u32 = 0x00001ed2
+const KEY5_1_KEY5_1_MASK: u32 = 0x0000ffff
+const KEY5_1_KEY5_1_SHIFT: u32 = 0
+
+// Bits 47:32 of OTP access key 5 (ECC)
+const KEY5_2_OFFSET: u32 = 0x00001ed4
+const KEY5_2_KEY5_2_MASK: u32 = 0x0000ffff
+const KEY5_2_KEY5_2_SHIFT: u32 = 0
+
+// Bits 63:48 of OTP access key 5 (ECC)
+const KEY5_3_OFFSET: u32 = 0x00001ed6
+const KEY5_3_KEY5_3_MASK: u32 = 0x0000ffff
+const KEY5_3_KEY5_3_SHIFT: u32 = 0
+
+// Bits 79:64 of OTP access key 5 (ECC)
+const KEY5_4_OFFSET: u32 = 0x00001ed8
+const KEY5_4_KEY5_4_MASK: u32 = 0x0000ffff
+const KEY5_4_KEY5_4_SHIFT: u32 = 0
+
+// Bits 95:80 of OTP access key 5 (ECC)
+const KEY5_5_OFFSET: u32 = 0x00001eda
+const KEY5_5_KEY5_5_MASK: u32 = 0x0000ffff
+const KEY5_5_KEY5_5_SHIFT: u32 = 0
+
+// Bits 111:96 of OTP access key 5 (ECC)
+const KEY5_6_OFFSET: u32 = 0x00001edc
+const KEY5_6_KEY5_6_MASK: u32 = 0x0000ffff
+const KEY5_6_KEY5_6_SHIFT: u32 = 0
+
+// Bits 127:112 of OTP access key 5 (ECC)
+const KEY5_7_OFFSET: u32 = 0x00001ede
+const KEY5_7_KEY5_7_MASK: u32 = 0x0000ffff
+const KEY5_7_KEY5_7_SHIFT: u32 = 0
+
+// Bits 15:0 of OTP access key 6 (ECC)
+const KEY6_0_OFFSET: u32 = 0x00001ee0
+const KEY6_0_KEY6_0_MASK: u32 = 0x0000ffff
+const KEY6_0_KEY6_0_SHIFT: u32 = 0
+
+// Bits 31:16 of OTP access key 6 (ECC)
+const KEY6_1_OFFSET: u32 = 0x00001ee2
+const KEY6_1_KEY6_1_MASK: u32 = 0x0000ffff
+const KEY6_1_KEY6_1_SHIFT: u32 = 0
+
+// Bits 47:32 of OTP access key 6 (ECC)
+const KEY6_2_OFFSET: u32 = 0x00001ee4
+const KEY6_2_KEY6_2_MASK: u32 = 0x0000ffff
+const KEY6_2_KEY6_2_SHIFT: u32 = 0
+
+// Bits 63:48 of OTP access key 6 (ECC)
+const KEY6_3_OFFSET: u32 = 0x00001ee6
+const KEY6_3_KEY6_3_MASK: u32 = 0x0000ffff
+const KEY6_3_KEY6_3_SHIFT: u32 = 0
+
+// Bits 79:64 of OTP access key 6 (ECC)
+const KEY6_4_OFFSET: u32 = 0x00001ee8
+const KEY6_4_KEY6_4_MASK: u32 = 0x0000ffff
+const KEY6_4_KEY6_4_SHIFT: u32 = 0
+
+// Bits 95:80 of OTP access key 6 (ECC)
+const KEY6_5_OFFSET: u32 = 0x00001eea
+const KEY6_5_KEY6_5_MASK: u32 = 0x0000ffff
+const KEY6_5_KEY6_5_SHIFT: u32 = 0
+
+// Bits 111:96 of OTP access key 6 (ECC)
+const KEY6_6_OFFSET: u32 = 0x00001eec
+const KEY6_6_KEY6_6_MASK: u32 = 0x0000ffff
+const KEY6_6_KEY6_6_SHIFT: u32 = 0
+
+// Bits 127:112 of OTP access key 6 (ECC)
+const KEY6_7_OFFSET: u32 = 0x00001eee
+const KEY6_7_KEY6_7_MASK: u32 = 0x0000ffff
+const KEY6_7_KEY6_7_SHIFT: u32 = 0

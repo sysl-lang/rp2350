@@ -1,0 +1,72 @@
+// Glitch detector controls
+
+module sh.sysl.rp2350.glitch_detector
+
+// The peripheral's base address. Every offset below is from here.
+const BASE: u32 = 0x40158000
+
+// Forcibly arm the glitch detectors, if they are not already armed by OTP. When armed, any
+// individual detector trigger will cause a restart of the switched core power domain's power-on
+// reset state machine. Glitch detector triggers are recorded accumulatively in TRIG_STATUS. If the
+// system is reset by a glitch detector trigger, this is recorded in POWMAN_CHIP_RESET. This
+// register is Secure read/write only.
+const ARM_OFFSET: u32 = 0x00000000
+const ARM_ARM_MASK: u32 = 0x0000ffff
+const ARM_ARM_SHIFT: u32 = 0
+const ARM_ARM_NO: u32 = 23469
+const ARM_ARM_YES: u32 = 0
+
+const DISARM_OFFSET: u32 = 0x00000004
+const DISARM_DISARM_MASK: u32 = 0x0000ffff
+const DISARM_DISARM_SHIFT: u32 = 0
+const DISARM_DISARM_NO: u32 = 0
+const DISARM_DISARM_YES: u32 = 56495
+
+// Adjust the sensitivity of glitch detectors to values other than their OTP-provided defaults.
+// This register is Secure read/write only.
+const SENSITIVITY_OFFSET: u32 = 0x00000008
+const SENSITIVITY_DEFAULT_MASK: u32 = 0xff000000
+const SENSITIVITY_DEFAULT_SHIFT: u32 = 24
+const SENSITIVITY_DEFAULT_YES: u32 = 0
+const SENSITIVITY_DEFAULT_NO: u32 = 222
+const SENSITIVITY_DET3_INV_MASK: u32 = 0x0000c000
+const SENSITIVITY_DET3_INV_SHIFT: u32 = 14
+const SENSITIVITY_DET2_INV_MASK: u32 = 0x00003000
+const SENSITIVITY_DET2_INV_SHIFT: u32 = 12
+const SENSITIVITY_DET1_INV_MASK: u32 = 0x00000c00
+const SENSITIVITY_DET1_INV_SHIFT: u32 = 10
+const SENSITIVITY_DET0_INV_MASK: u32 = 0x00000300
+const SENSITIVITY_DET0_INV_SHIFT: u32 = 8
+const SENSITIVITY_DET3_MASK: u32 = 0x000000c0
+const SENSITIVITY_DET3_SHIFT: u32 = 6
+const SENSITIVITY_DET2_MASK: u32 = 0x00000030
+const SENSITIVITY_DET2_SHIFT: u32 = 4
+const SENSITIVITY_DET1_MASK: u32 = 0x0000000c
+const SENSITIVITY_DET1_SHIFT: u32 = 2
+const SENSITIVITY_DET0_MASK: u32 = 0x00000003
+const SENSITIVITY_DET0_SHIFT: u32 = 0
+
+const LOCK_OFFSET: u32 = 0x0000000c
+const LOCK_LOCK_MASK: u32 = 0x000000ff
+const LOCK_LOCK_SHIFT: u32 = 0
+
+// Set when a detector output triggers. Write-1-clear. (May immediately return high if the detector
+// remains in a failed state. Detectors can only be cleared by a full reset of the switched core
+// power domain.) This register is Secure read/write only.
+const TRIG_STATUS_OFFSET: u32 = 0x00000010
+const TRIG_STATUS_DET3_MASK: u32 = 0x00000008
+const TRIG_STATUS_DET3_SHIFT: u32 = 3
+const TRIG_STATUS_DET2_MASK: u32 = 0x00000004
+const TRIG_STATUS_DET2_SHIFT: u32 = 2
+const TRIG_STATUS_DET1_MASK: u32 = 0x00000002
+const TRIG_STATUS_DET1_SHIFT: u32 = 1
+const TRIG_STATUS_DET0_MASK: u32 = 0x00000001
+const TRIG_STATUS_DET0_SHIFT: u32 = 0
+
+// Simulate the firing of one or more detectors. Writing ones to this register will set the
+// matching bits in STATUS_TRIG. If the glitch detectors are currently armed, writing ones will
+// also immediately reset the switched core power domain, and set the reset reason latches in
+// POWMAN_CHIP_RESET to indicate a glitch detector resets. This register is Secure read/write only.
+const TRIG_FORCE_OFFSET: u32 = 0x00000014
+const TRIG_FORCE_TRIG_FORCE_MASK: u32 = 0x0000000f
+const TRIG_FORCE_TRIG_FORCE_SHIFT: u32 = 0

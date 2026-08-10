@@ -1,0 +1,76 @@
+module sh.sysl.rp2350.watchdog
+
+// The peripheral's base address. Every offset below is from here.
+const BASE: u32 = 0x400d8000
+
+// Watchdog control The rst_wdsel register determines which subsystems are reset when the watchdog
+// is triggered. The watchdog can be triggered in software.
+const CTRL_OFFSET: u32 = 0x00000000
+const CTRL_TRIGGER_MASK: u32 = 0x80000000
+const CTRL_TRIGGER_SHIFT: u32 = 31
+const CTRL_ENABLE_MASK: u32 = 0x40000000
+const CTRL_ENABLE_SHIFT: u32 = 30
+const CTRL_PAUSE_DBG1_MASK: u32 = 0x04000000
+const CTRL_PAUSE_DBG1_SHIFT: u32 = 26
+const CTRL_PAUSE_DBG0_MASK: u32 = 0x02000000
+const CTRL_PAUSE_DBG0_SHIFT: u32 = 25
+const CTRL_PAUSE_JTAG_MASK: u32 = 0x01000000
+const CTRL_PAUSE_JTAG_SHIFT: u32 = 24
+const CTRL_TIME_MASK: u32 = 0x00ffffff
+const CTRL_TIME_SHIFT: u32 = 0
+
+// Load the watchdog timer. The maximum setting is 0xffffff which corresponds to approximately 16
+// seconds.
+const LOAD_OFFSET: u32 = 0x00000004
+const LOAD_LOAD_MASK: u32 = 0x00ffffff
+const LOAD_LOAD_SHIFT: u32 = 0
+
+// Logs the reason for the last reset. Both bits are zero for the case of a hardware reset.
+// Additionally, as of RP2350, a debugger warm reset of either core (SYSRESETREQ or hartreset) will
+// also clear the watchdog reason register, so that software loaded under the debugger following a
+// watchdog timeout will not continue to see the timeout condition.
+const REASON_OFFSET: u32 = 0x00000008
+const REASON_FORCE_MASK: u32 = 0x00000002
+const REASON_FORCE_SHIFT: u32 = 1
+const REASON_TIMER_MASK: u32 = 0x00000001
+const REASON_TIMER_SHIFT: u32 = 0
+
+// Scratch register. Information persists through soft reset of the chip.
+const SCRATCH0_OFFSET: u32 = 0x0000000c
+const SCRATCH0_SCRATCH0_MASK: u32 = 0xffffffff
+const SCRATCH0_SCRATCH0_SHIFT: u32 = 0
+
+// Scratch register. Information persists through soft reset of the chip.
+const SCRATCH1_OFFSET: u32 = 0x00000010
+const SCRATCH1_SCRATCH1_MASK: u32 = 0xffffffff
+const SCRATCH1_SCRATCH1_SHIFT: u32 = 0
+
+// Scratch register. Information persists through soft reset of the chip.
+const SCRATCH2_OFFSET: u32 = 0x00000014
+const SCRATCH2_SCRATCH2_MASK: u32 = 0xffffffff
+const SCRATCH2_SCRATCH2_SHIFT: u32 = 0
+
+// Scratch register. Information persists through soft reset of the chip.
+const SCRATCH3_OFFSET: u32 = 0x00000018
+const SCRATCH3_SCRATCH3_MASK: u32 = 0xffffffff
+const SCRATCH3_SCRATCH3_SHIFT: u32 = 0
+
+// Scratch register. Information persists through soft reset of the chip.
+const SCRATCH4_OFFSET: u32 = 0x0000001c
+const SCRATCH4_SCRATCH4_MASK: u32 = 0xffffffff
+const SCRATCH4_SCRATCH4_SHIFT: u32 = 0
+
+// Scratch register. Information persists through soft reset of the chip.
+const SCRATCH5_OFFSET: u32 = 0x00000020
+const SCRATCH5_SCRATCH5_MASK: u32 = 0xffffffff
+const SCRATCH5_SCRATCH5_SHIFT: u32 = 0
+
+// Scratch register. Information persists through soft reset of the chip.
+const SCRATCH6_OFFSET: u32 = 0x00000024
+const SCRATCH6_SCRATCH6_MASK: u32 = 0xffffffff
+const SCRATCH6_SCRATCH6_SHIFT: u32 = 0
+
+// Scratch register. Information persists through soft reset of the chip.
+const SCRATCH7_OFFSET: u32 = 0x00000028
+const SCRATCH7_SCRATCH7_MASK: u32 = 0xffffffff
+const SCRATCH7_SCRATCH7_SHIFT: u32 = 0

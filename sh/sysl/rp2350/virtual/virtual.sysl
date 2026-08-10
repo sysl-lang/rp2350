@@ -1,0 +1,9 @@
+module sh.sysl.rp2350.virtual
+
+// The peripheral's base address. Every offset below is from here.
+const BASE: u32 = 0x00000000
+
+// Dummy register for schema compliance
+const DUMMY_OFFSET: u32 = 0x00000000
+const DUMMY_DUMMY_MASK: u32 = 0xffffffff
+const DUMMY_DUMMY_SHIFT: u32 = 0

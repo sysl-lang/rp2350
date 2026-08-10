@@ -1,0 +1,581 @@
+// Controls vreg, bor, lposc, chip resets & xosc startup, powman and provides scratch register for
+// general use and for bootcode use
+
+module sh.sysl.rp2350.powman
+
+// The peripheral's base address. Every offset below is from here.
+const BASE: u32 = 0x40100000
+
+// Indicates a bad password has been used
+const BADPASSWD_OFFSET: u32 = 0x00000000
+const BADPASSWD_BADPASSWD_MASK: u32 = 0x00000001
+const BADPASSWD_BADPASSWD_SHIFT: u32 = 0
+
+// Voltage Regulator Control
+const VREG_CTRL_OFFSET: u32 = 0x00000004
+const VREG_CTRL_RST_N_MASK: u32 = 0x00008000
+const VREG_CTRL_RST_N_SHIFT: u32 = 15
+const VREG_CTRL_UNLOCK_MASK: u32 = 0x00002000
+const VREG_CTRL_UNLOCK_SHIFT: u32 = 13
+const VREG_CTRL_ISOLATE_MASK: u32 = 0x00001000
+const VREG_CTRL_ISOLATE_SHIFT: u32 = 12
+const VREG_CTRL_DISABLE_VOLTAGE_LIMIT_MASK: u32 = 0x00000100
+const VREG_CTRL_DISABLE_VOLTAGE_LIMIT_SHIFT: u32 = 8
+const VREG_CTRL_HT_TH_MASK: u32 = 0x00000070
+const VREG_CTRL_HT_TH_SHIFT: u32 = 4
+
+// Voltage Regulator Status
+const VREG_STS_OFFSET: u32 = 0x00000008
+const VREG_STS_VOUT_OK_MASK: u32 = 0x00000010
+const VREG_STS_VOUT_OK_SHIFT: u32 = 4
+const VREG_STS_STARTUP_MASK: u32 = 0x00000001
+const VREG_STS_STARTUP_SHIFT: u32 = 0
+
+// Voltage Regulator Settings
+const VREG_OFFSET: u32 = 0x0000000c
+const VREG_UPDATE_IN_PROGRESS_MASK: u32 = 0x00008000
+const VREG_UPDATE_IN_PROGRESS_SHIFT: u32 = 15
+const VREG_VSEL_MASK: u32 = 0x000001f0
+const VREG_VSEL_SHIFT: u32 = 4
+const VREG_HIZ_MASK: u32 = 0x00000002
+const VREG_HIZ_SHIFT: u32 = 1
+
+// Voltage Regulator Low Power Entry Settings
+const VREG_LP_ENTRY_OFFSET: u32 = 0x00000010
+const VREG_LP_ENTRY_VSEL_MASK: u32 = 0x000001f0
+const VREG_LP_ENTRY_VSEL_SHIFT: u32 = 4
+const VREG_LP_ENTRY_MODE_MASK: u32 = 0x00000004
+const VREG_LP_ENTRY_MODE_SHIFT: u32 = 2
+const VREG_LP_ENTRY_HIZ_MASK: u32 = 0x00000002
+const VREG_LP_ENTRY_HIZ_SHIFT: u32 = 1
+
+// Voltage Regulator Low Power Exit Settings
+const VREG_LP_EXIT_OFFSET: u32 = 0x00000014
+const VREG_LP_EXIT_VSEL_MASK: u32 = 0x000001f0
+const VREG_LP_EXIT_VSEL_SHIFT: u32 = 4
+const VREG_LP_EXIT_MODE_MASK: u32 = 0x00000004
+const VREG_LP_EXIT_MODE_SHIFT: u32 = 2
+const VREG_LP_EXIT_HIZ_MASK: u32 = 0x00000002
+const VREG_LP_EXIT_HIZ_SHIFT: u32 = 1
+
+// Brown-out Detection Control
+const BOD_CTRL_OFFSET: u32 = 0x00000018
+const BOD_CTRL_ISOLATE_MASK: u32 = 0x00001000
+const BOD_CTRL_ISOLATE_SHIFT: u32 = 12
+
+// Brown-out Detection Settings
+const BOD_OFFSET: u32 = 0x0000001c
+const BOD_VSEL_MASK: u32 = 0x000001f0
+const BOD_VSEL_SHIFT: u32 = 4
+const BOD_EN_MASK: u32 = 0x00000001
+const BOD_EN_SHIFT: u32 = 0
+
+// Brown-out Detection Low Power Entry Settings
+const BOD_LP_ENTRY_OFFSET: u32 = 0x00000020
+const BOD_LP_ENTRY_VSEL_MASK: u32 = 0x000001f0
+const BOD_LP_ENTRY_VSEL_SHIFT: u32 = 4
+const BOD_LP_ENTRY_EN_MASK: u32 = 0x00000001
+const BOD_LP_ENTRY_EN_SHIFT: u32 = 0
+
+// Brown-out Detection Low Power Exit Settings
+const BOD_LP_EXIT_OFFSET: u32 = 0x00000024
+const BOD_LP_EXIT_VSEL_MASK: u32 = 0x000001f0
+const BOD_LP_EXIT_VSEL_SHIFT: u32 = 4
+const BOD_LP_EXIT_EN_MASK: u32 = 0x00000001
+const BOD_LP_EXIT_EN_SHIFT: u32 = 0
+
+// Low power oscillator control register.
+const LPOSC_OFFSET: u32 = 0x00000028
+const LPOSC_TRIM_MASK: u32 = 0x000003f0
+const LPOSC_TRIM_SHIFT: u32 = 4
+const LPOSC_MODE_MASK: u32 = 0x00000003
+const LPOSC_MODE_SHIFT: u32 = 0
+
+// Chip reset control and status
+const CHIP_RESET_OFFSET: u32 = 0x0000002c
+const CHIP_RESET_HAD_WATCHDOG_RESET_PSM_MASK: u32 = 0x10000000
+const CHIP_RESET_HAD_WATCHDOG_RESET_PSM_SHIFT: u32 = 28
+const CHIP_RESET_HAD_HZD_SYS_RESET_REQ_MASK: u32 = 0x08000000
+const CHIP_RESET_HAD_HZD_SYS_RESET_REQ_SHIFT: u32 = 27
+const CHIP_RESET_HAD_GLITCH_DETECT_MASK: u32 = 0x04000000
+const CHIP_RESET_HAD_GLITCH_DETECT_SHIFT: u32 = 26
+const CHIP_RESET_HAD_SWCORE_PD_MASK: u32 = 0x02000000
+const CHIP_RESET_HAD_SWCORE_PD_SHIFT: u32 = 25
+const CHIP_RESET_HAD_WATCHDOG_RESET_SWCORE_MASK: u32 = 0x01000000
+const CHIP_RESET_HAD_WATCHDOG_RESET_SWCORE_SHIFT: u32 = 24
+const CHIP_RESET_HAD_WATCHDOG_RESET_POWMAN_MASK: u32 = 0x00800000
+const CHIP_RESET_HAD_WATCHDOG_RESET_POWMAN_SHIFT: u32 = 23
+const CHIP_RESET_HAD_WATCHDOG_RESET_POWMAN_ASYNC_MASK: u32 = 0x00400000
+const CHIP_RESET_HAD_WATCHDOG_RESET_POWMAN_ASYNC_SHIFT: u32 = 22
+const CHIP_RESET_HAD_RESCUE_MASK: u32 = 0x00200000
+const CHIP_RESET_HAD_RESCUE_SHIFT: u32 = 21
+const CHIP_RESET_HAD_DP_RESET_REQ_MASK: u32 = 0x00080000
+const CHIP_RESET_HAD_DP_RESET_REQ_SHIFT: u32 = 19
+const CHIP_RESET_HAD_RUN_LOW_MASK: u32 = 0x00040000
+const CHIP_RESET_HAD_RUN_LOW_SHIFT: u32 = 18
+const CHIP_RESET_HAD_BOR_MASK: u32 = 0x00020000
+const CHIP_RESET_HAD_BOR_SHIFT: u32 = 17
+const CHIP_RESET_HAD_POR_MASK: u32 = 0x00010000
+const CHIP_RESET_HAD_POR_SHIFT: u32 = 16
+const CHIP_RESET_RESCUE_FLAG_MASK: u32 = 0x00000010
+const CHIP_RESET_RESCUE_FLAG_SHIFT: u32 = 4
+const CHIP_RESET_DOUBLE_TAP_MASK: u32 = 0x00000001
+const CHIP_RESET_DOUBLE_TAP_SHIFT: u32 = 0
+
+// Allows a watchdog reset to reset the internal state of powman in addition to the power-on state
+// machine (PSM). Note that powman ignores watchdog resets that do not select at least the CLOCKS
+// stage or earlier stages in the PSM. If using these bits, it's recommended to set PSM_WDSEL to
+// all-ones in addition to the desired bits in this register. Failing to select CLOCKS or earlier
+// will result in the POWMAN_WDSEL register having no effect.
+const WDSEL_OFFSET: u32 = 0x00000030
+const WDSEL_RESET_PSM_MASK: u32 = 0x00001000
+const WDSEL_RESET_PSM_SHIFT: u32 = 12
+const WDSEL_RESET_SWCORE_MASK: u32 = 0x00000100
+const WDSEL_RESET_SWCORE_SHIFT: u32 = 8
+const WDSEL_RESET_POWMAN_MASK: u32 = 0x00000010
+const WDSEL_RESET_POWMAN_SHIFT: u32 = 4
+const WDSEL_RESET_POWMAN_ASYNC_MASK: u32 = 0x00000001
+const WDSEL_RESET_POWMAN_ASYNC_SHIFT: u32 = 0
+
+// For configuration of the power sequencer Writes are ignored while POWMAN_STATE_CHANGING=1
+const SEQ_CFG_OFFSET: u32 = 0x00000034
+const SEQ_CFG_USING_FAST_POWCK_MASK: u32 = 0x00100000
+const SEQ_CFG_USING_FAST_POWCK_SHIFT: u32 = 20
+const SEQ_CFG_USING_BOD_LP_MASK: u32 = 0x00020000
+const SEQ_CFG_USING_BOD_LP_SHIFT: u32 = 17
+const SEQ_CFG_USING_VREG_LP_MASK: u32 = 0x00010000
+const SEQ_CFG_USING_VREG_LP_SHIFT: u32 = 16
+const SEQ_CFG_USE_FAST_POWCK_MASK: u32 = 0x00001000
+const SEQ_CFG_USE_FAST_POWCK_SHIFT: u32 = 12
+const SEQ_CFG_RUN_LPOSC_IN_LP_MASK: u32 = 0x00000100
+const SEQ_CFG_RUN_LPOSC_IN_LP_SHIFT: u32 = 8
+const SEQ_CFG_USE_BOD_HP_MASK: u32 = 0x00000080
+const SEQ_CFG_USE_BOD_HP_SHIFT: u32 = 7
+const SEQ_CFG_USE_BOD_LP_MASK: u32 = 0x00000040
+const SEQ_CFG_USE_BOD_LP_SHIFT: u32 = 6
+const SEQ_CFG_USE_VREG_HP_MASK: u32 = 0x00000020
+const SEQ_CFG_USE_VREG_HP_SHIFT: u32 = 5
+const SEQ_CFG_USE_VREG_LP_MASK: u32 = 0x00000010
+const SEQ_CFG_USE_VREG_LP_SHIFT: u32 = 4
+const SEQ_CFG_HW_PWRUP_SRAM0_MASK: u32 = 0x00000002
+const SEQ_CFG_HW_PWRUP_SRAM0_SHIFT: u32 = 1
+const SEQ_CFG_HW_PWRUP_SRAM1_MASK: u32 = 0x00000001
+const SEQ_CFG_HW_PWRUP_SRAM1_SHIFT: u32 = 0
+
+// This register controls the power state of the 4 power domains. The current power state is
+// indicated in POWMAN_STATE_CURRENT which is read-only. To change the state, write to
+// POWMAN_STATE_REQ. The coding of POWMAN_STATE_CURRENT & POWMAN_STATE_REQ corresponds to the power
+// states defined in the datasheet: bit 3 = SWCORE bit 2 = XIP cache bit 1 = SRAM0 bit 0 = SRAM1 0
+// = powered up 1 = powered down When POWMAN_STATE_REQ is written, the POWMAN_STATE_WAITING flag is
+// set while the Power Manager determines what is required. If an invalid transition is requested
+// the Power Manager will still register the request in POWMAN_STATE_REQ but will also set the
+// POWMAN_BAD_REQ flag. It will then implement the power-up requests and ignore the power down
+// requests. To do nothing would risk entering an unrecoverable lock-up state. Invalid requests
+// are: any combination of power up and power down requests any request that results in swcore
+// being powered and xip unpowered If the request is to power down the switched-core domain then
+// POWMAN_STATE_WAITING stays active until the processors halt. During this time the
+// POWMAN_STATE_REQ field can be re-written to change or cancel the request. When the power state
+// transition begins the POWMAN_STATE_WAITING_flag is cleared, the POWMAN_STATE_CHANGING flag is
+// set and POWMAN register writes are ignored until the transition completes.
+const STATE_OFFSET: u32 = 0x00000038
+const STATE_CHANGING_MASK: u32 = 0x00002000
+const STATE_CHANGING_SHIFT: u32 = 13
+const STATE_WAITING_MASK: u32 = 0x00001000
+const STATE_WAITING_SHIFT: u32 = 12
+const STATE_BAD_HW_REQ_MASK: u32 = 0x00000800
+const STATE_BAD_HW_REQ_SHIFT: u32 = 11
+const STATE_BAD_SW_REQ_MASK: u32 = 0x00000400
+const STATE_BAD_SW_REQ_SHIFT: u32 = 10
+const STATE_PWRUP_WHILE_WAITING_MASK: u32 = 0x00000200
+const STATE_PWRUP_WHILE_WAITING_SHIFT: u32 = 9
+const STATE_REQ_IGNORED_MASK: u32 = 0x00000100
+const STATE_REQ_IGNORED_SHIFT: u32 = 8
+const STATE_REQ_MASK: u32 = 0x000000f0
+const STATE_REQ_SHIFT: u32 = 4
+const STATE_CURRENT_MASK: u32 = 0x0000000f
+const STATE_CURRENT_SHIFT: u32 = 0
+
+const POW_FASTDIV_OFFSET: u32 = 0x0000003c
+const POW_FASTDIV_POW_FASTDIV_MASK: u32 = 0x000007ff
+const POW_FASTDIV_POW_FASTDIV_SHIFT: u32 = 0
+
+// power state machine delays
+const POW_DELAY_OFFSET: u32 = 0x00000040
+const POW_DELAY_SRAM_STEP_MASK: u32 = 0x0000ff00
+const POW_DELAY_SRAM_STEP_SHIFT: u32 = 8
+const POW_DELAY_XIP_STEP_MASK: u32 = 0x000000f0
+const POW_DELAY_XIP_STEP_SHIFT: u32 = 4
+const POW_DELAY_SWCORE_STEP_MASK: u32 = 0x0000000f
+const POW_DELAY_SWCORE_STEP_SHIFT: u32 = 0
+
+// Configures a gpio as a power mode aware control output
+const EXT_CTRL0_OFFSET: u32 = 0x00000044
+const EXT_CTRL0_LP_EXIT_STATE_MASK: u32 = 0x00004000
+const EXT_CTRL0_LP_EXIT_STATE_SHIFT: u32 = 14
+const EXT_CTRL0_LP_ENTRY_STATE_MASK: u32 = 0x00002000
+const EXT_CTRL0_LP_ENTRY_STATE_SHIFT: u32 = 13
+const EXT_CTRL0_INIT_STATE_MASK: u32 = 0x00001000
+const EXT_CTRL0_INIT_STATE_SHIFT: u32 = 12
+const EXT_CTRL0_INIT_MASK: u32 = 0x00000100
+const EXT_CTRL0_INIT_SHIFT: u32 = 8
+const EXT_CTRL0_GPIO_SELECT_MASK: u32 = 0x0000003f
+const EXT_CTRL0_GPIO_SELECT_SHIFT: u32 = 0
+
+// Configures a gpio as a power mode aware control output
+const EXT_CTRL1_OFFSET: u32 = 0x00000048
+const EXT_CTRL1_LP_EXIT_STATE_MASK: u32 = 0x00004000
+const EXT_CTRL1_LP_EXIT_STATE_SHIFT: u32 = 14
+const EXT_CTRL1_LP_ENTRY_STATE_MASK: u32 = 0x00002000
+const EXT_CTRL1_LP_ENTRY_STATE_SHIFT: u32 = 13
+const EXT_CTRL1_INIT_STATE_MASK: u32 = 0x00001000
+const EXT_CTRL1_INIT_STATE_SHIFT: u32 = 12
+const EXT_CTRL1_INIT_MASK: u32 = 0x00000100
+const EXT_CTRL1_INIT_SHIFT: u32 = 8
+const EXT_CTRL1_GPIO_SELECT_MASK: u32 = 0x0000003f
+const EXT_CTRL1_GPIO_SELECT_SHIFT: u32 = 0
+
+// Select a GPIO to use as a time reference, the source can be used to drive the low power clock at
+// 32kHz, or to provide a 1ms tick to the timer, or provide a 1Hz tick to the timer. The tick
+// selection is controlled by the POWMAN_TIMER register.
+const EXT_TIME_REF_OFFSET: u32 = 0x0000004c
+const EXT_TIME_REF_DRIVE_LPCK_MASK: u32 = 0x00000010
+const EXT_TIME_REF_DRIVE_LPCK_SHIFT: u32 = 4
+const EXT_TIME_REF_SOURCE_SEL_MASK: u32 = 0x00000003
+const EXT_TIME_REF_SOURCE_SEL_SHIFT: u32 = 0
+const EXT_TIME_REF_SOURCE_SEL_GPIO12: u32 = 0
+const EXT_TIME_REF_SOURCE_SEL_GPIO20: u32 = 1
+const EXT_TIME_REF_SOURCE_SEL_GPIO14: u32 = 2
+const EXT_TIME_REF_SOURCE_SEL_GPIO22: u32 = 3
+
+// Informs the AON Timer of the integer component of the clock frequency when running off the
+// LPOSC.
+const LPOSC_FREQ_KHZ_INT_OFFSET: u32 = 0x00000050
+const LPOSC_FREQ_KHZ_INT_LPOSC_FREQ_KHZ_INT_MASK: u32 = 0x0000003f
+const LPOSC_FREQ_KHZ_INT_LPOSC_FREQ_KHZ_INT_SHIFT: u32 = 0
+
+// Informs the AON Timer of the fractional component of the clock frequency when running off the
+// LPOSC.
+const LPOSC_FREQ_KHZ_FRAC_OFFSET: u32 = 0x00000054
+const LPOSC_FREQ_KHZ_FRAC_LPOSC_FREQ_KHZ_FRAC_MASK: u32 = 0x0000ffff
+const LPOSC_FREQ_KHZ_FRAC_LPOSC_FREQ_KHZ_FRAC_SHIFT: u32 = 0
+
+// Informs the AON Timer of the integer component of the clock frequency when running off the XOSC.
+const XOSC_FREQ_KHZ_INT_OFFSET: u32 = 0x00000058
+const XOSC_FREQ_KHZ_INT_XOSC_FREQ_KHZ_INT_MASK: u32 = 0x0000ffff
+const XOSC_FREQ_KHZ_INT_XOSC_FREQ_KHZ_INT_SHIFT: u32 = 0
+
+// Informs the AON Timer of the fractional component of the clock frequency when running off the
+// XOSC.
+const XOSC_FREQ_KHZ_FRAC_OFFSET: u32 = 0x0000005c
+const XOSC_FREQ_KHZ_FRAC_XOSC_FREQ_KHZ_FRAC_MASK: u32 = 0x0000ffff
+const XOSC_FREQ_KHZ_FRAC_XOSC_FREQ_KHZ_FRAC_SHIFT: u32 = 0
+
+const SET_TIME_63TO48_OFFSET: u32 = 0x00000060
+const SET_TIME_63TO48_SET_TIME_63TO48_MASK: u32 = 0x0000ffff
+const SET_TIME_63TO48_SET_TIME_63TO48_SHIFT: u32 = 0
+
+const SET_TIME_47TO32_OFFSET: u32 = 0x00000064
+const SET_TIME_47TO32_SET_TIME_47TO32_MASK: u32 = 0x0000ffff
+const SET_TIME_47TO32_SET_TIME_47TO32_SHIFT: u32 = 0
+
+const SET_TIME_31TO16_OFFSET: u32 = 0x00000068
+const SET_TIME_31TO16_SET_TIME_31TO16_MASK: u32 = 0x0000ffff
+const SET_TIME_31TO16_SET_TIME_31TO16_SHIFT: u32 = 0
+
+const SET_TIME_15TO0_OFFSET: u32 = 0x0000006c
+const SET_TIME_15TO0_SET_TIME_15TO0_MASK: u32 = 0x0000ffff
+const SET_TIME_15TO0_SET_TIME_15TO0_SHIFT: u32 = 0
+
+const READ_TIME_UPPER_OFFSET: u32 = 0x00000070
+const READ_TIME_UPPER_READ_TIME_UPPER_MASK: u32 = 0xffffffff
+const READ_TIME_UPPER_READ_TIME_UPPER_SHIFT: u32 = 0
+
+const READ_TIME_LOWER_OFFSET: u32 = 0x00000074
+const READ_TIME_LOWER_READ_TIME_LOWER_MASK: u32 = 0xffffffff
+const READ_TIME_LOWER_READ_TIME_LOWER_SHIFT: u32 = 0
+
+const ALARM_TIME_63TO48_OFFSET: u32 = 0x00000078
+const ALARM_TIME_63TO48_ALARM_TIME_63TO48_MASK: u32 = 0x0000ffff
+const ALARM_TIME_63TO48_ALARM_TIME_63TO48_SHIFT: u32 = 0
+
+const ALARM_TIME_47TO32_OFFSET: u32 = 0x0000007c
+const ALARM_TIME_47TO32_ALARM_TIME_47TO32_MASK: u32 = 0x0000ffff
+const ALARM_TIME_47TO32_ALARM_TIME_47TO32_SHIFT: u32 = 0
+
+const ALARM_TIME_31TO16_OFFSET: u32 = 0x00000080
+const ALARM_TIME_31TO16_ALARM_TIME_31TO16_MASK: u32 = 0x0000ffff
+const ALARM_TIME_31TO16_ALARM_TIME_31TO16_SHIFT: u32 = 0
+
+const ALARM_TIME_15TO0_OFFSET: u32 = 0x00000084
+const ALARM_TIME_15TO0_ALARM_TIME_15TO0_MASK: u32 = 0x0000ffff
+const ALARM_TIME_15TO0_ALARM_TIME_15TO0_SHIFT: u32 = 0
+
+const TIMER_OFFSET: u32 = 0x00000088
+const TIMER_USING_GPIO_1HZ_MASK: u32 = 0x00080000
+const TIMER_USING_GPIO_1HZ_SHIFT: u32 = 19
+const TIMER_USING_GPIO_1KHZ_MASK: u32 = 0x00040000
+const TIMER_USING_GPIO_1KHZ_SHIFT: u32 = 18
+const TIMER_USING_LPOSC_MASK: u32 = 0x00020000
+const TIMER_USING_LPOSC_SHIFT: u32 = 17
+const TIMER_USING_XOSC_MASK: u32 = 0x00010000
+const TIMER_USING_XOSC_SHIFT: u32 = 16
+const TIMER_USE_GPIO_1HZ_MASK: u32 = 0x00002000
+const TIMER_USE_GPIO_1HZ_SHIFT: u32 = 13
+const TIMER_USE_GPIO_1KHZ_MASK: u32 = 0x00000400
+const TIMER_USE_GPIO_1KHZ_SHIFT: u32 = 10
+const TIMER_USE_XOSC_MASK: u32 = 0x00000200
+const TIMER_USE_XOSC_SHIFT: u32 = 9
+const TIMER_USE_LPOSC_MASK: u32 = 0x00000100
+const TIMER_USE_LPOSC_SHIFT: u32 = 8
+const TIMER_ALARM_MASK: u32 = 0x00000040
+const TIMER_ALARM_SHIFT: u32 = 6
+const TIMER_PWRUP_ON_ALARM_MASK: u32 = 0x00000020
+const TIMER_PWRUP_ON_ALARM_SHIFT: u32 = 5
+const TIMER_ALARM_ENAB_MASK: u32 = 0x00000010
+const TIMER_ALARM_ENAB_SHIFT: u32 = 4
+const TIMER_CLEAR_MASK: u32 = 0x00000004
+const TIMER_CLEAR_SHIFT: u32 = 2
+const TIMER_RUN_MASK: u32 = 0x00000002
+const TIMER_RUN_SHIFT: u32 = 1
+const TIMER_NONSEC_WRITE_MASK: u32 = 0x00000001
+const TIMER_NONSEC_WRITE_SHIFT: u32 = 0
+
+// 4 GPIO powerup events can be configured to wake the chip up from a low power state. The pwrups
+// are level/edge sensitive and can be set to trigger on a high/rising or low/falling event The
+// number of gpios available depends on the package option. An invalid selection will be ignored
+// source = 0 selects gpio0 . . source = 47 selects gpio47 source = 48 selects qspi_ss source = 49
+// selects qspi_sd0 source = 50 selects qspi_sd1 source = 51 selects qspi_sd2 source = 52 selects
+// qspi_sd3 source = 53 selects qspi_sclk level = 0 triggers the pwrup when the source is low level
+// = 1 triggers the pwrup when the source is high
+const PWRUP0_OFFSET: u32 = 0x0000008c
+const PWRUP0_RAW_STATUS_MASK: u32 = 0x00000400
+const PWRUP0_RAW_STATUS_SHIFT: u32 = 10
+const PWRUP0_STATUS_MASK: u32 = 0x00000200
+const PWRUP0_STATUS_SHIFT: u32 = 9
+const PWRUP0_MODE_MASK: u32 = 0x00000100
+const PWRUP0_MODE_SHIFT: u32 = 8
+const PWRUP0_MODE_LEVEL: u32 = 0
+const PWRUP0_MODE_EDGE: u32 = 1
+const PWRUP0_DIRECTION_MASK: u32 = 0x00000080
+const PWRUP0_DIRECTION_SHIFT: u32 = 7
+const PWRUP0_DIRECTION_LOW_FALLING: u32 = 0
+const PWRUP0_DIRECTION_HIGH_RISING: u32 = 1
+const PWRUP0_ENABLE_MASK: u32 = 0x00000040
+const PWRUP0_ENABLE_SHIFT: u32 = 6
+const PWRUP0_SOURCE_MASK: u32 = 0x0000003f
+const PWRUP0_SOURCE_SHIFT: u32 = 0
+
+// 4 GPIO powerup events can be configured to wake the chip up from a low power state. The pwrups
+// are level/edge sensitive and can be set to trigger on a high/rising or low/falling event The
+// number of gpios available depends on the package option. An invalid selection will be ignored
+// source = 0 selects gpio0 . . source = 47 selects gpio47 source = 48 selects qspi_ss source = 49
+// selects qspi_sd0 source = 50 selects qspi_sd1 source = 51 selects qspi_sd2 source = 52 selects
+// qspi_sd3 source = 53 selects qspi_sclk level = 0 triggers the pwrup when the source is low level
+// = 1 triggers the pwrup when the source is high
+const PWRUP1_OFFSET: u32 = 0x00000090
+const PWRUP1_RAW_STATUS_MASK: u32 = 0x00000400
+const PWRUP1_RAW_STATUS_SHIFT: u32 = 10
+const PWRUP1_STATUS_MASK: u32 = 0x00000200
+const PWRUP1_STATUS_SHIFT: u32 = 9
+const PWRUP1_MODE_MASK: u32 = 0x00000100
+const PWRUP1_MODE_SHIFT: u32 = 8
+const PWRUP1_MODE_LEVEL: u32 = 0
+const PWRUP1_MODE_EDGE: u32 = 1
+const PWRUP1_DIRECTION_MASK: u32 = 0x00000080
+const PWRUP1_DIRECTION_SHIFT: u32 = 7
+const PWRUP1_DIRECTION_LOW_FALLING: u32 = 0
+const PWRUP1_DIRECTION_HIGH_RISING: u32 = 1
+const PWRUP1_ENABLE_MASK: u32 = 0x00000040
+const PWRUP1_ENABLE_SHIFT: u32 = 6
+const PWRUP1_SOURCE_MASK: u32 = 0x0000003f
+const PWRUP1_SOURCE_SHIFT: u32 = 0
+
+// 4 GPIO powerup events can be configured to wake the chip up from a low power state. The pwrups
+// are level/edge sensitive and can be set to trigger on a high/rising or low/falling event The
+// number of gpios available depends on the package option. An invalid selection will be ignored
+// source = 0 selects gpio0 . . source = 47 selects gpio47 source = 48 selects qspi_ss source = 49
+// selects qspi_sd0 source = 50 selects qspi_sd1 source = 51 selects qspi_sd2 source = 52 selects
+// qspi_sd3 source = 53 selects qspi_sclk level = 0 triggers the pwrup when the source is low level
+// = 1 triggers the pwrup when the source is high
+const PWRUP2_OFFSET: u32 = 0x00000094
+const PWRUP2_RAW_STATUS_MASK: u32 = 0x00000400
+const PWRUP2_RAW_STATUS_SHIFT: u32 = 10
+const PWRUP2_STATUS_MASK: u32 = 0x00000200
+const PWRUP2_STATUS_SHIFT: u32 = 9
+const PWRUP2_MODE_MASK: u32 = 0x00000100
+const PWRUP2_MODE_SHIFT: u32 = 8
+const PWRUP2_MODE_LEVEL: u32 = 0
+const PWRUP2_MODE_EDGE: u32 = 1
+const PWRUP2_DIRECTION_MASK: u32 = 0x00000080
+const PWRUP2_DIRECTION_SHIFT: u32 = 7
+const PWRUP2_DIRECTION_LOW_FALLING: u32 = 0
+const PWRUP2_DIRECTION_HIGH_RISING: u32 = 1
+const PWRUP2_ENABLE_MASK: u32 = 0x00000040
+const PWRUP2_ENABLE_SHIFT: u32 = 6
+const PWRUP2_SOURCE_MASK: u32 = 0x0000003f
+const PWRUP2_SOURCE_SHIFT: u32 = 0
+
+// 4 GPIO powerup events can be configured to wake the chip up from a low power state. The pwrups
+// are level/edge sensitive and can be set to trigger on a high/rising or low/falling event The
+// number of gpios available depends on the package option. An invalid selection will be ignored
+// source = 0 selects gpio0 . . source = 47 selects gpio47 source = 48 selects qspi_ss source = 49
+// selects qspi_sd0 source = 50 selects qspi_sd1 source = 51 selects qspi_sd2 source = 52 selects
+// qspi_sd3 source = 53 selects qspi_sclk level = 0 triggers the pwrup when the source is low level
+// = 1 triggers the pwrup when the source is high
+const PWRUP3_OFFSET: u32 = 0x00000098
+const PWRUP3_RAW_STATUS_MASK: u32 = 0x00000400
+const PWRUP3_RAW_STATUS_SHIFT: u32 = 10
+const PWRUP3_STATUS_MASK: u32 = 0x00000200
+const PWRUP3_STATUS_SHIFT: u32 = 9
+const PWRUP3_MODE_MASK: u32 = 0x00000100
+const PWRUP3_MODE_SHIFT: u32 = 8
+const PWRUP3_MODE_LEVEL: u32 = 0
+const PWRUP3_MODE_EDGE: u32 = 1
+const PWRUP3_DIRECTION_MASK: u32 = 0x00000080
+const PWRUP3_DIRECTION_SHIFT: u32 = 7
+const PWRUP3_DIRECTION_LOW_FALLING: u32 = 0
+const PWRUP3_DIRECTION_HIGH_RISING: u32 = 1
+const PWRUP3_ENABLE_MASK: u32 = 0x00000040
+const PWRUP3_ENABLE_SHIFT: u32 = 6
+const PWRUP3_SOURCE_MASK: u32 = 0x0000003f
+const PWRUP3_SOURCE_SHIFT: u32 = 0
+
+// Indicates current powerup request state pwrup events can be cleared by removing the enable from
+// the pwrup register. The alarm pwrup req can be cleared by clearing timer.alarm_enab 0 = chip
+// reset, for the source of the last reset see POWMAN_CHIP_RESET 1 = pwrup0 2 = pwrup1 3 = pwrup2 4
+// = pwrup3 5 = coresight_pwrup 6 = alarm_pwrup
+const CURRENT_PWRUP_REQ_OFFSET: u32 = 0x0000009c
+const CURRENT_PWRUP_REQ_CURRENT_PWRUP_REQ_MASK: u32 = 0x0000007f
+const CURRENT_PWRUP_REQ_CURRENT_PWRUP_REQ_SHIFT: u32 = 0
+
+// Indicates which pwrup source triggered the last switched-core power up 0 = chip reset, for the
+// source of the last reset see POWMAN_CHIP_RESET 1 = pwrup0 2 = pwrup1 3 = pwrup2 4 = pwrup3 5 =
+// coresight_pwrup 6 = alarm_pwrup
+const LAST_SWCORE_PWRUP_OFFSET: u32 = 0x000000a0
+const LAST_SWCORE_PWRUP_LAST_SWCORE_PWRUP_MASK: u32 = 0x0000007f
+const LAST_SWCORE_PWRUP_LAST_SWCORE_PWRUP_SHIFT: u32 = 0
+
+const DBG_PWRCFG_OFFSET: u32 = 0x000000a4
+const DBG_PWRCFG_IGNORE_MASK: u32 = 0x00000001
+const DBG_PWRCFG_IGNORE_SHIFT: u32 = 0
+
+// Tell the bootrom to ignore the BOOT0..3 registers following the next PSM reset (e.g. the next
+// core power down/up). If an early boot stage has soft-locked some OTP pages in order to protect
+// their contents from later stages, there is a risk that Secure code running at a later stage can
+// unlock the pages by powering the core up and down. This register can be used to ensure that the
+// bootloader runs as normal on the next power up, preventing Secure code at a later stage from
+// accessing OTP in its unlocked state. Should be used in conjunction with the OTP BOOTDIS
+// register.
+const BOOTDIS_OFFSET: u32 = 0x000000a8
+const BOOTDIS_NEXT_MASK: u32 = 0x00000002
+const BOOTDIS_NEXT_SHIFT: u32 = 1
+const BOOTDIS_NOW_MASK: u32 = 0x00000001
+const BOOTDIS_NOW_SHIFT: u32 = 0
+
+const DBGCONFIG_OFFSET: u32 = 0x000000ac
+const DBGCONFIG_DP_INSTID_MASK: u32 = 0x0000000f
+const DBGCONFIG_DP_INSTID_SHIFT: u32 = 0
+
+// Scratch register. Information persists in low power mode
+const SCRATCH0_OFFSET: u32 = 0x000000b0
+const SCRATCH0_SCRATCH0_MASK: u32 = 0xffffffff
+const SCRATCH0_SCRATCH0_SHIFT: u32 = 0
+
+// Scratch register. Information persists in low power mode
+const SCRATCH1_OFFSET: u32 = 0x000000b4
+const SCRATCH1_SCRATCH1_MASK: u32 = 0xffffffff
+const SCRATCH1_SCRATCH1_SHIFT: u32 = 0
+
+// Scratch register. Information persists in low power mode
+const SCRATCH2_OFFSET: u32 = 0x000000b8
+const SCRATCH2_SCRATCH2_MASK: u32 = 0xffffffff
+const SCRATCH2_SCRATCH2_SHIFT: u32 = 0
+
+// Scratch register. Information persists in low power mode
+const SCRATCH3_OFFSET: u32 = 0x000000bc
+const SCRATCH3_SCRATCH3_MASK: u32 = 0xffffffff
+const SCRATCH3_SCRATCH3_SHIFT: u32 = 0
+
+// Scratch register. Information persists in low power mode
+const SCRATCH4_OFFSET: u32 = 0x000000c0
+const SCRATCH4_SCRATCH4_MASK: u32 = 0xffffffff
+const SCRATCH4_SCRATCH4_SHIFT: u32 = 0
+
+// Scratch register. Information persists in low power mode
+const SCRATCH5_OFFSET: u32 = 0x000000c4
+const SCRATCH5_SCRATCH5_MASK: u32 = 0xffffffff
+const SCRATCH5_SCRATCH5_SHIFT: u32 = 0
+
+// Scratch register. Information persists in low power mode
+const SCRATCH6_OFFSET: u32 = 0x000000c8
+const SCRATCH6_SCRATCH6_MASK: u32 = 0xffffffff
+const SCRATCH6_SCRATCH6_SHIFT: u32 = 0
+
+// Scratch register. Information persists in low power mode
+const SCRATCH7_OFFSET: u32 = 0x000000cc
+const SCRATCH7_SCRATCH7_MASK: u32 = 0xffffffff
+const SCRATCH7_SCRATCH7_SHIFT: u32 = 0
+
+// Scratch register. Information persists in low power mode
+const BOOT0_OFFSET: u32 = 0x000000d0
+const BOOT0_BOOT0_MASK: u32 = 0xffffffff
+const BOOT0_BOOT0_SHIFT: u32 = 0
+
+// Scratch register. Information persists in low power mode
+const BOOT1_OFFSET: u32 = 0x000000d4
+const BOOT1_BOOT1_MASK: u32 = 0xffffffff
+const BOOT1_BOOT1_SHIFT: u32 = 0
+
+// Scratch register. Information persists in low power mode
+const BOOT2_OFFSET: u32 = 0x000000d8
+const BOOT2_BOOT2_MASK: u32 = 0xffffffff
+const BOOT2_BOOT2_SHIFT: u32 = 0
+
+// Scratch register. Information persists in low power mode
+const BOOT3_OFFSET: u32 = 0x000000dc
+const BOOT3_BOOT3_MASK: u32 = 0xffffffff
+const BOOT3_BOOT3_SHIFT: u32 = 0
+
+// Raw Interrupts
+const INTR_OFFSET: u32 = 0x000000e0
+const INTR_PWRUP_WHILE_WAITING_MASK: u32 = 0x00000008
+const INTR_PWRUP_WHILE_WAITING_SHIFT: u32 = 3
+const INTR_STATE_REQ_IGNORED_MASK: u32 = 0x00000004
+const INTR_STATE_REQ_IGNORED_SHIFT: u32 = 2
+const INTR_TIMER_MASK: u32 = 0x00000002
+const INTR_TIMER_SHIFT: u32 = 1
+const INTR_VREG_OUTPUT_LOW_MASK: u32 = 0x00000001
+const INTR_VREG_OUTPUT_LOW_SHIFT: u32 = 0
+
+// Interrupt Enable
+const INTE_OFFSET: u32 = 0x000000e4
+const INTE_PWRUP_WHILE_WAITING_MASK: u32 = 0x00000008
+const INTE_PWRUP_WHILE_WAITING_SHIFT: u32 = 3
+const INTE_STATE_REQ_IGNORED_MASK: u32 = 0x00000004
+const INTE_STATE_REQ_IGNORED_SHIFT: u32 = 2
+const INTE_TIMER_MASK: u32 = 0x00000002
+const INTE_TIMER_SHIFT: u32 = 1
+const INTE_VREG_OUTPUT_LOW_MASK: u32 = 0x00000001
+const INTE_VREG_OUTPUT_LOW_SHIFT: u32 = 0
+
+// Interrupt Force
+const INTF_OFFSET: u32 = 0x000000e8
+const INTF_PWRUP_WHILE_WAITING_MASK: u32 = 0x00000008
+const INTF_PWRUP_WHILE_WAITING_SHIFT: u32 = 3
+const INTF_STATE_REQ_IGNORED_MASK: u32 = 0x00000004
+const INTF_STATE_REQ_IGNORED_SHIFT: u32 = 2
+const INTF_TIMER_MASK: u32 = 0x00000002
+const INTF_TIMER_SHIFT: u32 = 1
+const INTF_VREG_OUTPUT_LOW_MASK: u32 = 0x00000001
+const INTF_VREG_OUTPUT_LOW_SHIFT: u32 = 0
+
+// Interrupt status after masking & forcing
+const INTS_OFFSET: u32 = 0x000000ec
+const INTS_PWRUP_WHILE_WAITING_MASK: u32 = 0x00000008
+const INTS_PWRUP_WHILE_WAITING_SHIFT: u32 = 3
+const INTS_STATE_REQ_IGNORED_MASK: u32 = 0x00000004
+const INTS_STATE_REQ_IGNORED_SHIFT: u32 = 2
+const INTS_TIMER_MASK: u32 = 0x00000002
+const INTS_TIMER_SHIFT: u32 = 1
+const INTS_VREG_OUTPUT_LOW_MASK: u32 = 0x00000001
+const INTS_VREG_OUTPUT_LOW_SHIFT: u32 = 0

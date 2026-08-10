@@ -1,0 +1,60 @@
+module sh.sysl.rp2350.pll_sys
+
+// The peripheral's base address. Every offset below is from here.
+const BASE: u32 = 0x40050000
+
+// Control and Status GENERAL CONSTRAINTS: Reference clock frequency min=5MHz, max=800MHz Feedback
+// divider min=16, max=320 VCO frequency min=750MHz, max=1600MHz
+const CS_OFFSET: u32 = 0x00000000
+const CS_LOCK_MASK: u32 = 0x80000000
+const CS_LOCK_SHIFT: u32 = 31
+const CS_LOCK_N_MASK: u32 = 0x40000000
+const CS_LOCK_N_SHIFT: u32 = 30
+const CS_BYPASS_MASK: u32 = 0x00000100
+const CS_BYPASS_SHIFT: u32 = 8
+const CS_REFDIV_MASK: u32 = 0x0000003f
+const CS_REFDIV_SHIFT: u32 = 0
+
+// Controls the PLL power modes.
+const PWR_OFFSET: u32 = 0x00000004
+const PWR_VCOPD_MASK: u32 = 0x00000020
+const PWR_VCOPD_SHIFT: u32 = 5
+const PWR_POSTDIVPD_MASK: u32 = 0x00000008
+const PWR_POSTDIVPD_SHIFT: u32 = 3
+const PWR_DSMPD_MASK: u32 = 0x00000004
+const PWR_DSMPD_SHIFT: u32 = 2
+const PWR_PD_MASK: u32 = 0x00000001
+const PWR_PD_SHIFT: u32 = 0
+
+// Feedback divisor (note: this PLL does not support fractional division)
+const FBDIV_INT_OFFSET: u32 = 0x00000008
+const FBDIV_INT_FBDIV_INT_MASK: u32 = 0x00000fff
+const FBDIV_INT_FBDIV_INT_SHIFT: u32 = 0
+
+// Controls the PLL post dividers for the primary output (note: this PLL does not have a secondary
+// output) the primary output is driven from VCO divided by postdiv1*postdiv2
+const PRIM_OFFSET: u32 = 0x0000000c
+const PRIM_POSTDIV1_MASK: u32 = 0x00070000
+const PRIM_POSTDIV1_SHIFT: u32 = 16
+const PRIM_POSTDIV2_MASK: u32 = 0x00007000
+const PRIM_POSTDIV2_SHIFT: u32 = 12
+
+// Raw Interrupts
+const INTR_OFFSET: u32 = 0x00000010
+const INTR_LOCK_N_STICKY_MASK: u32 = 0x00000001
+const INTR_LOCK_N_STICKY_SHIFT: u32 = 0
+
+// Interrupt Enable
+const INTE_OFFSET: u32 = 0x00000014
+const INTE_LOCK_N_STICKY_MASK: u32 = 0x00000001
+const INTE_LOCK_N_STICKY_SHIFT: u32 = 0
+
+// Interrupt Force
+const INTF_OFFSET: u32 = 0x00000018
+const INTF_LOCK_N_STICKY_MASK: u32 = 0x00000001
+const INTF_LOCK_N_STICKY_SHIFT: u32 = 0
+
+// Interrupt status after masking & forcing
+const INTS_OFFSET: u32 = 0x0000001c
+const INTS_LOCK_N_STICKY_MASK: u32 = 0x00000001
+const INTS_LOCK_N_STICKY_SHIFT: u32 = 0

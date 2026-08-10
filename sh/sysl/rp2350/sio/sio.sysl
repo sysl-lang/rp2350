@@ -1,0 +1,938 @@
+// Single-cycle IO block Provides core-local and inter-core hardware for the two processors, with
+// single-cycle access.
+
+module sh.sysl.rp2350.sio
+
+// The peripheral's base address. Every offset below is from here.
+const BASE: u32 = 0xd0000000
+
+// Processor core identifier
+const CPUID_OFFSET: u32 = 0x00000000
+const CPUID_CPUID_MASK: u32 = 0xffffffff
+const CPUID_CPUID_SHIFT: u32 = 0
+
+// Input value for GPIO0...31. In the Non-secure SIO, Secure-only GPIOs (as per ACCESSCTRL) appear
+// as zero.
+const GPIO_IN_OFFSET: u32 = 0x00000004
+const GPIO_IN_GPIO_IN_MASK: u32 = 0xffffffff
+const GPIO_IN_GPIO_IN_SHIFT: u32 = 0
+
+// Input value on GPIO32...47, QSPI IOs and USB pins In the Non-secure SIO, Secure-only GPIOs (as
+// per ACCESSCTRL) appear as zero.
+const GPIO_HI_IN_OFFSET: u32 = 0x00000008
+const GPIO_HI_IN_QSPI_SD_MASK: u32 = 0xf0000000
+const GPIO_HI_IN_QSPI_SD_SHIFT: u32 = 28
+const GPIO_HI_IN_QSPI_CSN_MASK: u32 = 0x08000000
+const GPIO_HI_IN_QSPI_CSN_SHIFT: u32 = 27
+const GPIO_HI_IN_QSPI_SCK_MASK: u32 = 0x04000000
+const GPIO_HI_IN_QSPI_SCK_SHIFT: u32 = 26
+const GPIO_HI_IN_USB_DM_MASK: u32 = 0x02000000
+const GPIO_HI_IN_USB_DM_SHIFT: u32 = 25
+const GPIO_HI_IN_USB_DP_MASK: u32 = 0x01000000
+const GPIO_HI_IN_USB_DP_SHIFT: u32 = 24
+const GPIO_HI_IN_GPIO_MASK: u32 = 0x0000ffff
+const GPIO_HI_IN_GPIO_SHIFT: u32 = 0
+
+// GPIO0...31 output value
+const GPIO_OUT_OFFSET: u32 = 0x00000010
+const GPIO_OUT_GPIO_OUT_MASK: u32 = 0xffffffff
+const GPIO_OUT_GPIO_OUT_SHIFT: u32 = 0
+
+// Output value for GPIO32...47, QSPI IOs and USB pins. Write to set output level (1/0 ->
+// high/low). Reading back gives the last value written, NOT the input value from the pins. If core
+// 0 and core 1 both write to GPIO_HI_OUT simultaneously (or to a SET/CLR/XOR alias), the result is
+// as though the write from core 0 took place first, and the write from core 1 was then applied to
+// that intermediate result. In the Non-secure SIO, Secure-only GPIOs (as per ACCESSCTRL) ignore
+// writes, and their output status reads back as zero. This is also true for SET/CLR/XOR aliases of
+// this register.
+const GPIO_HI_OUT_OFFSET: u32 = 0x00000014
+const GPIO_HI_OUT_QSPI_SD_MASK: u32 = 0xf0000000
+const GPIO_HI_OUT_QSPI_SD_SHIFT: u32 = 28
+const GPIO_HI_OUT_QSPI_CSN_MASK: u32 = 0x08000000
+const GPIO_HI_OUT_QSPI_CSN_SHIFT: u32 = 27
+const GPIO_HI_OUT_QSPI_SCK_MASK: u32 = 0x04000000
+const GPIO_HI_OUT_QSPI_SCK_SHIFT: u32 = 26
+const GPIO_HI_OUT_USB_DM_MASK: u32 = 0x02000000
+const GPIO_HI_OUT_USB_DM_SHIFT: u32 = 25
+const GPIO_HI_OUT_USB_DP_MASK: u32 = 0x01000000
+const GPIO_HI_OUT_USB_DP_SHIFT: u32 = 24
+const GPIO_HI_OUT_GPIO_MASK: u32 = 0x0000ffff
+const GPIO_HI_OUT_GPIO_SHIFT: u32 = 0
+
+// GPIO0...31 output value set
+const GPIO_OUT_SET_OFFSET: u32 = 0x00000018
+const GPIO_OUT_SET_GPIO_OUT_SET_MASK: u32 = 0xffffffff
+const GPIO_OUT_SET_GPIO_OUT_SET_SHIFT: u32 = 0
+
+// Output value set for GPIO32..47, QSPI IOs and USB pins. Perform an atomic bit-set on
+// GPIO_HI_OUT, i.e. `GPIO_HI_OUT |= wdata`
+const GPIO_HI_OUT_SET_OFFSET: u32 = 0x0000001c
+const GPIO_HI_OUT_SET_QSPI_SD_MASK: u32 = 0xf0000000
+const GPIO_HI_OUT_SET_QSPI_SD_SHIFT: u32 = 28
+const GPIO_HI_OUT_SET_QSPI_CSN_MASK: u32 = 0x08000000
+const GPIO_HI_OUT_SET_QSPI_CSN_SHIFT: u32 = 27
+const GPIO_HI_OUT_SET_QSPI_SCK_MASK: u32 = 0x04000000
+const GPIO_HI_OUT_SET_QSPI_SCK_SHIFT: u32 = 26
+const GPIO_HI_OUT_SET_USB_DM_MASK: u32 = 0x02000000
+const GPIO_HI_OUT_SET_USB_DM_SHIFT: u32 = 25
+const GPIO_HI_OUT_SET_USB_DP_MASK: u32 = 0x01000000
+const GPIO_HI_OUT_SET_USB_DP_SHIFT: u32 = 24
+const GPIO_HI_OUT_SET_GPIO_MASK: u32 = 0x0000ffff
+const GPIO_HI_OUT_SET_GPIO_SHIFT: u32 = 0
+
+// GPIO0...31 output value clear
+const GPIO_OUT_CLR_OFFSET: u32 = 0x00000020
+const GPIO_OUT_CLR_GPIO_OUT_CLR_MASK: u32 = 0xffffffff
+const GPIO_OUT_CLR_GPIO_OUT_CLR_SHIFT: u32 = 0
+
+// Output value clear for GPIO32..47, QSPI IOs and USB pins. Perform an atomic bit-clear on
+// GPIO_HI_OUT, i.e. `GPIO_HI_OUT &= ~wdata`
+const GPIO_HI_OUT_CLR_OFFSET: u32 = 0x00000024
+const GPIO_HI_OUT_CLR_QSPI_SD_MASK: u32 = 0xf0000000
+const GPIO_HI_OUT_CLR_QSPI_SD_SHIFT: u32 = 28
+const GPIO_HI_OUT_CLR_QSPI_CSN_MASK: u32 = 0x08000000
+const GPIO_HI_OUT_CLR_QSPI_CSN_SHIFT: u32 = 27
+const GPIO_HI_OUT_CLR_QSPI_SCK_MASK: u32 = 0x04000000
+const GPIO_HI_OUT_CLR_QSPI_SCK_SHIFT: u32 = 26
+const GPIO_HI_OUT_CLR_USB_DM_MASK: u32 = 0x02000000
+const GPIO_HI_OUT_CLR_USB_DM_SHIFT: u32 = 25
+const GPIO_HI_OUT_CLR_USB_DP_MASK: u32 = 0x01000000
+const GPIO_HI_OUT_CLR_USB_DP_SHIFT: u32 = 24
+const GPIO_HI_OUT_CLR_GPIO_MASK: u32 = 0x0000ffff
+const GPIO_HI_OUT_CLR_GPIO_SHIFT: u32 = 0
+
+// GPIO0...31 output value XOR
+const GPIO_OUT_XOR_OFFSET: u32 = 0x00000028
+const GPIO_OUT_XOR_GPIO_OUT_XOR_MASK: u32 = 0xffffffff
+const GPIO_OUT_XOR_GPIO_OUT_XOR_SHIFT: u32 = 0
+
+// Output value XOR for GPIO32..47, QSPI IOs and USB pins. Perform an atomic bitwise XOR on
+// GPIO_HI_OUT, i.e. `GPIO_HI_OUT ^= wdata`
+const GPIO_HI_OUT_XOR_OFFSET: u32 = 0x0000002c
+const GPIO_HI_OUT_XOR_QSPI_SD_MASK: u32 = 0xf0000000
+const GPIO_HI_OUT_XOR_QSPI_SD_SHIFT: u32 = 28
+const GPIO_HI_OUT_XOR_QSPI_CSN_MASK: u32 = 0x08000000
+const GPIO_HI_OUT_XOR_QSPI_CSN_SHIFT: u32 = 27
+const GPIO_HI_OUT_XOR_QSPI_SCK_MASK: u32 = 0x04000000
+const GPIO_HI_OUT_XOR_QSPI_SCK_SHIFT: u32 = 26
+const GPIO_HI_OUT_XOR_USB_DM_MASK: u32 = 0x02000000
+const GPIO_HI_OUT_XOR_USB_DM_SHIFT: u32 = 25
+const GPIO_HI_OUT_XOR_USB_DP_MASK: u32 = 0x01000000
+const GPIO_HI_OUT_XOR_USB_DP_SHIFT: u32 = 24
+const GPIO_HI_OUT_XOR_GPIO_MASK: u32 = 0x0000ffff
+const GPIO_HI_OUT_XOR_GPIO_SHIFT: u32 = 0
+
+// GPIO0...31 output enable
+const GPIO_OE_OFFSET: u32 = 0x00000030
+const GPIO_OE_GPIO_OE_MASK: u32 = 0xffffffff
+const GPIO_OE_GPIO_OE_SHIFT: u32 = 0
+
+// Output enable value for GPIO32...47, QSPI IOs and USB pins. Write output enable (1/0 ->
+// output/input). Reading back gives the last value written. If core 0 and core 1 both write to
+// GPIO_HI_OE simultaneously (or to a SET/CLR/XOR alias), the result is as though the write from
+// core 0 took place first, and the write from core 1 was then applied to that intermediate result.
+// In the Non-secure SIO, Secure-only GPIOs (as per ACCESSCTRL) ignore writes, and their output
+// status reads back as zero. This is also true for SET/CLR/XOR aliases of this register.
+const GPIO_HI_OE_OFFSET: u32 = 0x00000034
+const GPIO_HI_OE_QSPI_SD_MASK: u32 = 0xf0000000
+const GPIO_HI_OE_QSPI_SD_SHIFT: u32 = 28
+const GPIO_HI_OE_QSPI_CSN_MASK: u32 = 0x08000000
+const GPIO_HI_OE_QSPI_CSN_SHIFT: u32 = 27
+const GPIO_HI_OE_QSPI_SCK_MASK: u32 = 0x04000000
+const GPIO_HI_OE_QSPI_SCK_SHIFT: u32 = 26
+const GPIO_HI_OE_USB_DM_MASK: u32 = 0x02000000
+const GPIO_HI_OE_USB_DM_SHIFT: u32 = 25
+const GPIO_HI_OE_USB_DP_MASK: u32 = 0x01000000
+const GPIO_HI_OE_USB_DP_SHIFT: u32 = 24
+const GPIO_HI_OE_GPIO_MASK: u32 = 0x0000ffff
+const GPIO_HI_OE_GPIO_SHIFT: u32 = 0
+
+// GPIO0...31 output enable set
+const GPIO_OE_SET_OFFSET: u32 = 0x00000038
+const GPIO_OE_SET_GPIO_OE_SET_MASK: u32 = 0xffffffff
+const GPIO_OE_SET_GPIO_OE_SET_SHIFT: u32 = 0
+
+// Output enable set for GPIO32...47, QSPI IOs and USB pins. Perform an atomic bit-set on
+// GPIO_HI_OE, i.e. `GPIO_HI_OE |= wdata`
+const GPIO_HI_OE_SET_OFFSET: u32 = 0x0000003c
+const GPIO_HI_OE_SET_QSPI_SD_MASK: u32 = 0xf0000000
+const GPIO_HI_OE_SET_QSPI_SD_SHIFT: u32 = 28
+const GPIO_HI_OE_SET_QSPI_CSN_MASK: u32 = 0x08000000
+const GPIO_HI_OE_SET_QSPI_CSN_SHIFT: u32 = 27
+const GPIO_HI_OE_SET_QSPI_SCK_MASK: u32 = 0x04000000
+const GPIO_HI_OE_SET_QSPI_SCK_SHIFT: u32 = 26
+const GPIO_HI_OE_SET_USB_DM_MASK: u32 = 0x02000000
+const GPIO_HI_OE_SET_USB_DM_SHIFT: u32 = 25
+const GPIO_HI_OE_SET_USB_DP_MASK: u32 = 0x01000000
+const GPIO_HI_OE_SET_USB_DP_SHIFT: u32 = 24
+const GPIO_HI_OE_SET_GPIO_MASK: u32 = 0x0000ffff
+const GPIO_HI_OE_SET_GPIO_SHIFT: u32 = 0
+
+// GPIO0...31 output enable clear
+const GPIO_OE_CLR_OFFSET: u32 = 0x00000040
+const GPIO_OE_CLR_GPIO_OE_CLR_MASK: u32 = 0xffffffff
+const GPIO_OE_CLR_GPIO_OE_CLR_SHIFT: u32 = 0
+
+// Output enable clear for GPIO32...47, QSPI IOs and USB pins. Perform an atomic bit-clear on
+// GPIO_HI_OE, i.e. `GPIO_HI_OE &= ~wdata`
+const GPIO_HI_OE_CLR_OFFSET: u32 = 0x00000044
+const GPIO_HI_OE_CLR_QSPI_SD_MASK: u32 = 0xf0000000
+const GPIO_HI_OE_CLR_QSPI_SD_SHIFT: u32 = 28
+const GPIO_HI_OE_CLR_QSPI_CSN_MASK: u32 = 0x08000000
+const GPIO_HI_OE_CLR_QSPI_CSN_SHIFT: u32 = 27
+const GPIO_HI_OE_CLR_QSPI_SCK_MASK: u32 = 0x04000000
+const GPIO_HI_OE_CLR_QSPI_SCK_SHIFT: u32 = 26
+const GPIO_HI_OE_CLR_USB_DM_MASK: u32 = 0x02000000
+const GPIO_HI_OE_CLR_USB_DM_SHIFT: u32 = 25
+const GPIO_HI_OE_CLR_USB_DP_MASK: u32 = 0x01000000
+const GPIO_HI_OE_CLR_USB_DP_SHIFT: u32 = 24
+const GPIO_HI_OE_CLR_GPIO_MASK: u32 = 0x0000ffff
+const GPIO_HI_OE_CLR_GPIO_SHIFT: u32 = 0
+
+// GPIO0...31 output enable XOR
+const GPIO_OE_XOR_OFFSET: u32 = 0x00000048
+const GPIO_OE_XOR_GPIO_OE_XOR_MASK: u32 = 0xffffffff
+const GPIO_OE_XOR_GPIO_OE_XOR_SHIFT: u32 = 0
+
+// Output enable XOR for GPIO32...47, QSPI IOs and USB pins. Perform an atomic bitwise XOR on
+// GPIO_HI_OE, i.e. `GPIO_HI_OE ^= wdata`
+const GPIO_HI_OE_XOR_OFFSET: u32 = 0x0000004c
+const GPIO_HI_OE_XOR_QSPI_SD_MASK: u32 = 0xf0000000
+const GPIO_HI_OE_XOR_QSPI_SD_SHIFT: u32 = 28
+const GPIO_HI_OE_XOR_QSPI_CSN_MASK: u32 = 0x08000000
+const GPIO_HI_OE_XOR_QSPI_CSN_SHIFT: u32 = 27
+const GPIO_HI_OE_XOR_QSPI_SCK_MASK: u32 = 0x04000000
+const GPIO_HI_OE_XOR_QSPI_SCK_SHIFT: u32 = 26
+const GPIO_HI_OE_XOR_USB_DM_MASK: u32 = 0x02000000
+const GPIO_HI_OE_XOR_USB_DM_SHIFT: u32 = 25
+const GPIO_HI_OE_XOR_USB_DP_MASK: u32 = 0x01000000
+const GPIO_HI_OE_XOR_USB_DP_SHIFT: u32 = 24
+const GPIO_HI_OE_XOR_GPIO_MASK: u32 = 0x0000ffff
+const GPIO_HI_OE_XOR_GPIO_SHIFT: u32 = 0
+
+// Status register for inter-core FIFOs (mailboxes). There is one FIFO in the core 0 -> core 1
+// direction, and one core 1 -> core 0. Both are 32 bits wide and 8 words deep. Core 0 can see the
+// read side of the 1->0 FIFO (RX), and the write side of 0->1 FIFO (TX). Core 1 can see the read
+// side of the 0->1 FIFO (RX), and the write side of 1->0 FIFO (TX). The SIO IRQ for each core is
+// the logical OR of the VLD, WOF and ROE fields of its FIFO_ST register.
+const FIFO_ST_OFFSET: u32 = 0x00000050
+const FIFO_ST_ROE_MASK: u32 = 0x00000008
+const FIFO_ST_ROE_SHIFT: u32 = 3
+const FIFO_ST_WOF_MASK: u32 = 0x00000004
+const FIFO_ST_WOF_SHIFT: u32 = 2
+const FIFO_ST_RDY_MASK: u32 = 0x00000002
+const FIFO_ST_RDY_SHIFT: u32 = 1
+const FIFO_ST_VLD_MASK: u32 = 0x00000001
+const FIFO_ST_VLD_SHIFT: u32 = 0
+
+// Write access to this core's TX FIFO
+const FIFO_WR_OFFSET: u32 = 0x00000054
+const FIFO_WR_FIFO_WR_MASK: u32 = 0xffffffff
+const FIFO_WR_FIFO_WR_SHIFT: u32 = 0
+
+// Read access to this core's RX FIFO
+const FIFO_RD_OFFSET: u32 = 0x00000058
+const FIFO_RD_FIFO_RD_MASK: u32 = 0xffffffff
+const FIFO_RD_FIFO_RD_SHIFT: u32 = 0
+
+// Spinlock state A bitmap containing the state of all 32 spinlocks (1=locked). Mainly intended for
+// debugging.
+const SPINLOCK_ST_OFFSET: u32 = 0x0000005c
+const SPINLOCK_ST_SPINLOCK_ST_MASK: u32 = 0xffffffff
+const SPINLOCK_ST_SPINLOCK_ST_SHIFT: u32 = 0
+
+// Read/write access to accumulator 0
+const INTERP0_ACCUM0_OFFSET: u32 = 0x00000080
+const INTERP0_ACCUM0_INTERP0_ACCUM0_MASK: u32 = 0xffffffff
+const INTERP0_ACCUM0_INTERP0_ACCUM0_SHIFT: u32 = 0
+
+// Read/write access to accumulator 1
+const INTERP0_ACCUM1_OFFSET: u32 = 0x00000084
+const INTERP0_ACCUM1_INTERP0_ACCUM1_MASK: u32 = 0xffffffff
+const INTERP0_ACCUM1_INTERP0_ACCUM1_SHIFT: u32 = 0
+
+// Read/write access to BASE0 register.
+const INTERP0_BASE0_OFFSET: u32 = 0x00000088
+const INTERP0_BASE0_INTERP0_BASE0_MASK: u32 = 0xffffffff
+const INTERP0_BASE0_INTERP0_BASE0_SHIFT: u32 = 0
+
+// Read/write access to BASE1 register.
+const INTERP0_BASE1_OFFSET: u32 = 0x0000008c
+const INTERP0_BASE1_INTERP0_BASE1_MASK: u32 = 0xffffffff
+const INTERP0_BASE1_INTERP0_BASE1_SHIFT: u32 = 0
+
+// Read/write access to BASE2 register.
+const INTERP0_BASE2_OFFSET: u32 = 0x00000090
+const INTERP0_BASE2_INTERP0_BASE2_MASK: u32 = 0xffffffff
+const INTERP0_BASE2_INTERP0_BASE2_SHIFT: u32 = 0
+
+// Read LANE0 result, and simultaneously write lane results to both accumulators (POP).
+const INTERP0_POP_LANE0_OFFSET: u32 = 0x00000094
+const INTERP0_POP_LANE0_INTERP0_POP_LANE0_MASK: u32 = 0xffffffff
+const INTERP0_POP_LANE0_INTERP0_POP_LANE0_SHIFT: u32 = 0
+
+// Read LANE1 result, and simultaneously write lane results to both accumulators (POP).
+const INTERP0_POP_LANE1_OFFSET: u32 = 0x00000098
+const INTERP0_POP_LANE1_INTERP0_POP_LANE1_MASK: u32 = 0xffffffff
+const INTERP0_POP_LANE1_INTERP0_POP_LANE1_SHIFT: u32 = 0
+
+// Read FULL result, and simultaneously write lane results to both accumulators (POP).
+const INTERP0_POP_FULL_OFFSET: u32 = 0x0000009c
+const INTERP0_POP_FULL_INTERP0_POP_FULL_MASK: u32 = 0xffffffff
+const INTERP0_POP_FULL_INTERP0_POP_FULL_SHIFT: u32 = 0
+
+// Read LANE0 result, without altering any internal state (PEEK).
+const INTERP0_PEEK_LANE0_OFFSET: u32 = 0x000000a0
+const INTERP0_PEEK_LANE0_INTERP0_PEEK_LANE0_MASK: u32 = 0xffffffff
+const INTERP0_PEEK_LANE0_INTERP0_PEEK_LANE0_SHIFT: u32 = 0
+
+// Read LANE1 result, without altering any internal state (PEEK).
+const INTERP0_PEEK_LANE1_OFFSET: u32 = 0x000000a4
+const INTERP0_PEEK_LANE1_INTERP0_PEEK_LANE1_MASK: u32 = 0xffffffff
+const INTERP0_PEEK_LANE1_INTERP0_PEEK_LANE1_SHIFT: u32 = 0
+
+// Read FULL result, without altering any internal state (PEEK).
+const INTERP0_PEEK_FULL_OFFSET: u32 = 0x000000a8
+const INTERP0_PEEK_FULL_INTERP0_PEEK_FULL_MASK: u32 = 0xffffffff
+const INTERP0_PEEK_FULL_INTERP0_PEEK_FULL_SHIFT: u32 = 0
+
+// Control register for lane 0
+const INTERP0_CTRL_LANE0_OFFSET: u32 = 0x000000ac
+const INTERP0_CTRL_LANE0_OVERF_MASK: u32 = 0x02000000
+const INTERP0_CTRL_LANE0_OVERF_SHIFT: u32 = 25
+const INTERP0_CTRL_LANE0_OVERF1_MASK: u32 = 0x01000000
+const INTERP0_CTRL_LANE0_OVERF1_SHIFT: u32 = 24
+const INTERP0_CTRL_LANE0_OVERF0_MASK: u32 = 0x00800000
+const INTERP0_CTRL_LANE0_OVERF0_SHIFT: u32 = 23
+const INTERP0_CTRL_LANE0_BLEND_MASK: u32 = 0x00200000
+const INTERP0_CTRL_LANE0_BLEND_SHIFT: u32 = 21
+const INTERP0_CTRL_LANE0_FORCE_MSB_MASK: u32 = 0x00180000
+const INTERP0_CTRL_LANE0_FORCE_MSB_SHIFT: u32 = 19
+const INTERP0_CTRL_LANE0_ADD_RAW_MASK: u32 = 0x00040000
+const INTERP0_CTRL_LANE0_ADD_RAW_SHIFT: u32 = 18
+const INTERP0_CTRL_LANE0_CROSS_RESULT_MASK: u32 = 0x00020000
+const INTERP0_CTRL_LANE0_CROSS_RESULT_SHIFT: u32 = 17
+const INTERP0_CTRL_LANE0_CROSS_INPUT_MASK: u32 = 0x00010000
+const INTERP0_CTRL_LANE0_CROSS_INPUT_SHIFT: u32 = 16
+const INTERP0_CTRL_LANE0_SIGNED_MASK: u32 = 0x00008000
+const INTERP0_CTRL_LANE0_SIGNED_SHIFT: u32 = 15
+const INTERP0_CTRL_LANE0_MASK_MSB_MASK: u32 = 0x00007c00
+const INTERP0_CTRL_LANE0_MASK_MSB_SHIFT: u32 = 10
+const INTERP0_CTRL_LANE0_MASK_LSB_MASK: u32 = 0x000003e0
+const INTERP0_CTRL_LANE0_MASK_LSB_SHIFT: u32 = 5
+const INTERP0_CTRL_LANE0_SHIFT_MASK: u32 = 0x0000001f
+const INTERP0_CTRL_LANE0_SHIFT_SHIFT: u32 = 0
+
+// Control register for lane 1
+const INTERP0_CTRL_LANE1_OFFSET: u32 = 0x000000b0
+const INTERP0_CTRL_LANE1_FORCE_MSB_MASK: u32 = 0x00180000
+const INTERP0_CTRL_LANE1_FORCE_MSB_SHIFT: u32 = 19
+const INTERP0_CTRL_LANE1_ADD_RAW_MASK: u32 = 0x00040000
+const INTERP0_CTRL_LANE1_ADD_RAW_SHIFT: u32 = 18
+const INTERP0_CTRL_LANE1_CROSS_RESULT_MASK: u32 = 0x00020000
+const INTERP0_CTRL_LANE1_CROSS_RESULT_SHIFT: u32 = 17
+const INTERP0_CTRL_LANE1_CROSS_INPUT_MASK: u32 = 0x00010000
+const INTERP0_CTRL_LANE1_CROSS_INPUT_SHIFT: u32 = 16
+const INTERP0_CTRL_LANE1_SIGNED_MASK: u32 = 0x00008000
+const INTERP0_CTRL_LANE1_SIGNED_SHIFT: u32 = 15
+const INTERP0_CTRL_LANE1_MASK_MSB_MASK: u32 = 0x00007c00
+const INTERP0_CTRL_LANE1_MASK_MSB_SHIFT: u32 = 10
+const INTERP0_CTRL_LANE1_MASK_LSB_MASK: u32 = 0x000003e0
+const INTERP0_CTRL_LANE1_MASK_LSB_SHIFT: u32 = 5
+const INTERP0_CTRL_LANE1_SHIFT_MASK: u32 = 0x0000001f
+const INTERP0_CTRL_LANE1_SHIFT_SHIFT: u32 = 0
+
+// Values written here are atomically added to ACCUM0 Reading yields lane 0's raw shift and mask
+// value (BASE0 not added).
+const INTERP0_ACCUM0_ADD_OFFSET: u32 = 0x000000b4
+const INTERP0_ACCUM0_ADD_INTERP0_ACCUM0_ADD_MASK: u32 = 0x00ffffff
+const INTERP0_ACCUM0_ADD_INTERP0_ACCUM0_ADD_SHIFT: u32 = 0
+
+// Values written here are atomically added to ACCUM1 Reading yields lane 1's raw shift and mask
+// value (BASE1 not added).
+const INTERP0_ACCUM1_ADD_OFFSET: u32 = 0x000000b8
+const INTERP0_ACCUM1_ADD_INTERP0_ACCUM1_ADD_MASK: u32 = 0x00ffffff
+const INTERP0_ACCUM1_ADD_INTERP0_ACCUM1_ADD_SHIFT: u32 = 0
+
+// On write, the lower 16 bits go to BASE0, upper bits to BASE1 simultaneously. Each half is
+// sign-extended to 32 bits if that lane's SIGNED flag is set.
+const INTERP0_BASE_1AND0_OFFSET: u32 = 0x000000bc
+const INTERP0_BASE_1AND0_INTERP0_BASE_1AND0_MASK: u32 = 0xffffffff
+const INTERP0_BASE_1AND0_INTERP0_BASE_1AND0_SHIFT: u32 = 0
+
+// Read/write access to accumulator 0
+const INTERP1_ACCUM0_OFFSET: u32 = 0x000000c0
+const INTERP1_ACCUM0_INTERP1_ACCUM0_MASK: u32 = 0xffffffff
+const INTERP1_ACCUM0_INTERP1_ACCUM0_SHIFT: u32 = 0
+
+// Read/write access to accumulator 1
+const INTERP1_ACCUM1_OFFSET: u32 = 0x000000c4
+const INTERP1_ACCUM1_INTERP1_ACCUM1_MASK: u32 = 0xffffffff
+const INTERP1_ACCUM1_INTERP1_ACCUM1_SHIFT: u32 = 0
+
+// Read/write access to BASE0 register.
+const INTERP1_BASE0_OFFSET: u32 = 0x000000c8
+const INTERP1_BASE0_INTERP1_BASE0_MASK: u32 = 0xffffffff
+const INTERP1_BASE0_INTERP1_BASE0_SHIFT: u32 = 0
+
+// Read/write access to BASE1 register.
+const INTERP1_BASE1_OFFSET: u32 = 0x000000cc
+const INTERP1_BASE1_INTERP1_BASE1_MASK: u32 = 0xffffffff
+const INTERP1_BASE1_INTERP1_BASE1_SHIFT: u32 = 0
+
+// Read/write access to BASE2 register.
+const INTERP1_BASE2_OFFSET: u32 = 0x000000d0
+const INTERP1_BASE2_INTERP1_BASE2_MASK: u32 = 0xffffffff
+const INTERP1_BASE2_INTERP1_BASE2_SHIFT: u32 = 0
+
+// Read LANE0 result, and simultaneously write lane results to both accumulators (POP).
+const INTERP1_POP_LANE0_OFFSET: u32 = 0x000000d4
+const INTERP1_POP_LANE0_INTERP1_POP_LANE0_MASK: u32 = 0xffffffff
+const INTERP1_POP_LANE0_INTERP1_POP_LANE0_SHIFT: u32 = 0
+
+// Read LANE1 result, and simultaneously write lane results to both accumulators (POP).
+const INTERP1_POP_LANE1_OFFSET: u32 = 0x000000d8
+const INTERP1_POP_LANE1_INTERP1_POP_LANE1_MASK: u32 = 0xffffffff
+const INTERP1_POP_LANE1_INTERP1_POP_LANE1_SHIFT: u32 = 0
+
+// Read FULL result, and simultaneously write lane results to both accumulators (POP).
+const INTERP1_POP_FULL_OFFSET: u32 = 0x000000dc
+const INTERP1_POP_FULL_INTERP1_POP_FULL_MASK: u32 = 0xffffffff
+const INTERP1_POP_FULL_INTERP1_POP_FULL_SHIFT: u32 = 0
+
+// Read LANE0 result, without altering any internal state (PEEK).
+const INTERP1_PEEK_LANE0_OFFSET: u32 = 0x000000e0
+const INTERP1_PEEK_LANE0_INTERP1_PEEK_LANE0_MASK: u32 = 0xffffffff
+const INTERP1_PEEK_LANE0_INTERP1_PEEK_LANE0_SHIFT: u32 = 0
+
+// Read LANE1 result, without altering any internal state (PEEK).
+const INTERP1_PEEK_LANE1_OFFSET: u32 = 0x000000e4
+const INTERP1_PEEK_LANE1_INTERP1_PEEK_LANE1_MASK: u32 = 0xffffffff
+const INTERP1_PEEK_LANE1_INTERP1_PEEK_LANE1_SHIFT: u32 = 0
+
+// Read FULL result, without altering any internal state (PEEK).
+const INTERP1_PEEK_FULL_OFFSET: u32 = 0x000000e8
+const INTERP1_PEEK_FULL_INTERP1_PEEK_FULL_MASK: u32 = 0xffffffff
+const INTERP1_PEEK_FULL_INTERP1_PEEK_FULL_SHIFT: u32 = 0
+
+// Control register for lane 0
+const INTERP1_CTRL_LANE0_OFFSET: u32 = 0x000000ec
+const INTERP1_CTRL_LANE0_OVERF_MASK: u32 = 0x02000000
+const INTERP1_CTRL_LANE0_OVERF_SHIFT: u32 = 25
+const INTERP1_CTRL_LANE0_OVERF1_MASK: u32 = 0x01000000
+const INTERP1_CTRL_LANE0_OVERF1_SHIFT: u32 = 24
+const INTERP1_CTRL_LANE0_OVERF0_MASK: u32 = 0x00800000
+const INTERP1_CTRL_LANE0_OVERF0_SHIFT: u32 = 23
+const INTERP1_CTRL_LANE0_CLAMP_MASK: u32 = 0x00400000
+const INTERP1_CTRL_LANE0_CLAMP_SHIFT: u32 = 22
+const INTERP1_CTRL_LANE0_FORCE_MSB_MASK: u32 = 0x00180000
+const INTERP1_CTRL_LANE0_FORCE_MSB_SHIFT: u32 = 19
+const INTERP1_CTRL_LANE0_ADD_RAW_MASK: u32 = 0x00040000
+const INTERP1_CTRL_LANE0_ADD_RAW_SHIFT: u32 = 18
+const INTERP1_CTRL_LANE0_CROSS_RESULT_MASK: u32 = 0x00020000
+const INTERP1_CTRL_LANE0_CROSS_RESULT_SHIFT: u32 = 17
+const INTERP1_CTRL_LANE0_CROSS_INPUT_MASK: u32 = 0x00010000
+const INTERP1_CTRL_LANE0_CROSS_INPUT_SHIFT: u32 = 16
+const INTERP1_CTRL_LANE0_SIGNED_MASK: u32 = 0x00008000
+const INTERP1_CTRL_LANE0_SIGNED_SHIFT: u32 = 15
+const INTERP1_CTRL_LANE0_MASK_MSB_MASK: u32 = 0x00007c00
+const INTERP1_CTRL_LANE0_MASK_MSB_SHIFT: u32 = 10
+const INTERP1_CTRL_LANE0_MASK_LSB_MASK: u32 = 0x000003e0
+const INTERP1_CTRL_LANE0_MASK_LSB_SHIFT: u32 = 5
+const INTERP1_CTRL_LANE0_SHIFT_MASK: u32 = 0x0000001f
+const INTERP1_CTRL_LANE0_SHIFT_SHIFT: u32 = 0
+
+// Control register for lane 1
+const INTERP1_CTRL_LANE1_OFFSET: u32 = 0x000000f0
+const INTERP1_CTRL_LANE1_FORCE_MSB_MASK: u32 = 0x00180000
+const INTERP1_CTRL_LANE1_FORCE_MSB_SHIFT: u32 = 19
+const INTERP1_CTRL_LANE1_ADD_RAW_MASK: u32 = 0x00040000
+const INTERP1_CTRL_LANE1_ADD_RAW_SHIFT: u32 = 18
+const INTERP1_CTRL_LANE1_CROSS_RESULT_MASK: u32 = 0x00020000
+const INTERP1_CTRL_LANE1_CROSS_RESULT_SHIFT: u32 = 17
+const INTERP1_CTRL_LANE1_CROSS_INPUT_MASK: u32 = 0x00010000
+const INTERP1_CTRL_LANE1_CROSS_INPUT_SHIFT: u32 = 16
+const INTERP1_CTRL_LANE1_SIGNED_MASK: u32 = 0x00008000
+const INTERP1_CTRL_LANE1_SIGNED_SHIFT: u32 = 15
+const INTERP1_CTRL_LANE1_MASK_MSB_MASK: u32 = 0x00007c00
+const INTERP1_CTRL_LANE1_MASK_MSB_SHIFT: u32 = 10
+const INTERP1_CTRL_LANE1_MASK_LSB_MASK: u32 = 0x000003e0
+const INTERP1_CTRL_LANE1_MASK_LSB_SHIFT: u32 = 5
+const INTERP1_CTRL_LANE1_SHIFT_MASK: u32 = 0x0000001f
+const INTERP1_CTRL_LANE1_SHIFT_SHIFT: u32 = 0
+
+// Values written here are atomically added to ACCUM0 Reading yields lane 0's raw shift and mask
+// value (BASE0 not added).
+const INTERP1_ACCUM0_ADD_OFFSET: u32 = 0x000000f4
+const INTERP1_ACCUM0_ADD_INTERP1_ACCUM0_ADD_MASK: u32 = 0x00ffffff
+const INTERP1_ACCUM0_ADD_INTERP1_ACCUM0_ADD_SHIFT: u32 = 0
+
+// Values written here are atomically added to ACCUM1 Reading yields lane 1's raw shift and mask
+// value (BASE1 not added).
+const INTERP1_ACCUM1_ADD_OFFSET: u32 = 0x000000f8
+const INTERP1_ACCUM1_ADD_INTERP1_ACCUM1_ADD_MASK: u32 = 0x00ffffff
+const INTERP1_ACCUM1_ADD_INTERP1_ACCUM1_ADD_SHIFT: u32 = 0
+
+// On write, the lower 16 bits go to BASE0, upper bits to BASE1 simultaneously. Each half is
+// sign-extended to 32 bits if that lane's SIGNED flag is set.
+const INTERP1_BASE_1AND0_OFFSET: u32 = 0x000000fc
+const INTERP1_BASE_1AND0_INTERP1_BASE_1AND0_MASK: u32 = 0xffffffff
+const INTERP1_BASE_1AND0_INTERP1_BASE_1AND0_SHIFT: u32 = 0
+
+// Reading from a spinlock address will: - Return 0 if lock is already locked - Otherwise return
+// nonzero, and simultaneously claim the lock Writing (any value) releases the lock. If core 0 and
+// core 1 attempt to claim the same lock simultaneously, core 0 wins. The value returned on success
+// is 0x1 << lock number.
+const SPINLOCK0_OFFSET: u32 = 0x00000100
+const SPINLOCK0_SPINLOCK0_MASK: u32 = 0xffffffff
+const SPINLOCK0_SPINLOCK0_SHIFT: u32 = 0
+
+// Reading from a spinlock address will: - Return 0 if lock is already locked - Otherwise return
+// nonzero, and simultaneously claim the lock Writing (any value) releases the lock. If core 0 and
+// core 1 attempt to claim the same lock simultaneously, core 0 wins. The value returned on success
+// is 0x1 << lock number.
+const SPINLOCK1_OFFSET: u32 = 0x00000104
+const SPINLOCK1_SPINLOCK1_MASK: u32 = 0xffffffff
+const SPINLOCK1_SPINLOCK1_SHIFT: u32 = 0
+
+// Reading from a spinlock address will: - Return 0 if lock is already locked - Otherwise return
+// nonzero, and simultaneously claim the lock Writing (any value) releases the lock. If core 0 and
+// core 1 attempt to claim the same lock simultaneously, core 0 wins. The value returned on success
+// is 0x1 << lock number.
+const SPINLOCK2_OFFSET: u32 = 0x00000108
+const SPINLOCK2_SPINLOCK2_MASK: u32 = 0xffffffff
+const SPINLOCK2_SPINLOCK2_SHIFT: u32 = 0
+
+// Reading from a spinlock address will: - Return 0 if lock is already locked - Otherwise return
+// nonzero, and simultaneously claim the lock Writing (any value) releases the lock. If core 0 and
+// core 1 attempt to claim the same lock simultaneously, core 0 wins. The value returned on success
+// is 0x1 << lock number.
+const SPINLOCK3_OFFSET: u32 = 0x0000010c
+const SPINLOCK3_SPINLOCK3_MASK: u32 = 0xffffffff
+const SPINLOCK3_SPINLOCK3_SHIFT: u32 = 0
+
+// Reading from a spinlock address will: - Return 0 if lock is already locked - Otherwise return
+// nonzero, and simultaneously claim the lock Writing (any value) releases the lock. If core 0 and
+// core 1 attempt to claim the same lock simultaneously, core 0 wins. The value returned on success
+// is 0x1 << lock number.
+const SPINLOCK4_OFFSET: u32 = 0x00000110
+const SPINLOCK4_SPINLOCK4_MASK: u32 = 0xffffffff
+const SPINLOCK4_SPINLOCK4_SHIFT: u32 = 0
+
+// Reading from a spinlock address will: - Return 0 if lock is already locked - Otherwise return
+// nonzero, and simultaneously claim the lock Writing (any value) releases the lock. If core 0 and
+// core 1 attempt to claim the same lock simultaneously, core 0 wins. The value returned on success
+// is 0x1 << lock number.
+const SPINLOCK5_OFFSET: u32 = 0x00000114
+const SPINLOCK5_SPINLOCK5_MASK: u32 = 0xffffffff
+const SPINLOCK5_SPINLOCK5_SHIFT: u32 = 0
+
+// Reading from a spinlock address will: - Return 0 if lock is already locked - Otherwise return
+// nonzero, and simultaneously claim the lock Writing (any value) releases the lock. If core 0 and
+// core 1 attempt to claim the same lock simultaneously, core 0 wins. The value returned on success
+// is 0x1 << lock number.
+const SPINLOCK6_OFFSET: u32 = 0x00000118
+const SPINLOCK6_SPINLOCK6_MASK: u32 = 0xffffffff
+const SPINLOCK6_SPINLOCK6_SHIFT: u32 = 0
+
+// Reading from a spinlock address will: - Return 0 if lock is already locked - Otherwise return
+// nonzero, and simultaneously claim the lock Writing (any value) releases the lock. If core 0 and
+// core 1 attempt to claim the same lock simultaneously, core 0 wins. The value returned on success
+// is 0x1 << lock number.
+const SPINLOCK7_OFFSET: u32 = 0x0000011c
+const SPINLOCK7_SPINLOCK7_MASK: u32 = 0xffffffff
+const SPINLOCK7_SPINLOCK7_SHIFT: u32 = 0
+
+// Reading from a spinlock address will: - Return 0 if lock is already locked - Otherwise return
+// nonzero, and simultaneously claim the lock Writing (any value) releases the lock. If core 0 and
+// core 1 attempt to claim the same lock simultaneously, core 0 wins. The value returned on success
+// is 0x1 << lock number.
+const SPINLOCK8_OFFSET: u32 = 0x00000120
+const SPINLOCK8_SPINLOCK8_MASK: u32 = 0xffffffff
+const SPINLOCK8_SPINLOCK8_SHIFT: u32 = 0
+
+// Reading from a spinlock address will: - Return 0 if lock is already locked - Otherwise return
+// nonzero, and simultaneously claim the lock Writing (any value) releases the lock. If core 0 and
+// core 1 attempt to claim the same lock simultaneously, core 0 wins. The value returned on success
+// is 0x1 << lock number.
+const SPINLOCK9_OFFSET: u32 = 0x00000124
+const SPINLOCK9_SPINLOCK9_MASK: u32 = 0xffffffff
+const SPINLOCK9_SPINLOCK9_SHIFT: u32 = 0
+
+// Reading from a spinlock address will: - Return 0 if lock is already locked - Otherwise return
+// nonzero, and simultaneously claim the lock Writing (any value) releases the lock. If core 0 and
+// core 1 attempt to claim the same lock simultaneously, core 0 wins. The value returned on success
+// is 0x1 << lock number.
+const SPINLOCK10_OFFSET: u32 = 0x00000128
+const SPINLOCK10_SPINLOCK10_MASK: u32 = 0xffffffff
+const SPINLOCK10_SPINLOCK10_SHIFT: u32 = 0
+
+// Reading from a spinlock address will: - Return 0 if lock is already locked - Otherwise return
+// nonzero, and simultaneously claim the lock Writing (any value) releases the lock. If core 0 and
+// core 1 attempt to claim the same lock simultaneously, core 0 wins. The value returned on success
+// is 0x1 << lock number.
+const SPINLOCK11_OFFSET: u32 = 0x0000012c
+const SPINLOCK11_SPINLOCK11_MASK: u32 = 0xffffffff
+const SPINLOCK11_SPINLOCK11_SHIFT: u32 = 0
+
+// Reading from a spinlock address will: - Return 0 if lock is already locked - Otherwise return
+// nonzero, and simultaneously claim the lock Writing (any value) releases the lock. If core 0 and
+// core 1 attempt to claim the same lock simultaneously, core 0 wins. The value returned on success
+// is 0x1 << lock number.
+const SPINLOCK12_OFFSET: u32 = 0x00000130
+const SPINLOCK12_SPINLOCK12_MASK: u32 = 0xffffffff
+const SPINLOCK12_SPINLOCK12_SHIFT: u32 = 0
+
+// Reading from a spinlock address will: - Return 0 if lock is already locked - Otherwise return
+// nonzero, and simultaneously claim the lock Writing (any value) releases the lock. If core 0 and
+// core 1 attempt to claim the same lock simultaneously, core 0 wins. The value returned on success
+// is 0x1 << lock number.
+const SPINLOCK13_OFFSET: u32 = 0x00000134
+const SPINLOCK13_SPINLOCK13_MASK: u32 = 0xffffffff
+const SPINLOCK13_SPINLOCK13_SHIFT: u32 = 0
+
+// Reading from a spinlock address will: - Return 0 if lock is already locked - Otherwise return
+// nonzero, and simultaneously claim the lock Writing (any value) releases the lock. If core 0 and
+// core 1 attempt to claim the same lock simultaneously, core 0 wins. The value returned on success
+// is 0x1 << lock number.
+const SPINLOCK14_OFFSET: u32 = 0x00000138
+const SPINLOCK14_SPINLOCK14_MASK: u32 = 0xffffffff
+const SPINLOCK14_SPINLOCK14_SHIFT: u32 = 0
+
+// Reading from a spinlock address will: - Return 0 if lock is already locked - Otherwise return
+// nonzero, and simultaneously claim the lock Writing (any value) releases the lock. If core 0 and
+// core 1 attempt to claim the same lock simultaneously, core 0 wins. The value returned on success
+// is 0x1 << lock number.
+const SPINLOCK15_OFFSET: u32 = 0x0000013c
+const SPINLOCK15_SPINLOCK15_MASK: u32 = 0xffffffff
+const SPINLOCK15_SPINLOCK15_SHIFT: u32 = 0
+
+// Reading from a spinlock address will: - Return 0 if lock is already locked - Otherwise return
+// nonzero, and simultaneously claim the lock Writing (any value) releases the lock. If core 0 and
+// core 1 attempt to claim the same lock simultaneously, core 0 wins. The value returned on success
+// is 0x1 << lock number.
+const SPINLOCK16_OFFSET: u32 = 0x00000140
+const SPINLOCK16_SPINLOCK16_MASK: u32 = 0xffffffff
+const SPINLOCK16_SPINLOCK16_SHIFT: u32 = 0
+
+// Reading from a spinlock address will: - Return 0 if lock is already locked - Otherwise return
+// nonzero, and simultaneously claim the lock Writing (any value) releases the lock. If core 0 and
+// core 1 attempt to claim the same lock simultaneously, core 0 wins. The value returned on success
+// is 0x1 << lock number.
+const SPINLOCK17_OFFSET: u32 = 0x00000144
+const SPINLOCK17_SPINLOCK17_MASK: u32 = 0xffffffff
+const SPINLOCK17_SPINLOCK17_SHIFT: u32 = 0
+
+// Reading from a spinlock address will: - Return 0 if lock is already locked - Otherwise return
+// nonzero, and simultaneously claim the lock Writing (any value) releases the lock. If core 0 and
+// core 1 attempt to claim the same lock simultaneously, core 0 wins. The value returned on success
+// is 0x1 << lock number.
+const SPINLOCK18_OFFSET: u32 = 0x00000148
+const SPINLOCK18_SPINLOCK18_MASK: u32 = 0xffffffff
+const SPINLOCK18_SPINLOCK18_SHIFT: u32 = 0
+
+// Reading from a spinlock address will: - Return 0 if lock is already locked - Otherwise return
+// nonzero, and simultaneously claim the lock Writing (any value) releases the lock. If core 0 and
+// core 1 attempt to claim the same lock simultaneously, core 0 wins. The value returned on success
+// is 0x1 << lock number.
+const SPINLOCK19_OFFSET: u32 = 0x0000014c
+const SPINLOCK19_SPINLOCK19_MASK: u32 = 0xffffffff
+const SPINLOCK19_SPINLOCK19_SHIFT: u32 = 0
+
+// Reading from a spinlock address will: - Return 0 if lock is already locked - Otherwise return
+// nonzero, and simultaneously claim the lock Writing (any value) releases the lock. If core 0 and
+// core 1 attempt to claim the same lock simultaneously, core 0 wins. The value returned on success
+// is 0x1 << lock number.
+const SPINLOCK20_OFFSET: u32 = 0x00000150
+const SPINLOCK20_SPINLOCK20_MASK: u32 = 0xffffffff
+const SPINLOCK20_SPINLOCK20_SHIFT: u32 = 0
+
+// Reading from a spinlock address will: - Return 0 if lock is already locked - Otherwise return
+// nonzero, and simultaneously claim the lock Writing (any value) releases the lock. If core 0 and
+// core 1 attempt to claim the same lock simultaneously, core 0 wins. The value returned on success
+// is 0x1 << lock number.
+const SPINLOCK21_OFFSET: u32 = 0x00000154
+const SPINLOCK21_SPINLOCK21_MASK: u32 = 0xffffffff
+const SPINLOCK21_SPINLOCK21_SHIFT: u32 = 0
+
+// Reading from a spinlock address will: - Return 0 if lock is already locked - Otherwise return
+// nonzero, and simultaneously claim the lock Writing (any value) releases the lock. If core 0 and
+// core 1 attempt to claim the same lock simultaneously, core 0 wins. The value returned on success
+// is 0x1 << lock number.
+const SPINLOCK22_OFFSET: u32 = 0x00000158
+const SPINLOCK22_SPINLOCK22_MASK: u32 = 0xffffffff
+const SPINLOCK22_SPINLOCK22_SHIFT: u32 = 0
+
+// Reading from a spinlock address will: - Return 0 if lock is already locked - Otherwise return
+// nonzero, and simultaneously claim the lock Writing (any value) releases the lock. If core 0 and
+// core 1 attempt to claim the same lock simultaneously, core 0 wins. The value returned on success
+// is 0x1 << lock number.
+const SPINLOCK23_OFFSET: u32 = 0x0000015c
+const SPINLOCK23_SPINLOCK23_MASK: u32 = 0xffffffff
+const SPINLOCK23_SPINLOCK23_SHIFT: u32 = 0
+
+// Reading from a spinlock address will: - Return 0 if lock is already locked - Otherwise return
+// nonzero, and simultaneously claim the lock Writing (any value) releases the lock. If core 0 and
+// core 1 attempt to claim the same lock simultaneously, core 0 wins. The value returned on success
+// is 0x1 << lock number.
+const SPINLOCK24_OFFSET: u32 = 0x00000160
+const SPINLOCK24_SPINLOCK24_MASK: u32 = 0xffffffff
+const SPINLOCK24_SPINLOCK24_SHIFT: u32 = 0
+
+// Reading from a spinlock address will: - Return 0 if lock is already locked - Otherwise return
+// nonzero, and simultaneously claim the lock Writing (any value) releases the lock. If core 0 and
+// core 1 attempt to claim the same lock simultaneously, core 0 wins. The value returned on success
+// is 0x1 << lock number.
+const SPINLOCK25_OFFSET: u32 = 0x00000164
+const SPINLOCK25_SPINLOCK25_MASK: u32 = 0xffffffff
+const SPINLOCK25_SPINLOCK25_SHIFT: u32 = 0
+
+// Reading from a spinlock address will: - Return 0 if lock is already locked - Otherwise return
+// nonzero, and simultaneously claim the lock Writing (any value) releases the lock. If core 0 and
+// core 1 attempt to claim the same lock simultaneously, core 0 wins. The value returned on success
+// is 0x1 << lock number.
+const SPINLOCK26_OFFSET: u32 = 0x00000168
+const SPINLOCK26_SPINLOCK26_MASK: u32 = 0xffffffff
+const SPINLOCK26_SPINLOCK26_SHIFT: u32 = 0
+
+// Reading from a spinlock address will: - Return 0 if lock is already locked - Otherwise return
+// nonzero, and simultaneously claim the lock Writing (any value) releases the lock. If core 0 and
+// core 1 attempt to claim the same lock simultaneously, core 0 wins. The value returned on success
+// is 0x1 << lock number.
+const SPINLOCK27_OFFSET: u32 = 0x0000016c
+const SPINLOCK27_SPINLOCK27_MASK: u32 = 0xffffffff
+const SPINLOCK27_SPINLOCK27_SHIFT: u32 = 0
+
+// Reading from a spinlock address will: - Return 0 if lock is already locked - Otherwise return
+// nonzero, and simultaneously claim the lock Writing (any value) releases the lock. If core 0 and
+// core 1 attempt to claim the same lock simultaneously, core 0 wins. The value returned on success
+// is 0x1 << lock number.
+const SPINLOCK28_OFFSET: u32 = 0x00000170
+const SPINLOCK28_SPINLOCK28_MASK: u32 = 0xffffffff
+const SPINLOCK28_SPINLOCK28_SHIFT: u32 = 0
+
+// Reading from a spinlock address will: - Return 0 if lock is already locked - Otherwise return
+// nonzero, and simultaneously claim the lock Writing (any value) releases the lock. If core 0 and
+// core 1 attempt to claim the same lock simultaneously, core 0 wins. The value returned on success
+// is 0x1 << lock number.
+const SPINLOCK29_OFFSET: u32 = 0x00000174
+const SPINLOCK29_SPINLOCK29_MASK: u32 = 0xffffffff
+const SPINLOCK29_SPINLOCK29_SHIFT: u32 = 0
+
+// Reading from a spinlock address will: - Return 0 if lock is already locked - Otherwise return
+// nonzero, and simultaneously claim the lock Writing (any value) releases the lock. If core 0 and
+// core 1 attempt to claim the same lock simultaneously, core 0 wins. The value returned on success
+// is 0x1 << lock number.
+const SPINLOCK30_OFFSET: u32 = 0x00000178
+const SPINLOCK30_SPINLOCK30_MASK: u32 = 0xffffffff
+const SPINLOCK30_SPINLOCK30_SHIFT: u32 = 0
+
+// Reading from a spinlock address will: - Return 0 if lock is already locked - Otherwise return
+// nonzero, and simultaneously claim the lock Writing (any value) releases the lock. If core 0 and
+// core 1 attempt to claim the same lock simultaneously, core 0 wins. The value returned on success
+// is 0x1 << lock number.
+const SPINLOCK31_OFFSET: u32 = 0x0000017c
+const SPINLOCK31_SPINLOCK31_MASK: u32 = 0xffffffff
+const SPINLOCK31_SPINLOCK31_SHIFT: u32 = 0
+
+// Trigger a doorbell interrupt on the opposite core. Write 1 to a bit to set the corresponding bit
+// in DOORBELL_IN on the opposite core. This raises the opposite core's doorbell interrupt. Read to
+// get the status of the doorbells currently asserted on the opposite core. This is equivalent to
+// that core reading its own DOORBELL_IN status.
+const DOORBELL_OUT_SET_OFFSET: u32 = 0x00000180
+const DOORBELL_OUT_SET_DOORBELL_OUT_SET_MASK: u32 = 0x000000ff
+const DOORBELL_OUT_SET_DOORBELL_OUT_SET_SHIFT: u32 = 0
+
+// Clear doorbells which have been posted to the opposite core. This register is intended for
+// debugging and initialisation purposes. Writing 1 to a bit in DOORBELL_OUT_CLR clears the
+// corresponding bit in DOORBELL_IN on the opposite core. Clearing all bits will cause that core's
+// doorbell interrupt to deassert. Since the usual order of events is for software to send events
+// using DOORBELL_OUT_SET, and acknowledge incoming events by writing to DOORBELL_IN_CLR, this
+// register should be used with caution to avoid race conditions. Reading returns the status of the
+// doorbells currently asserted on the other core, i.e. is equivalent to that core reading its own
+// DOORBELL_IN status.
+const DOORBELL_OUT_CLR_OFFSET: u32 = 0x00000184
+const DOORBELL_OUT_CLR_DOORBELL_OUT_CLR_MASK: u32 = 0x000000ff
+const DOORBELL_OUT_CLR_DOORBELL_OUT_CLR_SHIFT: u32 = 0
+
+// Write 1s to trigger doorbell interrupts on this core. Read to get status of doorbells currently
+// asserted on this core.
+const DOORBELL_IN_SET_OFFSET: u32 = 0x00000188
+const DOORBELL_IN_SET_DOORBELL_IN_SET_MASK: u32 = 0x000000ff
+const DOORBELL_IN_SET_DOORBELL_IN_SET_SHIFT: u32 = 0
+
+// Check and acknowledge doorbells posted to this core. This core's doorbell interrupt is asserted
+// when any bit in this register is 1. Write 1 to each bit to clear that bit. The doorbell
+// interrupt deasserts once all bits are cleared. Read to get status of doorbells currently
+// asserted on this core.
+const DOORBELL_IN_CLR_OFFSET: u32 = 0x0000018c
+const DOORBELL_IN_CLR_DOORBELL_IN_CLR_MASK: u32 = 0x000000ff
+const DOORBELL_IN_CLR_DOORBELL_IN_CLR_SHIFT: u32 = 0
+
+// Detach certain core-local peripherals from Secure SIO, and attach them to Non-secure SIO, so
+// that Non-secure software can use them. Attempting to access one of these peripherals from the
+// Secure SIO when it is attached to the Non-secure SIO, or vice versa, will generate a bus error.
+// This register is per-core, and is only present on the Secure SIO. Most SIO hardware is
+// duplicated across the Secure and Non-secure SIO, so is not listed in this register.
+const PERI_NONSEC_OFFSET: u32 = 0x00000190
+const PERI_NONSEC_TMDS_MASK: u32 = 0x00000020
+const PERI_NONSEC_TMDS_SHIFT: u32 = 5
+const PERI_NONSEC_INTERP1_MASK: u32 = 0x00000002
+const PERI_NONSEC_INTERP1_SHIFT: u32 = 1
+const PERI_NONSEC_INTERP0_MASK: u32 = 0x00000001
+const PERI_NONSEC_INTERP0_SHIFT: u32 = 0
+
+// Control the assertion of the standard software interrupt (MIP.MSIP) on the RISC-V cores. Unlike
+// the RISC-V timer, this interrupt is not routed to a normal system-level interrupt line, so can
+// not be used by the Arm cores. It is safe for both cores to write to this register on the same
+// cycle. The set/clear effect is accumulated across both cores, and then applied. If a flag is
+// both set and cleared on the same cycle, only the set takes effect.
+const RISCV_SOFTIRQ_OFFSET: u32 = 0x000001a0
+const RISCV_SOFTIRQ_CORE1_CLR_MASK: u32 = 0x00000200
+const RISCV_SOFTIRQ_CORE1_CLR_SHIFT: u32 = 9
+const RISCV_SOFTIRQ_CORE0_CLR_MASK: u32 = 0x00000100
+const RISCV_SOFTIRQ_CORE0_CLR_SHIFT: u32 = 8
+const RISCV_SOFTIRQ_CORE1_SET_MASK: u32 = 0x00000002
+const RISCV_SOFTIRQ_CORE1_SET_SHIFT: u32 = 1
+const RISCV_SOFTIRQ_CORE0_SET_MASK: u32 = 0x00000001
+const RISCV_SOFTIRQ_CORE0_SET_SHIFT: u32 = 0
+
+// Control register for the RISC-V 64-bit Machine-mode timer. This timer is only present in the
+// Secure SIO, so is only accessible to an Arm core in Secure mode or a RISC-V core in Machine
+// mode. Note whilst this timer follows the RISC-V privileged specification, it is equally usable
+// by the Arm cores. The interrupts are routed to normal system-level interrupt lines as well as to
+// the MIP.MTIP inputs on the RISC-V cores.
+const MTIME_CTRL_OFFSET: u32 = 0x000001a4
+const MTIME_CTRL_DBGPAUSE_CORE1_MASK: u32 = 0x00000008
+const MTIME_CTRL_DBGPAUSE_CORE1_SHIFT: u32 = 3
+const MTIME_CTRL_DBGPAUSE_CORE0_MASK: u32 = 0x00000004
+const MTIME_CTRL_DBGPAUSE_CORE0_SHIFT: u32 = 2
+const MTIME_CTRL_FULLSPEED_MASK: u32 = 0x00000002
+const MTIME_CTRL_FULLSPEED_SHIFT: u32 = 1
+const MTIME_CTRL_EN_MASK: u32 = 0x00000001
+const MTIME_CTRL_EN_SHIFT: u32 = 0
+
+// Read/write access to the low half of RISC-V Machine-mode timer. This register is shared between
+// both cores. If both cores write on the same cycle, core 1 takes precedence.
+const MTIME_OFFSET: u32 = 0x000001b0
+const MTIME_MTIME_MASK: u32 = 0xffffffff
+const MTIME_MTIME_SHIFT: u32 = 0
+
+// Read/write access to the high half of RISC-V Machine-mode timer. This register is shared between
+// both cores. If both cores write on the same cycle, core 1 takes precedence.
+const MTIMEH_OFFSET: u32 = 0x000001b4
+const MTIMEH_MTIMEH_MASK: u32 = 0xffffffff
+const MTIMEH_MTIMEH_SHIFT: u32 = 0
+
+// Low half of RISC-V Machine-mode timer comparator. This register is core-local, i.e., each core
+// gets a copy of this register, with the comparison result routed to its own interrupt line. The
+// timer interrupt is asserted whenever MTIME is greater than or equal to MTIMECMP. This comparison
+// is unsigned, and performed on the full 64-bit values.
+const MTIMECMP_OFFSET: u32 = 0x000001b8
+const MTIMECMP_MTIMECMP_MASK: u32 = 0xffffffff
+const MTIMECMP_MTIMECMP_SHIFT: u32 = 0
+
+// High half of RISC-V Machine-mode timer comparator. This register is core-local. The timer
+// interrupt is asserted whenever MTIME is greater than or equal to MTIMECMP. This comparison is
+// unsigned, and performed on the full 64-bit values.
+const MTIMECMPH_OFFSET: u32 = 0x000001bc
+const MTIMECMPH_MTIMECMPH_MASK: u32 = 0xffffffff
+const MTIMECMPH_MTIMECMPH_SHIFT: u32 = 0
+
+// Control register for TMDS encoder.
+const TMDS_CTRL_OFFSET: u32 = 0x000001c0
+const TMDS_CTRL_CLEAR_BALANCE_MASK: u32 = 0x10000000
+const TMDS_CTRL_CLEAR_BALANCE_SHIFT: u32 = 28
+const TMDS_CTRL_PIX2_NOSHIFT_MASK: u32 = 0x08000000
+const TMDS_CTRL_PIX2_NOSHIFT_SHIFT: u32 = 27
+const TMDS_CTRL_PIX_SHIFT_MASK: u32 = 0x07000000
+const TMDS_CTRL_PIX_SHIFT_SHIFT: u32 = 24
+const TMDS_CTRL_PIX_SHIFT_0: u32 = 0
+const TMDS_CTRL_PIX_SHIFT_1: u32 = 1
+const TMDS_CTRL_PIX_SHIFT_2: u32 = 2
+const TMDS_CTRL_PIX_SHIFT_4: u32 = 3
+const TMDS_CTRL_PIX_SHIFT_8: u32 = 4
+const TMDS_CTRL_PIX_SHIFT_16: u32 = 5
+const TMDS_CTRL_INTERLEAVE_MASK: u32 = 0x00800000
+const TMDS_CTRL_INTERLEAVE_SHIFT: u32 = 23
+const TMDS_CTRL_L2_NBITS_MASK: u32 = 0x001c0000
+const TMDS_CTRL_L2_NBITS_SHIFT: u32 = 18
+const TMDS_CTRL_L1_NBITS_MASK: u32 = 0x00038000
+const TMDS_CTRL_L1_NBITS_SHIFT: u32 = 15
+const TMDS_CTRL_L0_NBITS_MASK: u32 = 0x00007000
+const TMDS_CTRL_L0_NBITS_SHIFT: u32 = 12
+const TMDS_CTRL_L2_ROT_MASK: u32 = 0x00000f00
+const TMDS_CTRL_L2_ROT_SHIFT: u32 = 8
+const TMDS_CTRL_L1_ROT_MASK: u32 = 0x000000f0
+const TMDS_CTRL_L1_ROT_SHIFT: u32 = 4
+const TMDS_CTRL_L0_ROT_MASK: u32 = 0x0000000f
+const TMDS_CTRL_L0_ROT_SHIFT: u32 = 0
+
+// Write-only access to the TMDS colour data register.
+const TMDS_WDATA_OFFSET: u32 = 0x000001c4
+const TMDS_WDATA_TMDS_WDATA_MASK: u32 = 0xffffffff
+const TMDS_WDATA_TMDS_WDATA_SHIFT: u32 = 0
+
+// Get the encoding of one pixel's worth of colour data, packed into a 32-bit value (3x10-bit
+// symbols). The PEEK alias does not shift the colour register when read, but still advances the
+// running DC balance state of each encoder. This is useful for pixel doubling.
+const TMDS_PEEK_SINGLE_OFFSET: u32 = 0x000001c8
+const TMDS_PEEK_SINGLE_TMDS_PEEK_SINGLE_MASK: u32 = 0xffffffff
+const TMDS_PEEK_SINGLE_TMDS_PEEK_SINGLE_SHIFT: u32 = 0
+
+// Get the encoding of one pixel's worth of colour data, packed into a 32-bit value. The packing is
+// 5 chunks of 3 lanes times 2 bits (30 bits total). Each chunk contains two bits of a TMDS symbol
+// per lane. This format is intended for shifting out with the HSTX peripheral on RP2350. The POP
+// alias shifts the colour register when read, as well as advancing the running DC balance state of
+// each encoder.
+const TMDS_POP_SINGLE_OFFSET: u32 = 0x000001cc
+const TMDS_POP_SINGLE_TMDS_POP_SINGLE_MASK: u32 = 0xffffffff
+const TMDS_POP_SINGLE_TMDS_POP_SINGLE_SHIFT: u32 = 0
+
+// Get lane 0 of the encoding of two pixels' worth of colour data. Two 10-bit TMDS symbols are
+// packed at the bottom of a 32-bit word. The PEEK alias does not shift the colour register when
+// read, but still advances the lane 0 DC balance state. This is useful if all 3 lanes' worth of
+// encode are to be read at once, rather than processing the entire scanline for one lane before
+// moving to the next lane.
+const TMDS_PEEK_DOUBLE_L0_OFFSET: u32 = 0x000001d0
+const TMDS_PEEK_DOUBLE_L0_TMDS_PEEK_DOUBLE_L0_MASK: u32 = 0xffffffff
+const TMDS_PEEK_DOUBLE_L0_TMDS_PEEK_DOUBLE_L0_SHIFT: u32 = 0
+
+// Get lane 0 of the encoding of two pixels' worth of colour data. Two 10-bit TMDS symbols are
+// packed at the bottom of a 32-bit word. The POP alias shifts the colour register when read,
+// according to the values of PIX_SHIFT and PIX2_NOSHIFT.
+const TMDS_POP_DOUBLE_L0_OFFSET: u32 = 0x000001d4
+const TMDS_POP_DOUBLE_L0_TMDS_POP_DOUBLE_L0_MASK: u32 = 0xffffffff
+const TMDS_POP_DOUBLE_L0_TMDS_POP_DOUBLE_L0_SHIFT: u32 = 0
+
+// Get lane 1 of the encoding of two pixels' worth of colour data. Two 10-bit TMDS symbols are
+// packed at the bottom of a 32-bit word. The PEEK alias does not shift the colour register when
+// read, but still advances the lane 1 DC balance state. This is useful if all 3 lanes' worth of
+// encode are to be read at once, rather than processing the entire scanline for one lane before
+// moving to the next lane.
+const TMDS_PEEK_DOUBLE_L1_OFFSET: u32 = 0x000001d8
+const TMDS_PEEK_DOUBLE_L1_TMDS_PEEK_DOUBLE_L1_MASK: u32 = 0xffffffff
+const TMDS_PEEK_DOUBLE_L1_TMDS_PEEK_DOUBLE_L1_SHIFT: u32 = 0
+
+// Get lane 1 of the encoding of two pixels' worth of colour data. Two 10-bit TMDS symbols are
+// packed at the bottom of a 32-bit word. The POP alias shifts the colour register when read,
+// according to the values of PIX_SHIFT and PIX2_NOSHIFT.
+const TMDS_POP_DOUBLE_L1_OFFSET: u32 = 0x000001dc
+const TMDS_POP_DOUBLE_L1_TMDS_POP_DOUBLE_L1_MASK: u32 = 0xffffffff
+const TMDS_POP_DOUBLE_L1_TMDS_POP_DOUBLE_L1_SHIFT: u32 = 0
+
+// Get lane 2 of the encoding of two pixels' worth of colour data. Two 10-bit TMDS symbols are
+// packed at the bottom of a 32-bit word. The PEEK alias does not shift the colour register when
+// read, but still advances the lane 2 DC balance state. This is useful if all 3 lanes' worth of
+// encode are to be read at once, rather than processing the entire scanline for one lane before
+// moving to the next lane.
+const TMDS_PEEK_DOUBLE_L2_OFFSET: u32 = 0x000001e0
+const TMDS_PEEK_DOUBLE_L2_TMDS_PEEK_DOUBLE_L2_MASK: u32 = 0xffffffff
+const TMDS_PEEK_DOUBLE_L2_TMDS_PEEK_DOUBLE_L2_SHIFT: u32 = 0
+
+// Get lane 2 of the encoding of two pixels' worth of colour data. Two 10-bit TMDS symbols are
+// packed at the bottom of a 32-bit word. The POP alias shifts the colour register when read,
+// according to the values of PIX_SHIFT and PIX2_NOSHIFT.
+const TMDS_POP_DOUBLE_L2_OFFSET: u32 = 0x000001e4
+const TMDS_POP_DOUBLE_L2_TMDS_POP_DOUBLE_L2_MASK: u32 = 0xffffffff
+const TMDS_POP_DOUBLE_L2_TMDS_POP_DOUBLE_L2_SHIFT: u32 = 0

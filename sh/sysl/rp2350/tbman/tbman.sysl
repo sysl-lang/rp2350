@@ -1,0 +1,15 @@
+// Testbench manager. Allows the programmer to know what platform their software is running on.
+
+module sh.sysl.rp2350.tbman
+
+// The peripheral's base address. Every offset below is from here.
+const BASE: u32 = 0x40160000
+
+// Indicates the type of platform in use
+const PLATFORM_OFFSET: u32 = 0x00000000
+const PLATFORM_HDLSIM_MASK: u32 = 0x00000004
+const PLATFORM_HDLSIM_SHIFT: u32 = 2
+const PLATFORM_FPGA_MASK: u32 = 0x00000002
+const PLATFORM_FPGA_SHIFT: u32 = 1
+const PLATFORM_ASIC_MASK: u32 = 0x00000001
+const PLATFORM_ASIC_SHIFT: u32 = 0

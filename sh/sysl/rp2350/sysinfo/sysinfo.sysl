@@ -1,0 +1,39 @@
+module sh.sysl.rp2350.sysinfo
+
+// The peripheral's base address. Every offset below is from here.
+const BASE: u32 = 0x40000000
+
+// JEDEC JEP-106 compliant chip identifier.
+const CHIP_ID_OFFSET: u32 = 0x00000000
+const CHIP_ID_REVISION_MASK: u32 = 0xf0000000
+const CHIP_ID_REVISION_SHIFT: u32 = 28
+const CHIP_ID_PART_MASK: u32 = 0x0ffff000
+const CHIP_ID_PART_SHIFT: u32 = 12
+const CHIP_ID_MANUFACTURER_MASK: u32 = 0x00000ffe
+const CHIP_ID_MANUFACTURER_SHIFT: u32 = 1
+const CHIP_ID_STOP_BIT_MASK: u32 = 0x00000001
+const CHIP_ID_STOP_BIT_SHIFT: u32 = 0
+
+// Package selection indicator, 0 = QFN80, 1 = QFN60
+const PACKAGE_SEL_OFFSET: u32 = 0x00000004
+const PACKAGE_SEL_PACKAGE_SEL_MASK: u32 = 0x00000001
+const PACKAGE_SEL_PACKAGE_SEL_SHIFT: u32 = 0
+
+// Platform register. Allows software to know what environment it is running in during
+// pre-production development. Post-production, the PLATFORM is always ASIC, non-SIM.
+const PLATFORM_OFFSET: u32 = 0x00000008
+const PLATFORM_GATESIM_MASK: u32 = 0x00000010
+const PLATFORM_GATESIM_SHIFT: u32 = 4
+const PLATFORM_BATCHSIM_MASK: u32 = 0x00000008
+const PLATFORM_BATCHSIM_SHIFT: u32 = 3
+const PLATFORM_HDLSIM_MASK: u32 = 0x00000004
+const PLATFORM_HDLSIM_SHIFT: u32 = 2
+const PLATFORM_ASIC_MASK: u32 = 0x00000002
+const PLATFORM_ASIC_SHIFT: u32 = 1
+const PLATFORM_FPGA_MASK: u32 = 0x00000001
+const PLATFORM_FPGA_SHIFT: u32 = 0
+
+// Git hash of the chip source. Used to identify chip version.
+const GITREF_RP2350_OFFSET: u32 = 0x00000014
+const GITREF_RP2350_GITREF_RP2350_MASK: u32 = 0xffffffff
+const GITREF_RP2350_GITREF_RP2350_SHIFT: u32 = 0

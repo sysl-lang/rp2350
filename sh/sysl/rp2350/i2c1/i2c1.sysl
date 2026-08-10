@@ -1,0 +1,643 @@
+module sh.sysl.rp2350.i2c1
+
+// The peripheral's base address. Every offset below is from here.
+const BASE: u32 = 0x40098000
+
+// I2C Control Register. This register can be written only when the DW_apb_i2c is disabled, which
+// corresponds to the IC_ENABLE[0] register being set to 0. Writes at other times have no effect.
+// Read/Write Access: - bit 10 is read only. - bit 11 is read only - bit 16 is read only - bit 17
+// is read only - bits 18 and 19 are read only.
+const IC_CON_OFFSET: u32 = 0x00000000
+const IC_CON_STOP_DET_IF_MASTER_ACTIVE_MASK: u32 = 0x00000400
+const IC_CON_STOP_DET_IF_MASTER_ACTIVE_SHIFT: u32 = 10
+const IC_CON_RX_FIFO_FULL_HLD_CTRL_MASK: u32 = 0x00000200
+const IC_CON_RX_FIFO_FULL_HLD_CTRL_SHIFT: u32 = 9
+const IC_CON_RX_FIFO_FULL_HLD_CTRL_DISABLED: u32 = 0
+const IC_CON_RX_FIFO_FULL_HLD_CTRL_ENABLED: u32 = 1
+const IC_CON_TX_EMPTY_CTRL_MASK: u32 = 0x00000100
+const IC_CON_TX_EMPTY_CTRL_SHIFT: u32 = 8
+const IC_CON_TX_EMPTY_CTRL_DISABLED: u32 = 0
+const IC_CON_TX_EMPTY_CTRL_ENABLED: u32 = 1
+const IC_CON_STOP_DET_IFADDRESSED_MASK: u32 = 0x00000080
+const IC_CON_STOP_DET_IFADDRESSED_SHIFT: u32 = 7
+const IC_CON_STOP_DET_IFADDRESSED_DISABLED: u32 = 0
+const IC_CON_STOP_DET_IFADDRESSED_ENABLED: u32 = 1
+const IC_CON_IC_SLAVE_DISABLE_MASK: u32 = 0x00000040
+const IC_CON_IC_SLAVE_DISABLE_SHIFT: u32 = 6
+const IC_CON_IC_SLAVE_DISABLE_SLAVE_ENABLED: u32 = 0
+const IC_CON_IC_SLAVE_DISABLE_SLAVE_DISABLED: u32 = 1
+const IC_CON_IC_RESTART_EN_MASK: u32 = 0x00000020
+const IC_CON_IC_RESTART_EN_SHIFT: u32 = 5
+const IC_CON_IC_RESTART_EN_DISABLED: u32 = 0
+const IC_CON_IC_RESTART_EN_ENABLED: u32 = 1
+const IC_CON_IC_10BITADDR_MASTER_MASK: u32 = 0x00000010
+const IC_CON_IC_10BITADDR_MASTER_SHIFT: u32 = 4
+const IC_CON_IC_10BITADDR_MASTER_ADDR_7BITS: u32 = 0
+const IC_CON_IC_10BITADDR_MASTER_ADDR_10BITS: u32 = 1
+const IC_CON_IC_10BITADDR_SLAVE_MASK: u32 = 0x00000008
+const IC_CON_IC_10BITADDR_SLAVE_SHIFT: u32 = 3
+const IC_CON_IC_10BITADDR_SLAVE_ADDR_7BITS: u32 = 0
+const IC_CON_IC_10BITADDR_SLAVE_ADDR_10BITS: u32 = 1
+const IC_CON_SPEED_MASK: u32 = 0x00000006
+const IC_CON_SPEED_SHIFT: u32 = 1
+const IC_CON_SPEED_STANDARD: u32 = 1
+const IC_CON_SPEED_FAST: u32 = 2
+const IC_CON_SPEED_HIGH: u32 = 3
+const IC_CON_MASTER_MODE_MASK: u32 = 0x00000001
+const IC_CON_MASTER_MODE_SHIFT: u32 = 0
+const IC_CON_MASTER_MODE_DISABLED: u32 = 0
+const IC_CON_MASTER_MODE_ENABLED: u32 = 1
+
+// I2C Target Address Register This register is 12 bits wide, and bits 31:12 are reserved. This
+// register can be written to only when IC_ENABLE[0] is set to 0. Note: If the software or
+// application is aware that the DW_apb_i2c is not using the TAR address for the pending commands
+// in the Tx FIFO, then it is possible to update the TAR address even while the Tx FIFO has entries
+// (IC_STATUS[2]= 0). - It is not necessary to perform any write to this register if DW_apb_i2c is
+// enabled as an I2C slave only.
+const IC_TAR_OFFSET: u32 = 0x00000004
+const IC_TAR_SPECIAL_MASK: u32 = 0x00000800
+const IC_TAR_SPECIAL_SHIFT: u32 = 11
+const IC_TAR_SPECIAL_DISABLED: u32 = 0
+const IC_TAR_SPECIAL_ENABLED: u32 = 1
+const IC_TAR_GC_OR_START_MASK: u32 = 0x00000400
+const IC_TAR_GC_OR_START_SHIFT: u32 = 10
+const IC_TAR_GC_OR_START_GENERAL_CALL: u32 = 0
+const IC_TAR_GC_OR_START_START_BYTE: u32 = 1
+const IC_TAR_IC_TAR_MASK: u32 = 0x000003ff
+const IC_TAR_IC_TAR_SHIFT: u32 = 0
+
+// I2C Slave Address Register
+const IC_SAR_OFFSET: u32 = 0x00000008
+const IC_SAR_IC_SAR_MASK: u32 = 0x000003ff
+const IC_SAR_IC_SAR_SHIFT: u32 = 0
+
+// I2C Rx/Tx Data Buffer and Command Register; this is the register the CPU writes to when filling
+// the TX FIFO and the CPU reads from when retrieving bytes from RX FIFO. The size of the register
+// changes as follows: Write: - 11 bits when IC_EMPTYFIFO_HOLD_MASTER_EN=1 - 9 bits when
+// IC_EMPTYFIFO_HOLD_MASTER_EN=0 Read: - 12 bits when IC_FIRST_DATA_BYTE_STATUS = 1 - 8 bits when
+// IC_FIRST_DATA_BYTE_STATUS = 0 Note: In order for the DW_apb_i2c to continue acknowledging reads,
+// a read command should be written for every byte that is to be received; otherwise the DW_apb_i2c
+// will stop acknowledging.
+const IC_DATA_CMD_OFFSET: u32 = 0x00000010
+const IC_DATA_CMD_FIRST_DATA_BYTE_MASK: u32 = 0x00000800
+const IC_DATA_CMD_FIRST_DATA_BYTE_SHIFT: u32 = 11
+const IC_DATA_CMD_FIRST_DATA_BYTE_INACTIVE: u32 = 0
+const IC_DATA_CMD_FIRST_DATA_BYTE_ACTIVE: u32 = 1
+const IC_DATA_CMD_RESTART_MASK: u32 = 0x00000400
+const IC_DATA_CMD_RESTART_SHIFT: u32 = 10
+const IC_DATA_CMD_RESTART_DISABLE: u32 = 0
+const IC_DATA_CMD_RESTART_ENABLE: u32 = 1
+const IC_DATA_CMD_STOP_MASK: u32 = 0x00000200
+const IC_DATA_CMD_STOP_SHIFT: u32 = 9
+const IC_DATA_CMD_STOP_DISABLE: u32 = 0
+const IC_DATA_CMD_STOP_ENABLE: u32 = 1
+const IC_DATA_CMD_CMD_MASK: u32 = 0x00000100
+const IC_DATA_CMD_CMD_SHIFT: u32 = 8
+const IC_DATA_CMD_CMD_WRITE: u32 = 0
+const IC_DATA_CMD_CMD_READ: u32 = 1
+const IC_DATA_CMD_DAT_MASK: u32 = 0x000000ff
+const IC_DATA_CMD_DAT_SHIFT: u32 = 0
+
+// Standard Speed I2C Clock SCL High Count Register
+const IC_SS_SCL_HCNT_OFFSET: u32 = 0x00000014
+const IC_SS_SCL_HCNT_IC_SS_SCL_HCNT_MASK: u32 = 0x0000ffff
+const IC_SS_SCL_HCNT_IC_SS_SCL_HCNT_SHIFT: u32 = 0
+
+// Standard Speed I2C Clock SCL Low Count Register
+const IC_SS_SCL_LCNT_OFFSET: u32 = 0x00000018
+const IC_SS_SCL_LCNT_IC_SS_SCL_LCNT_MASK: u32 = 0x0000ffff
+const IC_SS_SCL_LCNT_IC_SS_SCL_LCNT_SHIFT: u32 = 0
+
+// Fast Mode or Fast Mode Plus I2C Clock SCL High Count Register
+const IC_FS_SCL_HCNT_OFFSET: u32 = 0x0000001c
+const IC_FS_SCL_HCNT_IC_FS_SCL_HCNT_MASK: u32 = 0x0000ffff
+const IC_FS_SCL_HCNT_IC_FS_SCL_HCNT_SHIFT: u32 = 0
+
+// Fast Mode or Fast Mode Plus I2C Clock SCL Low Count Register
+const IC_FS_SCL_LCNT_OFFSET: u32 = 0x00000020
+const IC_FS_SCL_LCNT_IC_FS_SCL_LCNT_MASK: u32 = 0x0000ffff
+const IC_FS_SCL_LCNT_IC_FS_SCL_LCNT_SHIFT: u32 = 0
+
+// I2C Interrupt Status Register Each bit in this register has a corresponding mask bit in the
+// IC_INTR_MASK register. These bits are cleared by reading the matching interrupt clear register.
+// The unmasked raw versions of these bits are available in the IC_RAW_INTR_STAT register.
+const IC_INTR_STAT_OFFSET: u32 = 0x0000002c
+const IC_INTR_STAT_R_RESTART_DET_MASK: u32 = 0x00001000
+const IC_INTR_STAT_R_RESTART_DET_SHIFT: u32 = 12
+const IC_INTR_STAT_R_RESTART_DET_INACTIVE: u32 = 0
+const IC_INTR_STAT_R_RESTART_DET_ACTIVE: u32 = 1
+const IC_INTR_STAT_R_GEN_CALL_MASK: u32 = 0x00000800
+const IC_INTR_STAT_R_GEN_CALL_SHIFT: u32 = 11
+const IC_INTR_STAT_R_GEN_CALL_INACTIVE: u32 = 0
+const IC_INTR_STAT_R_GEN_CALL_ACTIVE: u32 = 1
+const IC_INTR_STAT_R_START_DET_MASK: u32 = 0x00000400
+const IC_INTR_STAT_R_START_DET_SHIFT: u32 = 10
+const IC_INTR_STAT_R_START_DET_INACTIVE: u32 = 0
+const IC_INTR_STAT_R_START_DET_ACTIVE: u32 = 1
+const IC_INTR_STAT_R_STOP_DET_MASK: u32 = 0x00000200
+const IC_INTR_STAT_R_STOP_DET_SHIFT: u32 = 9
+const IC_INTR_STAT_R_STOP_DET_INACTIVE: u32 = 0
+const IC_INTR_STAT_R_STOP_DET_ACTIVE: u32 = 1
+const IC_INTR_STAT_R_ACTIVITY_MASK: u32 = 0x00000100
+const IC_INTR_STAT_R_ACTIVITY_SHIFT: u32 = 8
+const IC_INTR_STAT_R_ACTIVITY_INACTIVE: u32 = 0
+const IC_INTR_STAT_R_ACTIVITY_ACTIVE: u32 = 1
+const IC_INTR_STAT_R_RX_DONE_MASK: u32 = 0x00000080
+const IC_INTR_STAT_R_RX_DONE_SHIFT: u32 = 7
+const IC_INTR_STAT_R_RX_DONE_INACTIVE: u32 = 0
+const IC_INTR_STAT_R_RX_DONE_ACTIVE: u32 = 1
+const IC_INTR_STAT_R_TX_ABRT_MASK: u32 = 0x00000040
+const IC_INTR_STAT_R_TX_ABRT_SHIFT: u32 = 6
+const IC_INTR_STAT_R_TX_ABRT_INACTIVE: u32 = 0
+const IC_INTR_STAT_R_TX_ABRT_ACTIVE: u32 = 1
+const IC_INTR_STAT_R_RD_REQ_MASK: u32 = 0x00000020
+const IC_INTR_STAT_R_RD_REQ_SHIFT: u32 = 5
+const IC_INTR_STAT_R_RD_REQ_INACTIVE: u32 = 0
+const IC_INTR_STAT_R_RD_REQ_ACTIVE: u32 = 1
+const IC_INTR_STAT_R_TX_EMPTY_MASK: u32 = 0x00000010
+const IC_INTR_STAT_R_TX_EMPTY_SHIFT: u32 = 4
+const IC_INTR_STAT_R_TX_EMPTY_INACTIVE: u32 = 0
+const IC_INTR_STAT_R_TX_EMPTY_ACTIVE: u32 = 1
+const IC_INTR_STAT_R_TX_OVER_MASK: u32 = 0x00000008
+const IC_INTR_STAT_R_TX_OVER_SHIFT: u32 = 3
+const IC_INTR_STAT_R_TX_OVER_INACTIVE: u32 = 0
+const IC_INTR_STAT_R_TX_OVER_ACTIVE: u32 = 1
+const IC_INTR_STAT_R_RX_FULL_MASK: u32 = 0x00000004
+const IC_INTR_STAT_R_RX_FULL_SHIFT: u32 = 2
+const IC_INTR_STAT_R_RX_FULL_INACTIVE: u32 = 0
+const IC_INTR_STAT_R_RX_FULL_ACTIVE: u32 = 1
+const IC_INTR_STAT_R_RX_OVER_MASK: u32 = 0x00000002
+const IC_INTR_STAT_R_RX_OVER_SHIFT: u32 = 1
+const IC_INTR_STAT_R_RX_OVER_INACTIVE: u32 = 0
+const IC_INTR_STAT_R_RX_OVER_ACTIVE: u32 = 1
+const IC_INTR_STAT_R_RX_UNDER_MASK: u32 = 0x00000001
+const IC_INTR_STAT_R_RX_UNDER_SHIFT: u32 = 0
+const IC_INTR_STAT_R_RX_UNDER_INACTIVE: u32 = 0
+const IC_INTR_STAT_R_RX_UNDER_ACTIVE: u32 = 1
+
+// I2C Interrupt Mask Register. These bits mask their corresponding interrupt status bits. This
+// register is active low; a value of 0 masks the interrupt, whereas a value of 1 unmasks the
+// interrupt.
+const IC_INTR_MASK_OFFSET: u32 = 0x00000030
+const IC_INTR_MASK_M_RESTART_DET_MASK: u32 = 0x00001000
+const IC_INTR_MASK_M_RESTART_DET_SHIFT: u32 = 12
+const IC_INTR_MASK_M_RESTART_DET_ENABLED: u32 = 0
+const IC_INTR_MASK_M_RESTART_DET_DISABLED: u32 = 1
+const IC_INTR_MASK_M_GEN_CALL_MASK: u32 = 0x00000800
+const IC_INTR_MASK_M_GEN_CALL_SHIFT: u32 = 11
+const IC_INTR_MASK_M_GEN_CALL_ENABLED: u32 = 0
+const IC_INTR_MASK_M_GEN_CALL_DISABLED: u32 = 1
+const IC_INTR_MASK_M_START_DET_MASK: u32 = 0x00000400
+const IC_INTR_MASK_M_START_DET_SHIFT: u32 = 10
+const IC_INTR_MASK_M_START_DET_ENABLED: u32 = 0
+const IC_INTR_MASK_M_START_DET_DISABLED: u32 = 1
+const IC_INTR_MASK_M_STOP_DET_MASK: u32 = 0x00000200
+const IC_INTR_MASK_M_STOP_DET_SHIFT: u32 = 9
+const IC_INTR_MASK_M_STOP_DET_ENABLED: u32 = 0
+const IC_INTR_MASK_M_STOP_DET_DISABLED: u32 = 1
+const IC_INTR_MASK_M_ACTIVITY_MASK: u32 = 0x00000100
+const IC_INTR_MASK_M_ACTIVITY_SHIFT: u32 = 8
+const IC_INTR_MASK_M_ACTIVITY_ENABLED: u32 = 0
+const IC_INTR_MASK_M_ACTIVITY_DISABLED: u32 = 1
+const IC_INTR_MASK_M_RX_DONE_MASK: u32 = 0x00000080
+const IC_INTR_MASK_M_RX_DONE_SHIFT: u32 = 7
+const IC_INTR_MASK_M_RX_DONE_ENABLED: u32 = 0
+const IC_INTR_MASK_M_RX_DONE_DISABLED: u32 = 1
+const IC_INTR_MASK_M_TX_ABRT_MASK: u32 = 0x00000040
+const IC_INTR_MASK_M_TX_ABRT_SHIFT: u32 = 6
+const IC_INTR_MASK_M_TX_ABRT_ENABLED: u32 = 0
+const IC_INTR_MASK_M_TX_ABRT_DISABLED: u32 = 1
+const IC_INTR_MASK_M_RD_REQ_MASK: u32 = 0x00000020
+const IC_INTR_MASK_M_RD_REQ_SHIFT: u32 = 5
+const IC_INTR_MASK_M_RD_REQ_ENABLED: u32 = 0
+const IC_INTR_MASK_M_RD_REQ_DISABLED: u32 = 1
+const IC_INTR_MASK_M_TX_EMPTY_MASK: u32 = 0x00000010
+const IC_INTR_MASK_M_TX_EMPTY_SHIFT: u32 = 4
+const IC_INTR_MASK_M_TX_EMPTY_ENABLED: u32 = 0
+const IC_INTR_MASK_M_TX_EMPTY_DISABLED: u32 = 1
+const IC_INTR_MASK_M_TX_OVER_MASK: u32 = 0x00000008
+const IC_INTR_MASK_M_TX_OVER_SHIFT: u32 = 3
+const IC_INTR_MASK_M_TX_OVER_ENABLED: u32 = 0
+const IC_INTR_MASK_M_TX_OVER_DISABLED: u32 = 1
+const IC_INTR_MASK_M_RX_FULL_MASK: u32 = 0x00000004
+const IC_INTR_MASK_M_RX_FULL_SHIFT: u32 = 2
+const IC_INTR_MASK_M_RX_FULL_ENABLED: u32 = 0
+const IC_INTR_MASK_M_RX_FULL_DISABLED: u32 = 1
+const IC_INTR_MASK_M_RX_OVER_MASK: u32 = 0x00000002
+const IC_INTR_MASK_M_RX_OVER_SHIFT: u32 = 1
+const IC_INTR_MASK_M_RX_OVER_ENABLED: u32 = 0
+const IC_INTR_MASK_M_RX_OVER_DISABLED: u32 = 1
+const IC_INTR_MASK_M_RX_UNDER_MASK: u32 = 0x00000001
+const IC_INTR_MASK_M_RX_UNDER_SHIFT: u32 = 0
+const IC_INTR_MASK_M_RX_UNDER_ENABLED: u32 = 0
+const IC_INTR_MASK_M_RX_UNDER_DISABLED: u32 = 1
+
+// I2C Raw Interrupt Status Register Unlike the IC_INTR_STAT register, these bits are not masked so
+// they always show the true status of the DW_apb_i2c.
+const IC_RAW_INTR_STAT_OFFSET: u32 = 0x00000034
+const IC_RAW_INTR_STAT_RESTART_DET_MASK: u32 = 0x00001000
+const IC_RAW_INTR_STAT_RESTART_DET_SHIFT: u32 = 12
+const IC_RAW_INTR_STAT_RESTART_DET_INACTIVE: u32 = 0
+const IC_RAW_INTR_STAT_RESTART_DET_ACTIVE: u32 = 1
+const IC_RAW_INTR_STAT_GEN_CALL_MASK: u32 = 0x00000800
+const IC_RAW_INTR_STAT_GEN_CALL_SHIFT: u32 = 11
+const IC_RAW_INTR_STAT_GEN_CALL_INACTIVE: u32 = 0
+const IC_RAW_INTR_STAT_GEN_CALL_ACTIVE: u32 = 1
+const IC_RAW_INTR_STAT_START_DET_MASK: u32 = 0x00000400
+const IC_RAW_INTR_STAT_START_DET_SHIFT: u32 = 10
+const IC_RAW_INTR_STAT_START_DET_INACTIVE: u32 = 0
+const IC_RAW_INTR_STAT_START_DET_ACTIVE: u32 = 1
+const IC_RAW_INTR_STAT_STOP_DET_MASK: u32 = 0x00000200
+const IC_RAW_INTR_STAT_STOP_DET_SHIFT: u32 = 9
+const IC_RAW_INTR_STAT_STOP_DET_INACTIVE: u32 = 0
+const IC_RAW_INTR_STAT_STOP_DET_ACTIVE: u32 = 1
+const IC_RAW_INTR_STAT_ACTIVITY_MASK: u32 = 0x00000100
+const IC_RAW_INTR_STAT_ACTIVITY_SHIFT: u32 = 8
+const IC_RAW_INTR_STAT_ACTIVITY_INACTIVE: u32 = 0
+const IC_RAW_INTR_STAT_ACTIVITY_ACTIVE: u32 = 1
+const IC_RAW_INTR_STAT_RX_DONE_MASK: u32 = 0x00000080
+const IC_RAW_INTR_STAT_RX_DONE_SHIFT: u32 = 7
+const IC_RAW_INTR_STAT_RX_DONE_INACTIVE: u32 = 0
+const IC_RAW_INTR_STAT_RX_DONE_ACTIVE: u32 = 1
+const IC_RAW_INTR_STAT_TX_ABRT_MASK: u32 = 0x00000040
+const IC_RAW_INTR_STAT_TX_ABRT_SHIFT: u32 = 6
+const IC_RAW_INTR_STAT_TX_ABRT_INACTIVE: u32 = 0
+const IC_RAW_INTR_STAT_TX_ABRT_ACTIVE: u32 = 1
+const IC_RAW_INTR_STAT_RD_REQ_MASK: u32 = 0x00000020
+const IC_RAW_INTR_STAT_RD_REQ_SHIFT: u32 = 5
+const IC_RAW_INTR_STAT_RD_REQ_INACTIVE: u32 = 0
+const IC_RAW_INTR_STAT_RD_REQ_ACTIVE: u32 = 1
+const IC_RAW_INTR_STAT_TX_EMPTY_MASK: u32 = 0x00000010
+const IC_RAW_INTR_STAT_TX_EMPTY_SHIFT: u32 = 4
+const IC_RAW_INTR_STAT_TX_EMPTY_INACTIVE: u32 = 0
+const IC_RAW_INTR_STAT_TX_EMPTY_ACTIVE: u32 = 1
+const IC_RAW_INTR_STAT_TX_OVER_MASK: u32 = 0x00000008
+const IC_RAW_INTR_STAT_TX_OVER_SHIFT: u32 = 3
+const IC_RAW_INTR_STAT_TX_OVER_INACTIVE: u32 = 0
+const IC_RAW_INTR_STAT_TX_OVER_ACTIVE: u32 = 1
+const IC_RAW_INTR_STAT_RX_FULL_MASK: u32 = 0x00000004
+const IC_RAW_INTR_STAT_RX_FULL_SHIFT: u32 = 2
+const IC_RAW_INTR_STAT_RX_FULL_INACTIVE: u32 = 0
+const IC_RAW_INTR_STAT_RX_FULL_ACTIVE: u32 = 1
+const IC_RAW_INTR_STAT_RX_OVER_MASK: u32 = 0x00000002
+const IC_RAW_INTR_STAT_RX_OVER_SHIFT: u32 = 1
+const IC_RAW_INTR_STAT_RX_OVER_INACTIVE: u32 = 0
+const IC_RAW_INTR_STAT_RX_OVER_ACTIVE: u32 = 1
+const IC_RAW_INTR_STAT_RX_UNDER_MASK: u32 = 0x00000001
+const IC_RAW_INTR_STAT_RX_UNDER_SHIFT: u32 = 0
+const IC_RAW_INTR_STAT_RX_UNDER_INACTIVE: u32 = 0
+const IC_RAW_INTR_STAT_RX_UNDER_ACTIVE: u32 = 1
+
+// I2C Receive FIFO Threshold Register
+const IC_RX_TL_OFFSET: u32 = 0x00000038
+const IC_RX_TL_RX_TL_MASK: u32 = 0x000000ff
+const IC_RX_TL_RX_TL_SHIFT: u32 = 0
+
+// I2C Transmit FIFO Threshold Register
+const IC_TX_TL_OFFSET: u32 = 0x0000003c
+const IC_TX_TL_TX_TL_MASK: u32 = 0x000000ff
+const IC_TX_TL_TX_TL_SHIFT: u32 = 0
+
+// Clear Combined and Individual Interrupt Register
+const IC_CLR_INTR_OFFSET: u32 = 0x00000040
+const IC_CLR_INTR_CLR_INTR_MASK: u32 = 0x00000001
+const IC_CLR_INTR_CLR_INTR_SHIFT: u32 = 0
+
+// Clear RX_UNDER Interrupt Register
+const IC_CLR_RX_UNDER_OFFSET: u32 = 0x00000044
+const IC_CLR_RX_UNDER_CLR_RX_UNDER_MASK: u32 = 0x00000001
+const IC_CLR_RX_UNDER_CLR_RX_UNDER_SHIFT: u32 = 0
+
+// Clear RX_OVER Interrupt Register
+const IC_CLR_RX_OVER_OFFSET: u32 = 0x00000048
+const IC_CLR_RX_OVER_CLR_RX_OVER_MASK: u32 = 0x00000001
+const IC_CLR_RX_OVER_CLR_RX_OVER_SHIFT: u32 = 0
+
+// Clear TX_OVER Interrupt Register
+const IC_CLR_TX_OVER_OFFSET: u32 = 0x0000004c
+const IC_CLR_TX_OVER_CLR_TX_OVER_MASK: u32 = 0x00000001
+const IC_CLR_TX_OVER_CLR_TX_OVER_SHIFT: u32 = 0
+
+// Clear RD_REQ Interrupt Register
+const IC_CLR_RD_REQ_OFFSET: u32 = 0x00000050
+const IC_CLR_RD_REQ_CLR_RD_REQ_MASK: u32 = 0x00000001
+const IC_CLR_RD_REQ_CLR_RD_REQ_SHIFT: u32 = 0
+
+// Clear TX_ABRT Interrupt Register
+const IC_CLR_TX_ABRT_OFFSET: u32 = 0x00000054
+const IC_CLR_TX_ABRT_CLR_TX_ABRT_MASK: u32 = 0x00000001
+const IC_CLR_TX_ABRT_CLR_TX_ABRT_SHIFT: u32 = 0
+
+// Clear RX_DONE Interrupt Register
+const IC_CLR_RX_DONE_OFFSET: u32 = 0x00000058
+const IC_CLR_RX_DONE_CLR_RX_DONE_MASK: u32 = 0x00000001
+const IC_CLR_RX_DONE_CLR_RX_DONE_SHIFT: u32 = 0
+
+// Clear ACTIVITY Interrupt Register
+const IC_CLR_ACTIVITY_OFFSET: u32 = 0x0000005c
+const IC_CLR_ACTIVITY_CLR_ACTIVITY_MASK: u32 = 0x00000001
+const IC_CLR_ACTIVITY_CLR_ACTIVITY_SHIFT: u32 = 0
+
+// Clear STOP_DET Interrupt Register
+const IC_CLR_STOP_DET_OFFSET: u32 = 0x00000060
+const IC_CLR_STOP_DET_CLR_STOP_DET_MASK: u32 = 0x00000001
+const IC_CLR_STOP_DET_CLR_STOP_DET_SHIFT: u32 = 0
+
+// Clear START_DET Interrupt Register
+const IC_CLR_START_DET_OFFSET: u32 = 0x00000064
+const IC_CLR_START_DET_CLR_START_DET_MASK: u32 = 0x00000001
+const IC_CLR_START_DET_CLR_START_DET_SHIFT: u32 = 0
+
+// Clear GEN_CALL Interrupt Register
+const IC_CLR_GEN_CALL_OFFSET: u32 = 0x00000068
+const IC_CLR_GEN_CALL_CLR_GEN_CALL_MASK: u32 = 0x00000001
+const IC_CLR_GEN_CALL_CLR_GEN_CALL_SHIFT: u32 = 0
+
+// I2C Enable Register
+const IC_ENABLE_OFFSET: u32 = 0x0000006c
+const IC_ENABLE_TX_CMD_BLOCK_MASK: u32 = 0x00000004
+const IC_ENABLE_TX_CMD_BLOCK_SHIFT: u32 = 2
+const IC_ENABLE_TX_CMD_BLOCK_NOT_BLOCKED: u32 = 0
+const IC_ENABLE_TX_CMD_BLOCK_BLOCKED: u32 = 1
+const IC_ENABLE_ABORT_MASK: u32 = 0x00000002
+const IC_ENABLE_ABORT_SHIFT: u32 = 1
+const IC_ENABLE_ABORT_DISABLE: u32 = 0
+const IC_ENABLE_ABORT_ENABLED: u32 = 1
+const IC_ENABLE_ENABLE_MASK: u32 = 0x00000001
+const IC_ENABLE_ENABLE_SHIFT: u32 = 0
+const IC_ENABLE_ENABLE_DISABLED: u32 = 0
+const IC_ENABLE_ENABLE_ENABLED: u32 = 1
+
+// I2C Status Register This is a read-only register used to indicate the current transfer status
+// and FIFO status. The status register may be read at any time. None of the bits in this register
+// request an interrupt. When the I2C is disabled by writing 0 in bit 0 of the IC_ENABLE register:
+// - Bits 1 and 2 are set to 1 - Bits 3 and 10 are set to 0 When the master or slave state machines
+// goes to idle and ic_en=0: - Bits 5 and 6 are set to 0
+const IC_STATUS_OFFSET: u32 = 0x00000070
+const IC_STATUS_SLV_ACTIVITY_MASK: u32 = 0x00000040
+const IC_STATUS_SLV_ACTIVITY_SHIFT: u32 = 6
+const IC_STATUS_SLV_ACTIVITY_IDLE: u32 = 0
+const IC_STATUS_SLV_ACTIVITY_ACTIVE: u32 = 1
+const IC_STATUS_MST_ACTIVITY_MASK: u32 = 0x00000020
+const IC_STATUS_MST_ACTIVITY_SHIFT: u32 = 5
+const IC_STATUS_MST_ACTIVITY_IDLE: u32 = 0
+const IC_STATUS_MST_ACTIVITY_ACTIVE: u32 = 1
+const IC_STATUS_RFF_MASK: u32 = 0x00000010
+const IC_STATUS_RFF_SHIFT: u32 = 4
+const IC_STATUS_RFF_NOT_FULL: u32 = 0
+const IC_STATUS_RFF_FULL: u32 = 1
+const IC_STATUS_RFNE_MASK: u32 = 0x00000008
+const IC_STATUS_RFNE_SHIFT: u32 = 3
+const IC_STATUS_RFNE_EMPTY: u32 = 0
+const IC_STATUS_RFNE_NOT_EMPTY: u32 = 1
+const IC_STATUS_TFE_MASK: u32 = 0x00000004
+const IC_STATUS_TFE_SHIFT: u32 = 2
+const IC_STATUS_TFE_NON_EMPTY: u32 = 0
+const IC_STATUS_TFE_EMPTY: u32 = 1
+const IC_STATUS_TFNF_MASK: u32 = 0x00000002
+const IC_STATUS_TFNF_SHIFT: u32 = 1
+const IC_STATUS_TFNF_FULL: u32 = 0
+const IC_STATUS_TFNF_NOT_FULL: u32 = 1
+const IC_STATUS_ACTIVITY_MASK: u32 = 0x00000001
+const IC_STATUS_ACTIVITY_SHIFT: u32 = 0
+const IC_STATUS_ACTIVITY_INACTIVE: u32 = 0
+const IC_STATUS_ACTIVITY_ACTIVE: u32 = 1
+
+// I2C Transmit FIFO Level Register This register contains the number of valid data entries in the
+// transmit FIFO buffer. It is cleared whenever: - The I2C is disabled - There is a transmit abort
+// - that is, TX_ABRT bit is set in the IC_RAW_INTR_STAT register - The slave bulk transmit mode is
+// aborted The register increments whenever data is placed into the transmit FIFO and decrements
+// when data is taken from the transmit FIFO.
+const IC_TXFLR_OFFSET: u32 = 0x00000074
+const IC_TXFLR_TXFLR_MASK: u32 = 0x0000001f
+const IC_TXFLR_TXFLR_SHIFT: u32 = 0
+
+// I2C Receive FIFO Level Register This register contains the number of valid data entries in the
+// receive FIFO buffer. It is cleared whenever: - The I2C is disabled - Whenever there is a
+// transmit abort caused by any of the events tracked in IC_TX_ABRT_SOURCE The register increments
+// whenever data is placed into the receive FIFO and decrements when data is taken from the receive
+// FIFO.
+const IC_RXFLR_OFFSET: u32 = 0x00000078
+const IC_RXFLR_RXFLR_MASK: u32 = 0x0000001f
+const IC_RXFLR_RXFLR_SHIFT: u32 = 0
+
+// I2C SDA Hold Time Length Register The bits [15:0] of this register are used to control the hold
+// time of SDA during transmit in both slave and master mode (after SCL goes from HIGH to LOW). The
+// bits [23:16] of this register are used to extend the SDA transition (if any) whenever SCL is
+// HIGH in the receiver in either master or slave mode. Writes to this register succeed only when
+// IC_ENABLE[0]=0. The values in this register are in units of ic_clk period. The value programmed
+// in IC_SDA_TX_HOLD must be greater than the minimum hold time in each mode (one cycle in master
+// mode, seven cycles in slave mode) for the value to be implemented. The programmed SDA hold time
+// during transmit (IC_SDA_TX_HOLD) cannot exceed at any time the duration of the low part of scl.
+// Therefore the programmed value cannot be larger than N_SCL_LOW-2, where N_SCL_LOW is the
+// duration of the low part of the scl period measured in ic_clk cycles.
+const IC_SDA_HOLD_OFFSET: u32 = 0x0000007c
+const IC_SDA_HOLD_IC_SDA_RX_HOLD_MASK: u32 = 0x00ff0000
+const IC_SDA_HOLD_IC_SDA_RX_HOLD_SHIFT: u32 = 16
+const IC_SDA_HOLD_IC_SDA_TX_HOLD_MASK: u32 = 0x0000ffff
+const IC_SDA_HOLD_IC_SDA_TX_HOLD_SHIFT: u32 = 0
+
+// I2C Transmit Abort Source Register This register has 32 bits that indicate the source of the
+// TX_ABRT bit. Except for Bit 9, this register is cleared whenever the IC_CLR_TX_ABRT register or
+// the IC_CLR_INTR register is read. To clear Bit 9, the source of the ABRT_SBYTE_NORSTRT must be
+// fixed first; RESTART must be enabled (IC_CON[5]=1), the SPECIAL bit must be cleared
+// (IC_TAR[11]), or the GC_OR_START bit must be cleared (IC_TAR[10]). Once the source of the
+// ABRT_SBYTE_NORSTRT is fixed, then this bit can be cleared in the same manner as other bits in
+// this register. If the source of the ABRT_SBYTE_NORSTRT is not fixed before attempting to clear
+// this bit, Bit 9 clears for one cycle and is then re-asserted.
+const IC_TX_ABRT_SOURCE_OFFSET: u32 = 0x00000080
+const IC_TX_ABRT_SOURCE_TX_FLUSH_CNT_MASK: u32 = 0xff800000
+const IC_TX_ABRT_SOURCE_TX_FLUSH_CNT_SHIFT: u32 = 23
+const IC_TX_ABRT_SOURCE_ABRT_USER_ABRT_MASK: u32 = 0x00010000
+const IC_TX_ABRT_SOURCE_ABRT_USER_ABRT_SHIFT: u32 = 16
+const IC_TX_ABRT_SOURCE_ABRT_USER_ABRT_ABRT_USER_ABRT_VOID: u32 = 0
+const IC_TX_ABRT_SOURCE_ABRT_USER_ABRT_ABRT_USER_ABRT_GENERATED: u32 = 1
+const IC_TX_ABRT_SOURCE_ABRT_SLVRD_INTX_MASK: u32 = 0x00008000
+const IC_TX_ABRT_SOURCE_ABRT_SLVRD_INTX_SHIFT: u32 = 15
+const IC_TX_ABRT_SOURCE_ABRT_SLVRD_INTX_ABRT_SLVRD_INTX_VOID: u32 = 0
+const IC_TX_ABRT_SOURCE_ABRT_SLVRD_INTX_ABRT_SLVRD_INTX_GENERATED: u32 = 1
+const IC_TX_ABRT_SOURCE_ABRT_SLV_ARBLOST_MASK: u32 = 0x00004000
+const IC_TX_ABRT_SOURCE_ABRT_SLV_ARBLOST_SHIFT: u32 = 14
+const IC_TX_ABRT_SOURCE_ABRT_SLV_ARBLOST_ABRT_SLV_ARBLOST_VOID: u32 = 0
+const IC_TX_ABRT_SOURCE_ABRT_SLV_ARBLOST_ABRT_SLV_ARBLOST_GENERATED: u32 = 1
+const IC_TX_ABRT_SOURCE_ABRT_SLVFLUSH_TXFIFO_MASK: u32 = 0x00002000
+const IC_TX_ABRT_SOURCE_ABRT_SLVFLUSH_TXFIFO_SHIFT: u32 = 13
+const IC_TX_ABRT_SOURCE_ABRT_SLVFLUSH_TXFIFO_ABRT_SLVFLUSH_TXFIFO_VOID: u32 = 0
+const IC_TX_ABRT_SOURCE_ABRT_SLVFLUSH_TXFIFO_ABRT_SLVFLUSH_TXFIFO_GENERATED: u32 = 1
+const IC_TX_ABRT_SOURCE_ARB_LOST_MASK: u32 = 0x00001000
+const IC_TX_ABRT_SOURCE_ARB_LOST_SHIFT: u32 = 12
+const IC_TX_ABRT_SOURCE_ARB_LOST_ABRT_LOST_VOID: u32 = 0
+const IC_TX_ABRT_SOURCE_ARB_LOST_ABRT_LOST_GENERATED: u32 = 1
+const IC_TX_ABRT_SOURCE_ABRT_MASTER_DIS_MASK: u32 = 0x00000800
+const IC_TX_ABRT_SOURCE_ABRT_MASTER_DIS_SHIFT: u32 = 11
+const IC_TX_ABRT_SOURCE_ABRT_MASTER_DIS_ABRT_MASTER_DIS_VOID: u32 = 0
+const IC_TX_ABRT_SOURCE_ABRT_MASTER_DIS_ABRT_MASTER_DIS_GENERATED: u32 = 1
+const IC_TX_ABRT_SOURCE_ABRT_10B_RD_NORSTRT_MASK: u32 = 0x00000400
+const IC_TX_ABRT_SOURCE_ABRT_10B_RD_NORSTRT_SHIFT: u32 = 10
+const IC_TX_ABRT_SOURCE_ABRT_10B_RD_NORSTRT_ABRT_10B_RD_VOID: u32 = 0
+const IC_TX_ABRT_SOURCE_ABRT_10B_RD_NORSTRT_ABRT_10B_RD_GENERATED: u32 = 1
+const IC_TX_ABRT_SOURCE_ABRT_SBYTE_NORSTRT_MASK: u32 = 0x00000200
+const IC_TX_ABRT_SOURCE_ABRT_SBYTE_NORSTRT_SHIFT: u32 = 9
+const IC_TX_ABRT_SOURCE_ABRT_SBYTE_NORSTRT_ABRT_SBYTE_NORSTRT_VOID: u32 = 0
+const IC_TX_ABRT_SOURCE_ABRT_SBYTE_NORSTRT_ABRT_SBYTE_NORSTRT_GENERATED: u32 = 1
+const IC_TX_ABRT_SOURCE_ABRT_HS_NORSTRT_MASK: u32 = 0x00000100
+const IC_TX_ABRT_SOURCE_ABRT_HS_NORSTRT_SHIFT: u32 = 8
+const IC_TX_ABRT_SOURCE_ABRT_HS_NORSTRT_ABRT_HS_NORSTRT_VOID: u32 = 0
+const IC_TX_ABRT_SOURCE_ABRT_HS_NORSTRT_ABRT_HS_NORSTRT_GENERATED: u32 = 1
+const IC_TX_ABRT_SOURCE_ABRT_SBYTE_ACKDET_MASK: u32 = 0x00000080
+const IC_TX_ABRT_SOURCE_ABRT_SBYTE_ACKDET_SHIFT: u32 = 7
+const IC_TX_ABRT_SOURCE_ABRT_SBYTE_ACKDET_ABRT_SBYTE_ACKDET_VOID: u32 = 0
+const IC_TX_ABRT_SOURCE_ABRT_SBYTE_ACKDET_ABRT_SBYTE_ACKDET_GENERATED: u32 = 1
+const IC_TX_ABRT_SOURCE_ABRT_HS_ACKDET_MASK: u32 = 0x00000040
+const IC_TX_ABRT_SOURCE_ABRT_HS_ACKDET_SHIFT: u32 = 6
+const IC_TX_ABRT_SOURCE_ABRT_HS_ACKDET_ABRT_HS_ACK_VOID: u32 = 0
+const IC_TX_ABRT_SOURCE_ABRT_HS_ACKDET_ABRT_HS_ACK_GENERATED: u32 = 1
+const IC_TX_ABRT_SOURCE_ABRT_GCALL_READ_MASK: u32 = 0x00000020
+const IC_TX_ABRT_SOURCE_ABRT_GCALL_READ_SHIFT: u32 = 5
+const IC_TX_ABRT_SOURCE_ABRT_GCALL_READ_ABRT_GCALL_READ_VOID: u32 = 0
+const IC_TX_ABRT_SOURCE_ABRT_GCALL_READ_ABRT_GCALL_READ_GENERATED: u32 = 1
+const IC_TX_ABRT_SOURCE_ABRT_GCALL_NOACK_MASK: u32 = 0x00000010
+const IC_TX_ABRT_SOURCE_ABRT_GCALL_NOACK_SHIFT: u32 = 4
+const IC_TX_ABRT_SOURCE_ABRT_GCALL_NOACK_ABRT_GCALL_NOACK_VOID: u32 = 0
+const IC_TX_ABRT_SOURCE_ABRT_GCALL_NOACK_ABRT_GCALL_NOACK_GENERATED: u32 = 1
+const IC_TX_ABRT_SOURCE_ABRT_TXDATA_NOACK_MASK: u32 = 0x00000008
+const IC_TX_ABRT_SOURCE_ABRT_TXDATA_NOACK_SHIFT: u32 = 3
+const IC_TX_ABRT_SOURCE_ABRT_TXDATA_NOACK_ABRT_TXDATA_NOACK_VOID: u32 = 0
+const IC_TX_ABRT_SOURCE_ABRT_TXDATA_NOACK_ABRT_TXDATA_NOACK_GENERATED: u32 = 1
+const IC_TX_ABRT_SOURCE_ABRT_10ADDR2_NOACK_MASK: u32 = 0x00000004
+const IC_TX_ABRT_SOURCE_ABRT_10ADDR2_NOACK_SHIFT: u32 = 2
+const IC_TX_ABRT_SOURCE_ABRT_10ADDR2_NOACK_INACTIVE: u32 = 0
+const IC_TX_ABRT_SOURCE_ABRT_10ADDR2_NOACK_ACTIVE: u32 = 1
+const IC_TX_ABRT_SOURCE_ABRT_10ADDR1_NOACK_MASK: u32 = 0x00000002
+const IC_TX_ABRT_SOURCE_ABRT_10ADDR1_NOACK_SHIFT: u32 = 1
+const IC_TX_ABRT_SOURCE_ABRT_10ADDR1_NOACK_INACTIVE: u32 = 0
+const IC_TX_ABRT_SOURCE_ABRT_10ADDR1_NOACK_ACTIVE: u32 = 1
+const IC_TX_ABRT_SOURCE_ABRT_7B_ADDR_NOACK_MASK: u32 = 0x00000001
+const IC_TX_ABRT_SOURCE_ABRT_7B_ADDR_NOACK_SHIFT: u32 = 0
+const IC_TX_ABRT_SOURCE_ABRT_7B_ADDR_NOACK_INACTIVE: u32 = 0
+const IC_TX_ABRT_SOURCE_ABRT_7B_ADDR_NOACK_ACTIVE: u32 = 1
+
+// Generate Slave Data NACK Register The register is used to generate a NACK for the data part of a
+// transfer when DW_apb_i2c is acting as a slave-receiver. This register only exists when the
+// IC_SLV_DATA_NACK_ONLY parameter is set to 1. When this parameter disabled, this register does
+// not exist and writing to the register's address has no effect. A write can occur on this
+// register if both of the following conditions are met: - DW_apb_i2c is disabled (IC_ENABLE[0] =
+// 0) - Slave part is inactive (IC_STATUS[6] = 0) Note: The IC_STATUS[6] is a register read-back
+// location for the internal slv_activity signal; the user should poll this before writing the
+// ic_slv_data_nack_only bit.
+const IC_SLV_DATA_NACK_ONLY_OFFSET: u32 = 0x00000084
+const IC_SLV_DATA_NACK_ONLY_NACK_MASK: u32 = 0x00000001
+const IC_SLV_DATA_NACK_ONLY_NACK_SHIFT: u32 = 0
+const IC_SLV_DATA_NACK_ONLY_NACK_DISABLED: u32 = 0
+const IC_SLV_DATA_NACK_ONLY_NACK_ENABLED: u32 = 1
+
+// DMA Control Register The register is used to enable the DMA Controller interface operation.
+// There is a separate bit for transmit and receive. This can be programmed regardless of the state
+// of IC_ENABLE.
+const IC_DMA_CR_OFFSET: u32 = 0x00000088
+const IC_DMA_CR_TDMAE_MASK: u32 = 0x00000002
+const IC_DMA_CR_TDMAE_SHIFT: u32 = 1
+const IC_DMA_CR_TDMAE_DISABLED: u32 = 0
+const IC_DMA_CR_TDMAE_ENABLED: u32 = 1
+const IC_DMA_CR_RDMAE_MASK: u32 = 0x00000001
+const IC_DMA_CR_RDMAE_SHIFT: u32 = 0
+const IC_DMA_CR_RDMAE_DISABLED: u32 = 0
+const IC_DMA_CR_RDMAE_ENABLED: u32 = 1
+
+// DMA Transmit Data Level Register
+const IC_DMA_TDLR_OFFSET: u32 = 0x0000008c
+const IC_DMA_TDLR_DMATDL_MASK: u32 = 0x0000000f
+const IC_DMA_TDLR_DMATDL_SHIFT: u32 = 0
+
+// I2C Receive Data Level Register
+const IC_DMA_RDLR_OFFSET: u32 = 0x00000090
+const IC_DMA_RDLR_DMARDL_MASK: u32 = 0x0000000f
+const IC_DMA_RDLR_DMARDL_SHIFT: u32 = 0
+
+// I2C SDA Setup Register This register controls the amount of time delay (in terms of number of
+// ic_clk clock periods) introduced in the rising edge of SCL - relative to SDA changing - when
+// DW_apb_i2c services a read request in a slave-transmitter operation. The relevant I2C
+// requirement is tSU:DAT (note 4) as detailed in the I2C Bus Specification. This register must be
+// programmed with a value equal to or greater than 2. Writes to this register succeed only when
+// IC_ENABLE[0] = 0. Note: The length of setup time is calculated using [(IC_SDA_SETUP - 1) *
+// (ic_clk_period)], so if the user requires 10 ic_clk periods of setup time, they should program a
+// value of 11. The IC_SDA_SETUP register is only used by the DW_apb_i2c when operating as a slave
+// transmitter.
+const IC_SDA_SETUP_OFFSET: u32 = 0x00000094
+const IC_SDA_SETUP_SDA_SETUP_MASK: u32 = 0x000000ff
+const IC_SDA_SETUP_SDA_SETUP_SHIFT: u32 = 0
+
+// I2C ACK General Call Register The register controls whether DW_apb_i2c responds with a ACK or
+// NACK when it receives an I2C General Call address. This register is applicable only when the
+// DW_apb_i2c is in slave mode.
+const IC_ACK_GENERAL_CALL_OFFSET: u32 = 0x00000098
+const IC_ACK_GENERAL_CALL_ACK_GEN_CALL_MASK: u32 = 0x00000001
+const IC_ACK_GENERAL_CALL_ACK_GEN_CALL_SHIFT: u32 = 0
+const IC_ACK_GENERAL_CALL_ACK_GEN_CALL_DISABLED: u32 = 0
+const IC_ACK_GENERAL_CALL_ACK_GEN_CALL_ENABLED: u32 = 1
+
+// I2C Enable Status Register The register is used to report the DW_apb_i2c hardware status when
+// the IC_ENABLE[0] register is set from 1 to 0; that is, when DW_apb_i2c is disabled. If
+// IC_ENABLE[0] has been set to 1, bits 2:1 are forced to 0, and bit 0 is forced to 1. If
+// IC_ENABLE[0] has been set to 0, bits 2:1 is only be valid as soon as bit 0 is read as '0'. Note:
+// When IC_ENABLE[0] has been set to 0, a delay occurs for bit 0 to be read as 0 because disabling
+// the DW_apb_i2c depends on I2C bus activities.
+const IC_ENABLE_STATUS_OFFSET: u32 = 0x0000009c
+const IC_ENABLE_STATUS_SLV_RX_DATA_LOST_MASK: u32 = 0x00000004
+const IC_ENABLE_STATUS_SLV_RX_DATA_LOST_SHIFT: u32 = 2
+const IC_ENABLE_STATUS_SLV_RX_DATA_LOST_INACTIVE: u32 = 0
+const IC_ENABLE_STATUS_SLV_RX_DATA_LOST_ACTIVE: u32 = 1
+const IC_ENABLE_STATUS_SLV_DISABLED_WHILE_BUSY_MASK: u32 = 0x00000002
+const IC_ENABLE_STATUS_SLV_DISABLED_WHILE_BUSY_SHIFT: u32 = 1
+const IC_ENABLE_STATUS_SLV_DISABLED_WHILE_BUSY_INACTIVE: u32 = 0
+const IC_ENABLE_STATUS_SLV_DISABLED_WHILE_BUSY_ACTIVE: u32 = 1
+const IC_ENABLE_STATUS_IC_EN_MASK: u32 = 0x00000001
+const IC_ENABLE_STATUS_IC_EN_SHIFT: u32 = 0
+const IC_ENABLE_STATUS_IC_EN_DISABLED: u32 = 0
+const IC_ENABLE_STATUS_IC_EN_ENABLED: u32 = 1
+
+// I2C SS, FS or FM+ spike suppression limit This register is used to store the duration, measured
+// in ic_clk cycles, of the longest spike that is filtered out by the spike suppression logic when
+// the component is operating in SS, FS or FM+ modes. The relevant I2C requirement is tSP (table 4)
+// as detailed in the I2C Bus Specification. This register must be programmed with a minimum value
+// of 1.
+const IC_FS_SPKLEN_OFFSET: u32 = 0x000000a0
+const IC_FS_SPKLEN_IC_FS_SPKLEN_MASK: u32 = 0x000000ff
+const IC_FS_SPKLEN_IC_FS_SPKLEN_SHIFT: u32 = 0
+
+// Clear RESTART_DET Interrupt Register
+const IC_CLR_RESTART_DET_OFFSET: u32 = 0x000000a8
+const IC_CLR_RESTART_DET_CLR_RESTART_DET_MASK: u32 = 0x00000001
+const IC_CLR_RESTART_DET_CLR_RESTART_DET_SHIFT: u32 = 0
+
+// Component Parameter Register 1 Note This register is not implemented and therefore reads as 0.
+// If it was implemented it would be a constant read-only register that contains encoded
+// information about the component's parameter settings. Fields shown below are the settings for
+// those parameters
+const IC_COMP_PARAM_1_OFFSET: u32 = 0x000000f4
+const IC_COMP_PARAM_1_TX_BUFFER_DEPTH_MASK: u32 = 0x00ff0000
+const IC_COMP_PARAM_1_TX_BUFFER_DEPTH_SHIFT: u32 = 16
+const IC_COMP_PARAM_1_RX_BUFFER_DEPTH_MASK: u32 = 0x0000ff00
+const IC_COMP_PARAM_1_RX_BUFFER_DEPTH_SHIFT: u32 = 8
+const IC_COMP_PARAM_1_ADD_ENCODED_PARAMS_MASK: u32 = 0x00000080
+const IC_COMP_PARAM_1_ADD_ENCODED_PARAMS_SHIFT: u32 = 7
+const IC_COMP_PARAM_1_HAS_DMA_MASK: u32 = 0x00000040
+const IC_COMP_PARAM_1_HAS_DMA_SHIFT: u32 = 6
+const IC_COMP_PARAM_1_INTR_IO_MASK: u32 = 0x00000020
+const IC_COMP_PARAM_1_INTR_IO_SHIFT: u32 = 5
+const IC_COMP_PARAM_1_HC_COUNT_VALUES_MASK: u32 = 0x00000010
+const IC_COMP_PARAM_1_HC_COUNT_VALUES_SHIFT: u32 = 4
+const IC_COMP_PARAM_1_MAX_SPEED_MODE_MASK: u32 = 0x0000000c
+const IC_COMP_PARAM_1_MAX_SPEED_MODE_SHIFT: u32 = 2
+const IC_COMP_PARAM_1_APB_DATA_WIDTH_MASK: u32 = 0x00000003
+const IC_COMP_PARAM_1_APB_DATA_WIDTH_SHIFT: u32 = 0
+
+// I2C Component Version Register
+const IC_COMP_VERSION_OFFSET: u32 = 0x000000f8
+const IC_COMP_VERSION_IC_COMP_VERSION_MASK: u32 = 0xffffffff
+const IC_COMP_VERSION_IC_COMP_VERSION_SHIFT: u32 = 0
+
+// I2C Component Type Register
+const IC_COMP_TYPE_OFFSET: u32 = 0x000000fc
+const IC_COMP_TYPE_IC_COMP_TYPE_MASK: u32 = 0xffffffff
+const IC_COMP_TYPE_IC_COMP_TYPE_SHIFT: u32 = 0

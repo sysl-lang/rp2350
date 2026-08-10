@@ -1,0 +1,1051 @@
+module sh.sysl.rp2350.pio2
+
+// The peripheral's base address. Every offset below is from here.
+const BASE: u32 = 0x50400000
+
+// PIO control register
+const CTRL_OFFSET: u32 = 0x00000000
+const CTRL_NEXTPREV_CLKDIV_RESTART_MASK: u32 = 0x04000000
+const CTRL_NEXTPREV_CLKDIV_RESTART_SHIFT: u32 = 26
+const CTRL_NEXTPREV_SM_DISABLE_MASK: u32 = 0x02000000
+const CTRL_NEXTPREV_SM_DISABLE_SHIFT: u32 = 25
+const CTRL_NEXTPREV_SM_ENABLE_MASK: u32 = 0x01000000
+const CTRL_NEXTPREV_SM_ENABLE_SHIFT: u32 = 24
+const CTRL_NEXT_PIO_MASK_MASK: u32 = 0x00f00000
+const CTRL_NEXT_PIO_MASK_SHIFT: u32 = 20
+const CTRL_PREV_PIO_MASK_MASK: u32 = 0x000f0000
+const CTRL_PREV_PIO_MASK_SHIFT: u32 = 16
+const CTRL_CLKDIV_RESTART_MASK: u32 = 0x00000f00
+const CTRL_CLKDIV_RESTART_SHIFT: u32 = 8
+const CTRL_SM_RESTART_MASK: u32 = 0x000000f0
+const CTRL_SM_RESTART_SHIFT: u32 = 4
+const CTRL_SM_ENABLE_MASK: u32 = 0x0000000f
+const CTRL_SM_ENABLE_SHIFT: u32 = 0
+
+// FIFO status register
+const FSTAT_OFFSET: u32 = 0x00000004
+const FSTAT_TXEMPTY_MASK: u32 = 0x0f000000
+const FSTAT_TXEMPTY_SHIFT: u32 = 24
+const FSTAT_TXFULL_MASK: u32 = 0x000f0000
+const FSTAT_TXFULL_SHIFT: u32 = 16
+const FSTAT_RXEMPTY_MASK: u32 = 0x00000f00
+const FSTAT_RXEMPTY_SHIFT: u32 = 8
+const FSTAT_RXFULL_MASK: u32 = 0x0000000f
+const FSTAT_RXFULL_SHIFT: u32 = 0
+
+// FIFO debug register
+const FDEBUG_OFFSET: u32 = 0x00000008
+const FDEBUG_TXSTALL_MASK: u32 = 0x0f000000
+const FDEBUG_TXSTALL_SHIFT: u32 = 24
+const FDEBUG_TXOVER_MASK: u32 = 0x000f0000
+const FDEBUG_TXOVER_SHIFT: u32 = 16
+const FDEBUG_RXUNDER_MASK: u32 = 0x00000f00
+const FDEBUG_RXUNDER_SHIFT: u32 = 8
+const FDEBUG_RXSTALL_MASK: u32 = 0x0000000f
+const FDEBUG_RXSTALL_SHIFT: u32 = 0
+
+// FIFO levels
+const FLEVEL_OFFSET: u32 = 0x0000000c
+const FLEVEL_RX3_MASK: u32 = 0xf0000000
+const FLEVEL_RX3_SHIFT: u32 = 28
+const FLEVEL_TX3_MASK: u32 = 0x0f000000
+const FLEVEL_TX3_SHIFT: u32 = 24
+const FLEVEL_RX2_MASK: u32 = 0x00f00000
+const FLEVEL_RX2_SHIFT: u32 = 20
+const FLEVEL_TX2_MASK: u32 = 0x000f0000
+const FLEVEL_TX2_SHIFT: u32 = 16
+const FLEVEL_RX1_MASK: u32 = 0x0000f000
+const FLEVEL_RX1_SHIFT: u32 = 12
+const FLEVEL_TX1_MASK: u32 = 0x00000f00
+const FLEVEL_TX1_SHIFT: u32 = 8
+const FLEVEL_RX0_MASK: u32 = 0x000000f0
+const FLEVEL_RX0_SHIFT: u32 = 4
+const FLEVEL_TX0_MASK: u32 = 0x0000000f
+const FLEVEL_TX0_SHIFT: u32 = 0
+
+// Direct write access to the TX FIFO for this state machine. Each write pushes one word to the
+// FIFO. Attempting to write to a full FIFO has no effect on the FIFO state or contents, and sets
+// the sticky FDEBUG_TXOVER error flag for this FIFO.
+const TXF0_OFFSET: u32 = 0x00000010
+const TXF0_TXF0_MASK: u32 = 0xffffffff
+const TXF0_TXF0_SHIFT: u32 = 0
+
+// Direct write access to the TX FIFO for this state machine. Each write pushes one word to the
+// FIFO. Attempting to write to a full FIFO has no effect on the FIFO state or contents, and sets
+// the sticky FDEBUG_TXOVER error flag for this FIFO.
+const TXF1_OFFSET: u32 = 0x00000014
+const TXF1_TXF1_MASK: u32 = 0xffffffff
+const TXF1_TXF1_SHIFT: u32 = 0
+
+// Direct write access to the TX FIFO for this state machine. Each write pushes one word to the
+// FIFO. Attempting to write to a full FIFO has no effect on the FIFO state or contents, and sets
+// the sticky FDEBUG_TXOVER error flag for this FIFO.
+const TXF2_OFFSET: u32 = 0x00000018
+const TXF2_TXF2_MASK: u32 = 0xffffffff
+const TXF2_TXF2_SHIFT: u32 = 0
+
+// Direct write access to the TX FIFO for this state machine. Each write pushes one word to the
+// FIFO. Attempting to write to a full FIFO has no effect on the FIFO state or contents, and sets
+// the sticky FDEBUG_TXOVER error flag for this FIFO.
+const TXF3_OFFSET: u32 = 0x0000001c
+const TXF3_TXF3_MASK: u32 = 0xffffffff
+const TXF3_TXF3_SHIFT: u32 = 0
+
+// Direct read access to the RX FIFO for this state machine. Each read pops one word from the FIFO.
+// Attempting to read from an empty FIFO has no effect on the FIFO state, and sets the sticky
+// FDEBUG_RXUNDER error flag for this FIFO. The data returned to the system on a read from an empty
+// FIFO is undefined.
+const RXF0_OFFSET: u32 = 0x00000020
+const RXF0_RXF0_MASK: u32 = 0xffffffff
+const RXF0_RXF0_SHIFT: u32 = 0
+
+// Direct read access to the RX FIFO for this state machine. Each read pops one word from the FIFO.
+// Attempting to read from an empty FIFO has no effect on the FIFO state, and sets the sticky
+// FDEBUG_RXUNDER error flag for this FIFO. The data returned to the system on a read from an empty
+// FIFO is undefined.
+const RXF1_OFFSET: u32 = 0x00000024
+const RXF1_RXF1_MASK: u32 = 0xffffffff
+const RXF1_RXF1_SHIFT: u32 = 0
+
+// Direct read access to the RX FIFO for this state machine. Each read pops one word from the FIFO.
+// Attempting to read from an empty FIFO has no effect on the FIFO state, and sets the sticky
+// FDEBUG_RXUNDER error flag for this FIFO. The data returned to the system on a read from an empty
+// FIFO is undefined.
+const RXF2_OFFSET: u32 = 0x00000028
+const RXF2_RXF2_MASK: u32 = 0xffffffff
+const RXF2_RXF2_SHIFT: u32 = 0
+
+// Direct read access to the RX FIFO for this state machine. Each read pops one word from the FIFO.
+// Attempting to read from an empty FIFO has no effect on the FIFO state, and sets the sticky
+// FDEBUG_RXUNDER error flag for this FIFO. The data returned to the system on a read from an empty
+// FIFO is undefined.
+const RXF3_OFFSET: u32 = 0x0000002c
+const RXF3_RXF3_MASK: u32 = 0xffffffff
+const RXF3_RXF3_SHIFT: u32 = 0
+
+// State machine IRQ flags register. Write 1 to clear. There are eight state machine IRQ flags,
+// which can be set, cleared, and waited on by the state machines. There's no fixed association
+// between flags and state machines -- any state machine can use any flag. Any of the eight flags
+// can be used for timing synchronisation between state machines, using IRQ and WAIT instructions.
+// Any combination of the eight flags can also routed out to either of the two system-level
+// interrupt requests, alongside FIFO status interrupts -- see e.g. IRQ0_INTE.
+const IRQ_OFFSET: u32 = 0x00000030
+const IRQ_IRQ_MASK: u32 = 0x000000ff
+const IRQ_IRQ_SHIFT: u32 = 0
+
+// Writing a 1 to each of these bits will forcibly assert the corresponding IRQ. Note this is
+// different to the INTF register: writing here affects PIO internal state. INTF just asserts the
+// processor-facing IRQ signal for testing ISRs, and is not visible to the state machines.
+const IRQ_FORCE_OFFSET: u32 = 0x00000034
+const IRQ_FORCE_IRQ_FORCE_MASK: u32 = 0x000000ff
+const IRQ_FORCE_IRQ_FORCE_SHIFT: u32 = 0
+
+// There is a 2-flipflop synchronizer on each GPIO input, which protects PIO logic from
+// metastabilities. This increases input delay, and for fast synchronous IO (e.g. SPI) these
+// synchronizers may need to be bypassed. Each bit in this register corresponds to one GPIO. 0 ->
+// input is synchronized (default) 1 -> synchronizer is bypassed If in doubt, leave this register
+// as all zeroes.
+const INPUT_SYNC_BYPASS_OFFSET: u32 = 0x00000038
+const INPUT_SYNC_BYPASS_INPUT_SYNC_BYPASS_MASK: u32 = 0xffffffff
+const INPUT_SYNC_BYPASS_INPUT_SYNC_BYPASS_SHIFT: u32 = 0
+
+// Read to sample the pad output values PIO is currently driving to the GPIOs. On RP2040 there are
+// 30 GPIOs, so the two most significant bits are hardwired to 0.
+const DBG_PADOUT_OFFSET: u32 = 0x0000003c
+const DBG_PADOUT_DBG_PADOUT_MASK: u32 = 0xffffffff
+const DBG_PADOUT_DBG_PADOUT_SHIFT: u32 = 0
+
+// Read to sample the pad output enables (direction) PIO is currently driving to the GPIOs. On
+// RP2040 there are 30 GPIOs, so the two most significant bits are hardwired to 0.
+const DBG_PADOE_OFFSET: u32 = 0x00000040
+const DBG_PADOE_DBG_PADOE_MASK: u32 = 0xffffffff
+const DBG_PADOE_DBG_PADOE_SHIFT: u32 = 0
+
+// The PIO hardware has some free parameters that may vary between chip products. These should be
+// provided in the chip datasheet, but are also exposed here.
+const DBG_CFGINFO_OFFSET: u32 = 0x00000044
+const DBG_CFGINFO_VERSION_MASK: u32 = 0xf0000000
+const DBG_CFGINFO_VERSION_SHIFT: u32 = 28
+const DBG_CFGINFO_VERSION_V0: u32 = 0
+const DBG_CFGINFO_VERSION_V1: u32 = 1
+const DBG_CFGINFO_IMEM_SIZE_MASK: u32 = 0x003f0000
+const DBG_CFGINFO_IMEM_SIZE_SHIFT: u32 = 16
+const DBG_CFGINFO_SM_COUNT_MASK: u32 = 0x00000f00
+const DBG_CFGINFO_SM_COUNT_SHIFT: u32 = 8
+const DBG_CFGINFO_FIFO_DEPTH_MASK: u32 = 0x0000003f
+const DBG_CFGINFO_FIFO_DEPTH_SHIFT: u32 = 0
+
+// Write-only access to instruction memory location 0
+const INSTR_MEM0_OFFSET: u32 = 0x00000048
+const INSTR_MEM0_INSTR_MEM0_MASK: u32 = 0x0000ffff
+const INSTR_MEM0_INSTR_MEM0_SHIFT: u32 = 0
+
+// Write-only access to instruction memory location 1
+const INSTR_MEM1_OFFSET: u32 = 0x0000004c
+const INSTR_MEM1_INSTR_MEM1_MASK: u32 = 0x0000ffff
+const INSTR_MEM1_INSTR_MEM1_SHIFT: u32 = 0
+
+// Write-only access to instruction memory location 2
+const INSTR_MEM2_OFFSET: u32 = 0x00000050
+const INSTR_MEM2_INSTR_MEM2_MASK: u32 = 0x0000ffff
+const INSTR_MEM2_INSTR_MEM2_SHIFT: u32 = 0
+
+// Write-only access to instruction memory location 3
+const INSTR_MEM3_OFFSET: u32 = 0x00000054
+const INSTR_MEM3_INSTR_MEM3_MASK: u32 = 0x0000ffff
+const INSTR_MEM3_INSTR_MEM3_SHIFT: u32 = 0
+
+// Write-only access to instruction memory location 4
+const INSTR_MEM4_OFFSET: u32 = 0x00000058
+const INSTR_MEM4_INSTR_MEM4_MASK: u32 = 0x0000ffff
+const INSTR_MEM4_INSTR_MEM4_SHIFT: u32 = 0
+
+// Write-only access to instruction memory location 5
+const INSTR_MEM5_OFFSET: u32 = 0x0000005c
+const INSTR_MEM5_INSTR_MEM5_MASK: u32 = 0x0000ffff
+const INSTR_MEM5_INSTR_MEM5_SHIFT: u32 = 0
+
+// Write-only access to instruction memory location 6
+const INSTR_MEM6_OFFSET: u32 = 0x00000060
+const INSTR_MEM6_INSTR_MEM6_MASK: u32 = 0x0000ffff
+const INSTR_MEM6_INSTR_MEM6_SHIFT: u32 = 0
+
+// Write-only access to instruction memory location 7
+const INSTR_MEM7_OFFSET: u32 = 0x00000064
+const INSTR_MEM7_INSTR_MEM7_MASK: u32 = 0x0000ffff
+const INSTR_MEM7_INSTR_MEM7_SHIFT: u32 = 0
+
+// Write-only access to instruction memory location 8
+const INSTR_MEM8_OFFSET: u32 = 0x00000068
+const INSTR_MEM8_INSTR_MEM8_MASK: u32 = 0x0000ffff
+const INSTR_MEM8_INSTR_MEM8_SHIFT: u32 = 0
+
+// Write-only access to instruction memory location 9
+const INSTR_MEM9_OFFSET: u32 = 0x0000006c
+const INSTR_MEM9_INSTR_MEM9_MASK: u32 = 0x0000ffff
+const INSTR_MEM9_INSTR_MEM9_SHIFT: u32 = 0
+
+// Write-only access to instruction memory location 10
+const INSTR_MEM10_OFFSET: u32 = 0x00000070
+const INSTR_MEM10_INSTR_MEM10_MASK: u32 = 0x0000ffff
+const INSTR_MEM10_INSTR_MEM10_SHIFT: u32 = 0
+
+// Write-only access to instruction memory location 11
+const INSTR_MEM11_OFFSET: u32 = 0x00000074
+const INSTR_MEM11_INSTR_MEM11_MASK: u32 = 0x0000ffff
+const INSTR_MEM11_INSTR_MEM11_SHIFT: u32 = 0
+
+// Write-only access to instruction memory location 12
+const INSTR_MEM12_OFFSET: u32 = 0x00000078
+const INSTR_MEM12_INSTR_MEM12_MASK: u32 = 0x0000ffff
+const INSTR_MEM12_INSTR_MEM12_SHIFT: u32 = 0
+
+// Write-only access to instruction memory location 13
+const INSTR_MEM13_OFFSET: u32 = 0x0000007c
+const INSTR_MEM13_INSTR_MEM13_MASK: u32 = 0x0000ffff
+const INSTR_MEM13_INSTR_MEM13_SHIFT: u32 = 0
+
+// Write-only access to instruction memory location 14
+const INSTR_MEM14_OFFSET: u32 = 0x00000080
+const INSTR_MEM14_INSTR_MEM14_MASK: u32 = 0x0000ffff
+const INSTR_MEM14_INSTR_MEM14_SHIFT: u32 = 0
+
+// Write-only access to instruction memory location 15
+const INSTR_MEM15_OFFSET: u32 = 0x00000084
+const INSTR_MEM15_INSTR_MEM15_MASK: u32 = 0x0000ffff
+const INSTR_MEM15_INSTR_MEM15_SHIFT: u32 = 0
+
+// Write-only access to instruction memory location 16
+const INSTR_MEM16_OFFSET: u32 = 0x00000088
+const INSTR_MEM16_INSTR_MEM16_MASK: u32 = 0x0000ffff
+const INSTR_MEM16_INSTR_MEM16_SHIFT: u32 = 0
+
+// Write-only access to instruction memory location 17
+const INSTR_MEM17_OFFSET: u32 = 0x0000008c
+const INSTR_MEM17_INSTR_MEM17_MASK: u32 = 0x0000ffff
+const INSTR_MEM17_INSTR_MEM17_SHIFT: u32 = 0
+
+// Write-only access to instruction memory location 18
+const INSTR_MEM18_OFFSET: u32 = 0x00000090
+const INSTR_MEM18_INSTR_MEM18_MASK: u32 = 0x0000ffff
+const INSTR_MEM18_INSTR_MEM18_SHIFT: u32 = 0
+
+// Write-only access to instruction memory location 19
+const INSTR_MEM19_OFFSET: u32 = 0x00000094
+const INSTR_MEM19_INSTR_MEM19_MASK: u32 = 0x0000ffff
+const INSTR_MEM19_INSTR_MEM19_SHIFT: u32 = 0
+
+// Write-only access to instruction memory location 20
+const INSTR_MEM20_OFFSET: u32 = 0x00000098
+const INSTR_MEM20_INSTR_MEM20_MASK: u32 = 0x0000ffff
+const INSTR_MEM20_INSTR_MEM20_SHIFT: u32 = 0
+
+// Write-only access to instruction memory location 21
+const INSTR_MEM21_OFFSET: u32 = 0x0000009c
+const INSTR_MEM21_INSTR_MEM21_MASK: u32 = 0x0000ffff
+const INSTR_MEM21_INSTR_MEM21_SHIFT: u32 = 0
+
+// Write-only access to instruction memory location 22
+const INSTR_MEM22_OFFSET: u32 = 0x000000a0
+const INSTR_MEM22_INSTR_MEM22_MASK: u32 = 0x0000ffff
+const INSTR_MEM22_INSTR_MEM22_SHIFT: u32 = 0
+
+// Write-only access to instruction memory location 23
+const INSTR_MEM23_OFFSET: u32 = 0x000000a4
+const INSTR_MEM23_INSTR_MEM23_MASK: u32 = 0x0000ffff
+const INSTR_MEM23_INSTR_MEM23_SHIFT: u32 = 0
+
+// Write-only access to instruction memory location 24
+const INSTR_MEM24_OFFSET: u32 = 0x000000a8
+const INSTR_MEM24_INSTR_MEM24_MASK: u32 = 0x0000ffff
+const INSTR_MEM24_INSTR_MEM24_SHIFT: u32 = 0
+
+// Write-only access to instruction memory location 25
+const INSTR_MEM25_OFFSET: u32 = 0x000000ac
+const INSTR_MEM25_INSTR_MEM25_MASK: u32 = 0x0000ffff
+const INSTR_MEM25_INSTR_MEM25_SHIFT: u32 = 0
+
+// Write-only access to instruction memory location 26
+const INSTR_MEM26_OFFSET: u32 = 0x000000b0
+const INSTR_MEM26_INSTR_MEM26_MASK: u32 = 0x0000ffff
+const INSTR_MEM26_INSTR_MEM26_SHIFT: u32 = 0
+
+// Write-only access to instruction memory location 27
+const INSTR_MEM27_OFFSET: u32 = 0x000000b4
+const INSTR_MEM27_INSTR_MEM27_MASK: u32 = 0x0000ffff
+const INSTR_MEM27_INSTR_MEM27_SHIFT: u32 = 0
+
+// Write-only access to instruction memory location 28
+const INSTR_MEM28_OFFSET: u32 = 0x000000b8
+const INSTR_MEM28_INSTR_MEM28_MASK: u32 = 0x0000ffff
+const INSTR_MEM28_INSTR_MEM28_SHIFT: u32 = 0
+
+// Write-only access to instruction memory location 29
+const INSTR_MEM29_OFFSET: u32 = 0x000000bc
+const INSTR_MEM29_INSTR_MEM29_MASK: u32 = 0x0000ffff
+const INSTR_MEM29_INSTR_MEM29_SHIFT: u32 = 0
+
+// Write-only access to instruction memory location 30
+const INSTR_MEM30_OFFSET: u32 = 0x000000c0
+const INSTR_MEM30_INSTR_MEM30_MASK: u32 = 0x0000ffff
+const INSTR_MEM30_INSTR_MEM30_SHIFT: u32 = 0
+
+// Write-only access to instruction memory location 31
+const INSTR_MEM31_OFFSET: u32 = 0x000000c4
+const INSTR_MEM31_INSTR_MEM31_MASK: u32 = 0x0000ffff
+const INSTR_MEM31_INSTR_MEM31_SHIFT: u32 = 0
+
+// Clock divisor register for state machine 0 Frequency = clock freq / (CLKDIV_INT + CLKDIV_FRAC /
+// 256)
+const SM0_CLKDIV_OFFSET: u32 = 0x000000c8
+const SM0_CLKDIV_INT_MASK: u32 = 0xffff0000
+const SM0_CLKDIV_INT_SHIFT: u32 = 16
+const SM0_CLKDIV_FRAC_MASK: u32 = 0x0000ff00
+const SM0_CLKDIV_FRAC_SHIFT: u32 = 8
+
+// Execution/behavioural settings for state machine 0
+const SM0_EXECCTRL_OFFSET: u32 = 0x000000cc
+const SM0_EXECCTRL_EXEC_STALLED_MASK: u32 = 0x80000000
+const SM0_EXECCTRL_EXEC_STALLED_SHIFT: u32 = 31
+const SM0_EXECCTRL_SIDE_EN_MASK: u32 = 0x40000000
+const SM0_EXECCTRL_SIDE_EN_SHIFT: u32 = 30
+const SM0_EXECCTRL_SIDE_PINDIR_MASK: u32 = 0x20000000
+const SM0_EXECCTRL_SIDE_PINDIR_SHIFT: u32 = 29
+const SM0_EXECCTRL_JMP_PIN_MASK: u32 = 0x1f000000
+const SM0_EXECCTRL_JMP_PIN_SHIFT: u32 = 24
+const SM0_EXECCTRL_OUT_EN_SEL_MASK: u32 = 0x00f80000
+const SM0_EXECCTRL_OUT_EN_SEL_SHIFT: u32 = 19
+const SM0_EXECCTRL_INLINE_OUT_EN_MASK: u32 = 0x00040000
+const SM0_EXECCTRL_INLINE_OUT_EN_SHIFT: u32 = 18
+const SM0_EXECCTRL_OUT_STICKY_MASK: u32 = 0x00020000
+const SM0_EXECCTRL_OUT_STICKY_SHIFT: u32 = 17
+const SM0_EXECCTRL_WRAP_TOP_MASK: u32 = 0x0001f000
+const SM0_EXECCTRL_WRAP_TOP_SHIFT: u32 = 12
+const SM0_EXECCTRL_WRAP_BOTTOM_MASK: u32 = 0x00000f80
+const SM0_EXECCTRL_WRAP_BOTTOM_SHIFT: u32 = 7
+const SM0_EXECCTRL_STATUS_SEL_MASK: u32 = 0x00000060
+const SM0_EXECCTRL_STATUS_SEL_SHIFT: u32 = 5
+const SM0_EXECCTRL_STATUS_SEL_TXLEVEL: u32 = 0
+const SM0_EXECCTRL_STATUS_SEL_RXLEVEL: u32 = 1
+const SM0_EXECCTRL_STATUS_SEL_IRQ: u32 = 2
+const SM0_EXECCTRL_STATUS_N_MASK: u32 = 0x0000001f
+const SM0_EXECCTRL_STATUS_N_SHIFT: u32 = 0
+const SM0_EXECCTRL_STATUS_N_IRQ: u32 = 0
+const SM0_EXECCTRL_STATUS_N_IRQ_PREVPIO: u32 = 8
+const SM0_EXECCTRL_STATUS_N_IRQ_NEXTPIO: u32 = 16
+
+// Control behaviour of the input/output shift registers for state machine 0
+const SM0_SHIFTCTRL_OFFSET: u32 = 0x000000d0
+const SM0_SHIFTCTRL_FJOIN_RX_MASK: u32 = 0x80000000
+const SM0_SHIFTCTRL_FJOIN_RX_SHIFT: u32 = 31
+const SM0_SHIFTCTRL_FJOIN_TX_MASK: u32 = 0x40000000
+const SM0_SHIFTCTRL_FJOIN_TX_SHIFT: u32 = 30
+const SM0_SHIFTCTRL_PULL_THRESH_MASK: u32 = 0x3e000000
+const SM0_SHIFTCTRL_PULL_THRESH_SHIFT: u32 = 25
+const SM0_SHIFTCTRL_PUSH_THRESH_MASK: u32 = 0x01f00000
+const SM0_SHIFTCTRL_PUSH_THRESH_SHIFT: u32 = 20
+const SM0_SHIFTCTRL_OUT_SHIFTDIR_MASK: u32 = 0x00080000
+const SM0_SHIFTCTRL_OUT_SHIFTDIR_SHIFT: u32 = 19
+const SM0_SHIFTCTRL_IN_SHIFTDIR_MASK: u32 = 0x00040000
+const SM0_SHIFTCTRL_IN_SHIFTDIR_SHIFT: u32 = 18
+const SM0_SHIFTCTRL_AUTOPULL_MASK: u32 = 0x00020000
+const SM0_SHIFTCTRL_AUTOPULL_SHIFT: u32 = 17
+const SM0_SHIFTCTRL_AUTOPUSH_MASK: u32 = 0x00010000
+const SM0_SHIFTCTRL_AUTOPUSH_SHIFT: u32 = 16
+const SM0_SHIFTCTRL_FJOIN_RX_PUT_MASK: u32 = 0x00008000
+const SM0_SHIFTCTRL_FJOIN_RX_PUT_SHIFT: u32 = 15
+const SM0_SHIFTCTRL_FJOIN_RX_GET_MASK: u32 = 0x00004000
+const SM0_SHIFTCTRL_FJOIN_RX_GET_SHIFT: u32 = 14
+const SM0_SHIFTCTRL_IN_COUNT_MASK: u32 = 0x0000001f
+const SM0_SHIFTCTRL_IN_COUNT_SHIFT: u32 = 0
+
+// Current instruction address of state machine 0
+const SM0_ADDR_OFFSET: u32 = 0x000000d4
+const SM0_ADDR_SM0_ADDR_MASK: u32 = 0x0000001f
+const SM0_ADDR_SM0_ADDR_SHIFT: u32 = 0
+
+// Read to see the instruction currently addressed by state machine 0's program counter Write to
+// execute an instruction immediately (including jumps) and then resume execution.
+const SM0_INSTR_OFFSET: u32 = 0x000000d8
+const SM0_INSTR_SM0_INSTR_MASK: u32 = 0x0000ffff
+const SM0_INSTR_SM0_INSTR_SHIFT: u32 = 0
+
+// State machine pin control
+const SM0_PINCTRL_OFFSET: u32 = 0x000000dc
+const SM0_PINCTRL_SIDESET_COUNT_MASK: u32 = 0xe0000000
+const SM0_PINCTRL_SIDESET_COUNT_SHIFT: u32 = 29
+const SM0_PINCTRL_SET_COUNT_MASK: u32 = 0x1c000000
+const SM0_PINCTRL_SET_COUNT_SHIFT: u32 = 26
+const SM0_PINCTRL_OUT_COUNT_MASK: u32 = 0x03f00000
+const SM0_PINCTRL_OUT_COUNT_SHIFT: u32 = 20
+const SM0_PINCTRL_IN_BASE_MASK: u32 = 0x000f8000
+const SM0_PINCTRL_IN_BASE_SHIFT: u32 = 15
+const SM0_PINCTRL_SIDESET_BASE_MASK: u32 = 0x00007c00
+const SM0_PINCTRL_SIDESET_BASE_SHIFT: u32 = 10
+const SM0_PINCTRL_SET_BASE_MASK: u32 = 0x000003e0
+const SM0_PINCTRL_SET_BASE_SHIFT: u32 = 5
+const SM0_PINCTRL_OUT_BASE_MASK: u32 = 0x0000001f
+const SM0_PINCTRL_OUT_BASE_SHIFT: u32 = 0
+
+// Clock divisor register for state machine 1 Frequency = clock freq / (CLKDIV_INT + CLKDIV_FRAC /
+// 256)
+const SM1_CLKDIV_OFFSET: u32 = 0x000000e0
+const SM1_CLKDIV_INT_MASK: u32 = 0xffff0000
+const SM1_CLKDIV_INT_SHIFT: u32 = 16
+const SM1_CLKDIV_FRAC_MASK: u32 = 0x0000ff00
+const SM1_CLKDIV_FRAC_SHIFT: u32 = 8
+
+// Execution/behavioural settings for state machine 1
+const SM1_EXECCTRL_OFFSET: u32 = 0x000000e4
+const SM1_EXECCTRL_EXEC_STALLED_MASK: u32 = 0x80000000
+const SM1_EXECCTRL_EXEC_STALLED_SHIFT: u32 = 31
+const SM1_EXECCTRL_SIDE_EN_MASK: u32 = 0x40000000
+const SM1_EXECCTRL_SIDE_EN_SHIFT: u32 = 30
+const SM1_EXECCTRL_SIDE_PINDIR_MASK: u32 = 0x20000000
+const SM1_EXECCTRL_SIDE_PINDIR_SHIFT: u32 = 29
+const SM1_EXECCTRL_JMP_PIN_MASK: u32 = 0x1f000000
+const SM1_EXECCTRL_JMP_PIN_SHIFT: u32 = 24
+const SM1_EXECCTRL_OUT_EN_SEL_MASK: u32 = 0x00f80000
+const SM1_EXECCTRL_OUT_EN_SEL_SHIFT: u32 = 19
+const SM1_EXECCTRL_INLINE_OUT_EN_MASK: u32 = 0x00040000
+const SM1_EXECCTRL_INLINE_OUT_EN_SHIFT: u32 = 18
+const SM1_EXECCTRL_OUT_STICKY_MASK: u32 = 0x00020000
+const SM1_EXECCTRL_OUT_STICKY_SHIFT: u32 = 17
+const SM1_EXECCTRL_WRAP_TOP_MASK: u32 = 0x0001f000
+const SM1_EXECCTRL_WRAP_TOP_SHIFT: u32 = 12
+const SM1_EXECCTRL_WRAP_BOTTOM_MASK: u32 = 0x00000f80
+const SM1_EXECCTRL_WRAP_BOTTOM_SHIFT: u32 = 7
+const SM1_EXECCTRL_STATUS_SEL_MASK: u32 = 0x00000060
+const SM1_EXECCTRL_STATUS_SEL_SHIFT: u32 = 5
+const SM1_EXECCTRL_STATUS_SEL_TXLEVEL: u32 = 0
+const SM1_EXECCTRL_STATUS_SEL_RXLEVEL: u32 = 1
+const SM1_EXECCTRL_STATUS_SEL_IRQ: u32 = 2
+const SM1_EXECCTRL_STATUS_N_MASK: u32 = 0x0000001f
+const SM1_EXECCTRL_STATUS_N_SHIFT: u32 = 0
+const SM1_EXECCTRL_STATUS_N_IRQ: u32 = 0
+const SM1_EXECCTRL_STATUS_N_IRQ_PREVPIO: u32 = 8
+const SM1_EXECCTRL_STATUS_N_IRQ_NEXTPIO: u32 = 16
+
+// Control behaviour of the input/output shift registers for state machine 1
+const SM1_SHIFTCTRL_OFFSET: u32 = 0x000000e8
+const SM1_SHIFTCTRL_FJOIN_RX_MASK: u32 = 0x80000000
+const SM1_SHIFTCTRL_FJOIN_RX_SHIFT: u32 = 31
+const SM1_SHIFTCTRL_FJOIN_TX_MASK: u32 = 0x40000000
+const SM1_SHIFTCTRL_FJOIN_TX_SHIFT: u32 = 30
+const SM1_SHIFTCTRL_PULL_THRESH_MASK: u32 = 0x3e000000
+const SM1_SHIFTCTRL_PULL_THRESH_SHIFT: u32 = 25
+const SM1_SHIFTCTRL_PUSH_THRESH_MASK: u32 = 0x01f00000
+const SM1_SHIFTCTRL_PUSH_THRESH_SHIFT: u32 = 20
+const SM1_SHIFTCTRL_OUT_SHIFTDIR_MASK: u32 = 0x00080000
+const SM1_SHIFTCTRL_OUT_SHIFTDIR_SHIFT: u32 = 19
+const SM1_SHIFTCTRL_IN_SHIFTDIR_MASK: u32 = 0x00040000
+const SM1_SHIFTCTRL_IN_SHIFTDIR_SHIFT: u32 = 18
+const SM1_SHIFTCTRL_AUTOPULL_MASK: u32 = 0x00020000
+const SM1_SHIFTCTRL_AUTOPULL_SHIFT: u32 = 17
+const SM1_SHIFTCTRL_AUTOPUSH_MASK: u32 = 0x00010000
+const SM1_SHIFTCTRL_AUTOPUSH_SHIFT: u32 = 16
+const SM1_SHIFTCTRL_FJOIN_RX_PUT_MASK: u32 = 0x00008000
+const SM1_SHIFTCTRL_FJOIN_RX_PUT_SHIFT: u32 = 15
+const SM1_SHIFTCTRL_FJOIN_RX_GET_MASK: u32 = 0x00004000
+const SM1_SHIFTCTRL_FJOIN_RX_GET_SHIFT: u32 = 14
+const SM1_SHIFTCTRL_IN_COUNT_MASK: u32 = 0x0000001f
+const SM1_SHIFTCTRL_IN_COUNT_SHIFT: u32 = 0
+
+// Current instruction address of state machine 1
+const SM1_ADDR_OFFSET: u32 = 0x000000ec
+const SM1_ADDR_SM1_ADDR_MASK: u32 = 0x0000001f
+const SM1_ADDR_SM1_ADDR_SHIFT: u32 = 0
+
+// Read to see the instruction currently addressed by state machine 1's program counter Write to
+// execute an instruction immediately (including jumps) and then resume execution.
+const SM1_INSTR_OFFSET: u32 = 0x000000f0
+const SM1_INSTR_SM1_INSTR_MASK: u32 = 0x0000ffff
+const SM1_INSTR_SM1_INSTR_SHIFT: u32 = 0
+
+// State machine pin control
+const SM1_PINCTRL_OFFSET: u32 = 0x000000f4
+const SM1_PINCTRL_SIDESET_COUNT_MASK: u32 = 0xe0000000
+const SM1_PINCTRL_SIDESET_COUNT_SHIFT: u32 = 29
+const SM1_PINCTRL_SET_COUNT_MASK: u32 = 0x1c000000
+const SM1_PINCTRL_SET_COUNT_SHIFT: u32 = 26
+const SM1_PINCTRL_OUT_COUNT_MASK: u32 = 0x03f00000
+const SM1_PINCTRL_OUT_COUNT_SHIFT: u32 = 20
+const SM1_PINCTRL_IN_BASE_MASK: u32 = 0x000f8000
+const SM1_PINCTRL_IN_BASE_SHIFT: u32 = 15
+const SM1_PINCTRL_SIDESET_BASE_MASK: u32 = 0x00007c00
+const SM1_PINCTRL_SIDESET_BASE_SHIFT: u32 = 10
+const SM1_PINCTRL_SET_BASE_MASK: u32 = 0x000003e0
+const SM1_PINCTRL_SET_BASE_SHIFT: u32 = 5
+const SM1_PINCTRL_OUT_BASE_MASK: u32 = 0x0000001f
+const SM1_PINCTRL_OUT_BASE_SHIFT: u32 = 0
+
+// Clock divisor register for state machine 2 Frequency = clock freq / (CLKDIV_INT + CLKDIV_FRAC /
+// 256)
+const SM2_CLKDIV_OFFSET: u32 = 0x000000f8
+const SM2_CLKDIV_INT_MASK: u32 = 0xffff0000
+const SM2_CLKDIV_INT_SHIFT: u32 = 16
+const SM2_CLKDIV_FRAC_MASK: u32 = 0x0000ff00
+const SM2_CLKDIV_FRAC_SHIFT: u32 = 8
+
+// Execution/behavioural settings for state machine 2
+const SM2_EXECCTRL_OFFSET: u32 = 0x000000fc
+const SM2_EXECCTRL_EXEC_STALLED_MASK: u32 = 0x80000000
+const SM2_EXECCTRL_EXEC_STALLED_SHIFT: u32 = 31
+const SM2_EXECCTRL_SIDE_EN_MASK: u32 = 0x40000000
+const SM2_EXECCTRL_SIDE_EN_SHIFT: u32 = 30
+const SM2_EXECCTRL_SIDE_PINDIR_MASK: u32 = 0x20000000
+const SM2_EXECCTRL_SIDE_PINDIR_SHIFT: u32 = 29
+const SM2_EXECCTRL_JMP_PIN_MASK: u32 = 0x1f000000
+const SM2_EXECCTRL_JMP_PIN_SHIFT: u32 = 24
+const SM2_EXECCTRL_OUT_EN_SEL_MASK: u32 = 0x00f80000
+const SM2_EXECCTRL_OUT_EN_SEL_SHIFT: u32 = 19
+const SM2_EXECCTRL_INLINE_OUT_EN_MASK: u32 = 0x00040000
+const SM2_EXECCTRL_INLINE_OUT_EN_SHIFT: u32 = 18
+const SM2_EXECCTRL_OUT_STICKY_MASK: u32 = 0x00020000
+const SM2_EXECCTRL_OUT_STICKY_SHIFT: u32 = 17
+const SM2_EXECCTRL_WRAP_TOP_MASK: u32 = 0x0001f000
+const SM2_EXECCTRL_WRAP_TOP_SHIFT: u32 = 12
+const SM2_EXECCTRL_WRAP_BOTTOM_MASK: u32 = 0x00000f80
+const SM2_EXECCTRL_WRAP_BOTTOM_SHIFT: u32 = 7
+const SM2_EXECCTRL_STATUS_SEL_MASK: u32 = 0x00000060
+const SM2_EXECCTRL_STATUS_SEL_SHIFT: u32 = 5
+const SM2_EXECCTRL_STATUS_SEL_TXLEVEL: u32 = 0
+const SM2_EXECCTRL_STATUS_SEL_RXLEVEL: u32 = 1
+const SM2_EXECCTRL_STATUS_SEL_IRQ: u32 = 2
+const SM2_EXECCTRL_STATUS_N_MASK: u32 = 0x0000001f
+const SM2_EXECCTRL_STATUS_N_SHIFT: u32 = 0
+const SM2_EXECCTRL_STATUS_N_IRQ: u32 = 0
+const SM2_EXECCTRL_STATUS_N_IRQ_PREVPIO: u32 = 8
+const SM2_EXECCTRL_STATUS_N_IRQ_NEXTPIO: u32 = 16
+
+// Control behaviour of the input/output shift registers for state machine 2
+const SM2_SHIFTCTRL_OFFSET: u32 = 0x00000100
+const SM2_SHIFTCTRL_FJOIN_RX_MASK: u32 = 0x80000000
+const SM2_SHIFTCTRL_FJOIN_RX_SHIFT: u32 = 31
+const SM2_SHIFTCTRL_FJOIN_TX_MASK: u32 = 0x40000000
+const SM2_SHIFTCTRL_FJOIN_TX_SHIFT: u32 = 30
+const SM2_SHIFTCTRL_PULL_THRESH_MASK: u32 = 0x3e000000
+const SM2_SHIFTCTRL_PULL_THRESH_SHIFT: u32 = 25
+const SM2_SHIFTCTRL_PUSH_THRESH_MASK: u32 = 0x01f00000
+const SM2_SHIFTCTRL_PUSH_THRESH_SHIFT: u32 = 20
+const SM2_SHIFTCTRL_OUT_SHIFTDIR_MASK: u32 = 0x00080000
+const SM2_SHIFTCTRL_OUT_SHIFTDIR_SHIFT: u32 = 19
+const SM2_SHIFTCTRL_IN_SHIFTDIR_MASK: u32 = 0x00040000
+const SM2_SHIFTCTRL_IN_SHIFTDIR_SHIFT: u32 = 18
+const SM2_SHIFTCTRL_AUTOPULL_MASK: u32 = 0x00020000
+const SM2_SHIFTCTRL_AUTOPULL_SHIFT: u32 = 17
+const SM2_SHIFTCTRL_AUTOPUSH_MASK: u32 = 0x00010000
+const SM2_SHIFTCTRL_AUTOPUSH_SHIFT: u32 = 16
+const SM2_SHIFTCTRL_FJOIN_RX_PUT_MASK: u32 = 0x00008000
+const SM2_SHIFTCTRL_FJOIN_RX_PUT_SHIFT: u32 = 15
+const SM2_SHIFTCTRL_FJOIN_RX_GET_MASK: u32 = 0x00004000
+const SM2_SHIFTCTRL_FJOIN_RX_GET_SHIFT: u32 = 14
+const SM2_SHIFTCTRL_IN_COUNT_MASK: u32 = 0x0000001f
+const SM2_SHIFTCTRL_IN_COUNT_SHIFT: u32 = 0
+
+// Current instruction address of state machine 2
+const SM2_ADDR_OFFSET: u32 = 0x00000104
+const SM2_ADDR_SM2_ADDR_MASK: u32 = 0x0000001f
+const SM2_ADDR_SM2_ADDR_SHIFT: u32 = 0
+
+// Read to see the instruction currently addressed by state machine 2's program counter Write to
+// execute an instruction immediately (including jumps) and then resume execution.
+const SM2_INSTR_OFFSET: u32 = 0x00000108
+const SM2_INSTR_SM2_INSTR_MASK: u32 = 0x0000ffff
+const SM2_INSTR_SM2_INSTR_SHIFT: u32 = 0
+
+// State machine pin control
+const SM2_PINCTRL_OFFSET: u32 = 0x0000010c
+const SM2_PINCTRL_SIDESET_COUNT_MASK: u32 = 0xe0000000
+const SM2_PINCTRL_SIDESET_COUNT_SHIFT: u32 = 29
+const SM2_PINCTRL_SET_COUNT_MASK: u32 = 0x1c000000
+const SM2_PINCTRL_SET_COUNT_SHIFT: u32 = 26
+const SM2_PINCTRL_OUT_COUNT_MASK: u32 = 0x03f00000
+const SM2_PINCTRL_OUT_COUNT_SHIFT: u32 = 20
+const SM2_PINCTRL_IN_BASE_MASK: u32 = 0x000f8000
+const SM2_PINCTRL_IN_BASE_SHIFT: u32 = 15
+const SM2_PINCTRL_SIDESET_BASE_MASK: u32 = 0x00007c00
+const SM2_PINCTRL_SIDESET_BASE_SHIFT: u32 = 10
+const SM2_PINCTRL_SET_BASE_MASK: u32 = 0x000003e0
+const SM2_PINCTRL_SET_BASE_SHIFT: u32 = 5
+const SM2_PINCTRL_OUT_BASE_MASK: u32 = 0x0000001f
+const SM2_PINCTRL_OUT_BASE_SHIFT: u32 = 0
+
+// Clock divisor register for state machine 3 Frequency = clock freq / (CLKDIV_INT + CLKDIV_FRAC /
+// 256)
+const SM3_CLKDIV_OFFSET: u32 = 0x00000110
+const SM3_CLKDIV_INT_MASK: u32 = 0xffff0000
+const SM3_CLKDIV_INT_SHIFT: u32 = 16
+const SM3_CLKDIV_FRAC_MASK: u32 = 0x0000ff00
+const SM3_CLKDIV_FRAC_SHIFT: u32 = 8
+
+// Execution/behavioural settings for state machine 3
+const SM3_EXECCTRL_OFFSET: u32 = 0x00000114
+const SM3_EXECCTRL_EXEC_STALLED_MASK: u32 = 0x80000000
+const SM3_EXECCTRL_EXEC_STALLED_SHIFT: u32 = 31
+const SM3_EXECCTRL_SIDE_EN_MASK: u32 = 0x40000000
+const SM3_EXECCTRL_SIDE_EN_SHIFT: u32 = 30
+const SM3_EXECCTRL_SIDE_PINDIR_MASK: u32 = 0x20000000
+const SM3_EXECCTRL_SIDE_PINDIR_SHIFT: u32 = 29
+const SM3_EXECCTRL_JMP_PIN_MASK: u32 = 0x1f000000
+const SM3_EXECCTRL_JMP_PIN_SHIFT: u32 = 24
+const SM3_EXECCTRL_OUT_EN_SEL_MASK: u32 = 0x00f80000
+const SM3_EXECCTRL_OUT_EN_SEL_SHIFT: u32 = 19
+const SM3_EXECCTRL_INLINE_OUT_EN_MASK: u32 = 0x00040000
+const SM3_EXECCTRL_INLINE_OUT_EN_SHIFT: u32 = 18
+const SM3_EXECCTRL_OUT_STICKY_MASK: u32 = 0x00020000
+const SM3_EXECCTRL_OUT_STICKY_SHIFT: u32 = 17
+const SM3_EXECCTRL_WRAP_TOP_MASK: u32 = 0x0001f000
+const SM3_EXECCTRL_WRAP_TOP_SHIFT: u32 = 12
+const SM3_EXECCTRL_WRAP_BOTTOM_MASK: u32 = 0x00000f80
+const SM3_EXECCTRL_WRAP_BOTTOM_SHIFT: u32 = 7
+const SM3_EXECCTRL_STATUS_SEL_MASK: u32 = 0x00000060
+const SM3_EXECCTRL_STATUS_SEL_SHIFT: u32 = 5
+const SM3_EXECCTRL_STATUS_SEL_TXLEVEL: u32 = 0
+const SM3_EXECCTRL_STATUS_SEL_RXLEVEL: u32 = 1
+const SM3_EXECCTRL_STATUS_SEL_IRQ: u32 = 2
+const SM3_EXECCTRL_STATUS_N_MASK: u32 = 0x0000001f
+const SM3_EXECCTRL_STATUS_N_SHIFT: u32 = 0
+const SM3_EXECCTRL_STATUS_N_IRQ: u32 = 0
+const SM3_EXECCTRL_STATUS_N_IRQ_PREVPIO: u32 = 8
+const SM3_EXECCTRL_STATUS_N_IRQ_NEXTPIO: u32 = 16
+
+// Control behaviour of the input/output shift registers for state machine 3
+const SM3_SHIFTCTRL_OFFSET: u32 = 0x00000118
+const SM3_SHIFTCTRL_FJOIN_RX_MASK: u32 = 0x80000000
+const SM3_SHIFTCTRL_FJOIN_RX_SHIFT: u32 = 31
+const SM3_SHIFTCTRL_FJOIN_TX_MASK: u32 = 0x40000000
+const SM3_SHIFTCTRL_FJOIN_TX_SHIFT: u32 = 30
+const SM3_SHIFTCTRL_PULL_THRESH_MASK: u32 = 0x3e000000
+const SM3_SHIFTCTRL_PULL_THRESH_SHIFT: u32 = 25
+const SM3_SHIFTCTRL_PUSH_THRESH_MASK: u32 = 0x01f00000
+const SM3_SHIFTCTRL_PUSH_THRESH_SHIFT: u32 = 20
+const SM3_SHIFTCTRL_OUT_SHIFTDIR_MASK: u32 = 0x00080000
+const SM3_SHIFTCTRL_OUT_SHIFTDIR_SHIFT: u32 = 19
+const SM3_SHIFTCTRL_IN_SHIFTDIR_MASK: u32 = 0x00040000
+const SM3_SHIFTCTRL_IN_SHIFTDIR_SHIFT: u32 = 18
+const SM3_SHIFTCTRL_AUTOPULL_MASK: u32 = 0x00020000
+const SM3_SHIFTCTRL_AUTOPULL_SHIFT: u32 = 17
+const SM3_SHIFTCTRL_AUTOPUSH_MASK: u32 = 0x00010000
+const SM3_SHIFTCTRL_AUTOPUSH_SHIFT: u32 = 16
+const SM3_SHIFTCTRL_FJOIN_RX_PUT_MASK: u32 = 0x00008000
+const SM3_SHIFTCTRL_FJOIN_RX_PUT_SHIFT: u32 = 15
+const SM3_SHIFTCTRL_FJOIN_RX_GET_MASK: u32 = 0x00004000
+const SM3_SHIFTCTRL_FJOIN_RX_GET_SHIFT: u32 = 14
+const SM3_SHIFTCTRL_IN_COUNT_MASK: u32 = 0x0000001f
+const SM3_SHIFTCTRL_IN_COUNT_SHIFT: u32 = 0
+
+// Current instruction address of state machine 3
+const SM3_ADDR_OFFSET: u32 = 0x0000011c
+const SM3_ADDR_SM3_ADDR_MASK: u32 = 0x0000001f
+const SM3_ADDR_SM3_ADDR_SHIFT: u32 = 0
+
+// Read to see the instruction currently addressed by state machine 3's program counter Write to
+// execute an instruction immediately (including jumps) and then resume execution.
+const SM3_INSTR_OFFSET: u32 = 0x00000120
+const SM3_INSTR_SM3_INSTR_MASK: u32 = 0x0000ffff
+const SM3_INSTR_SM3_INSTR_SHIFT: u32 = 0
+
+// State machine pin control
+const SM3_PINCTRL_OFFSET: u32 = 0x00000124
+const SM3_PINCTRL_SIDESET_COUNT_MASK: u32 = 0xe0000000
+const SM3_PINCTRL_SIDESET_COUNT_SHIFT: u32 = 29
+const SM3_PINCTRL_SET_COUNT_MASK: u32 = 0x1c000000
+const SM3_PINCTRL_SET_COUNT_SHIFT: u32 = 26
+const SM3_PINCTRL_OUT_COUNT_MASK: u32 = 0x03f00000
+const SM3_PINCTRL_OUT_COUNT_SHIFT: u32 = 20
+const SM3_PINCTRL_IN_BASE_MASK: u32 = 0x000f8000
+const SM3_PINCTRL_IN_BASE_SHIFT: u32 = 15
+const SM3_PINCTRL_SIDESET_BASE_MASK: u32 = 0x00007c00
+const SM3_PINCTRL_SIDESET_BASE_SHIFT: u32 = 10
+const SM3_PINCTRL_SET_BASE_MASK: u32 = 0x000003e0
+const SM3_PINCTRL_SET_BASE_SHIFT: u32 = 5
+const SM3_PINCTRL_OUT_BASE_MASK: u32 = 0x0000001f
+const SM3_PINCTRL_OUT_BASE_SHIFT: u32 = 0
+
+// Direct read/write access to entry 0 of SM0's RX FIFO, if SHIFTCTRL_FJOIN_RX_PUT xor
+// SHIFTCTRL_FJOIN_RX_GET is set.
+const RXF0_PUTGET0_OFFSET: u32 = 0x00000128
+const RXF0_PUTGET0_RXF0_PUTGET0_MASK: u32 = 0xffffffff
+const RXF0_PUTGET0_RXF0_PUTGET0_SHIFT: u32 = 0
+
+// Direct read/write access to entry 1 of SM0's RX FIFO, if SHIFTCTRL_FJOIN_RX_PUT xor
+// SHIFTCTRL_FJOIN_RX_GET is set.
+const RXF0_PUTGET1_OFFSET: u32 = 0x0000012c
+const RXF0_PUTGET1_RXF0_PUTGET1_MASK: u32 = 0xffffffff
+const RXF0_PUTGET1_RXF0_PUTGET1_SHIFT: u32 = 0
+
+// Direct read/write access to entry 2 of SM0's RX FIFO, if SHIFTCTRL_FJOIN_RX_PUT xor
+// SHIFTCTRL_FJOIN_RX_GET is set.
+const RXF0_PUTGET2_OFFSET: u32 = 0x00000130
+const RXF0_PUTGET2_RXF0_PUTGET2_MASK: u32 = 0xffffffff
+const RXF0_PUTGET2_RXF0_PUTGET2_SHIFT: u32 = 0
+
+// Direct read/write access to entry 3 of SM0's RX FIFO, if SHIFTCTRL_FJOIN_RX_PUT xor
+// SHIFTCTRL_FJOIN_RX_GET is set.
+const RXF0_PUTGET3_OFFSET: u32 = 0x00000134
+const RXF0_PUTGET3_RXF0_PUTGET3_MASK: u32 = 0xffffffff
+const RXF0_PUTGET3_RXF0_PUTGET3_SHIFT: u32 = 0
+
+// Direct read/write access to entry 0 of SM1's RX FIFO, if SHIFTCTRL_FJOIN_RX_PUT xor
+// SHIFTCTRL_FJOIN_RX_GET is set.
+const RXF1_PUTGET0_OFFSET: u32 = 0x00000138
+const RXF1_PUTGET0_RXF1_PUTGET0_MASK: u32 = 0xffffffff
+const RXF1_PUTGET0_RXF1_PUTGET0_SHIFT: u32 = 0
+
+// Direct read/write access to entry 1 of SM1's RX FIFO, if SHIFTCTRL_FJOIN_RX_PUT xor
+// SHIFTCTRL_FJOIN_RX_GET is set.
+const RXF1_PUTGET1_OFFSET: u32 = 0x0000013c
+const RXF1_PUTGET1_RXF1_PUTGET1_MASK: u32 = 0xffffffff
+const RXF1_PUTGET1_RXF1_PUTGET1_SHIFT: u32 = 0
+
+// Direct read/write access to entry 2 of SM1's RX FIFO, if SHIFTCTRL_FJOIN_RX_PUT xor
+// SHIFTCTRL_FJOIN_RX_GET is set.
+const RXF1_PUTGET2_OFFSET: u32 = 0x00000140
+const RXF1_PUTGET2_RXF1_PUTGET2_MASK: u32 = 0xffffffff
+const RXF1_PUTGET2_RXF1_PUTGET2_SHIFT: u32 = 0
+
+// Direct read/write access to entry 3 of SM1's RX FIFO, if SHIFTCTRL_FJOIN_RX_PUT xor
+// SHIFTCTRL_FJOIN_RX_GET is set.
+const RXF1_PUTGET3_OFFSET: u32 = 0x00000144
+const RXF1_PUTGET3_RXF1_PUTGET3_MASK: u32 = 0xffffffff
+const RXF1_PUTGET3_RXF1_PUTGET3_SHIFT: u32 = 0
+
+// Direct read/write access to entry 0 of SM2's RX FIFO, if SHIFTCTRL_FJOIN_RX_PUT xor
+// SHIFTCTRL_FJOIN_RX_GET is set.
+const RXF2_PUTGET0_OFFSET: u32 = 0x00000148
+const RXF2_PUTGET0_RXF2_PUTGET0_MASK: u32 = 0xffffffff
+const RXF2_PUTGET0_RXF2_PUTGET0_SHIFT: u32 = 0
+
+// Direct read/write access to entry 1 of SM2's RX FIFO, if SHIFTCTRL_FJOIN_RX_PUT xor
+// SHIFTCTRL_FJOIN_RX_GET is set.
+const RXF2_PUTGET1_OFFSET: u32 = 0x0000014c
+const RXF2_PUTGET1_RXF2_PUTGET1_MASK: u32 = 0xffffffff
+const RXF2_PUTGET1_RXF2_PUTGET1_SHIFT: u32 = 0
+
+// Direct read/write access to entry 2 of SM2's RX FIFO, if SHIFTCTRL_FJOIN_RX_PUT xor
+// SHIFTCTRL_FJOIN_RX_GET is set.
+const RXF2_PUTGET2_OFFSET: u32 = 0x00000150
+const RXF2_PUTGET2_RXF2_PUTGET2_MASK: u32 = 0xffffffff
+const RXF2_PUTGET2_RXF2_PUTGET2_SHIFT: u32 = 0
+
+// Direct read/write access to entry 3 of SM2's RX FIFO, if SHIFTCTRL_FJOIN_RX_PUT xor
+// SHIFTCTRL_FJOIN_RX_GET is set.
+const RXF2_PUTGET3_OFFSET: u32 = 0x00000154
+const RXF2_PUTGET3_RXF2_PUTGET3_MASK: u32 = 0xffffffff
+const RXF2_PUTGET3_RXF2_PUTGET3_SHIFT: u32 = 0
+
+// Direct read/write access to entry 0 of SM3's RX FIFO, if SHIFTCTRL_FJOIN_RX_PUT xor
+// SHIFTCTRL_FJOIN_RX_GET is set.
+const RXF3_PUTGET0_OFFSET: u32 = 0x00000158
+const RXF3_PUTGET0_RXF3_PUTGET0_MASK: u32 = 0xffffffff
+const RXF3_PUTGET0_RXF3_PUTGET0_SHIFT: u32 = 0
+
+// Direct read/write access to entry 1 of SM3's RX FIFO, if SHIFTCTRL_FJOIN_RX_PUT xor
+// SHIFTCTRL_FJOIN_RX_GET is set.
+const RXF3_PUTGET1_OFFSET: u32 = 0x0000015c
+const RXF3_PUTGET1_RXF3_PUTGET1_MASK: u32 = 0xffffffff
+const RXF3_PUTGET1_RXF3_PUTGET1_SHIFT: u32 = 0
+
+// Direct read/write access to entry 2 of SM3's RX FIFO, if SHIFTCTRL_FJOIN_RX_PUT xor
+// SHIFTCTRL_FJOIN_RX_GET is set.
+const RXF3_PUTGET2_OFFSET: u32 = 0x00000160
+const RXF3_PUTGET2_RXF3_PUTGET2_MASK: u32 = 0xffffffff
+const RXF3_PUTGET2_RXF3_PUTGET2_SHIFT: u32 = 0
+
+// Direct read/write access to entry 3 of SM3's RX FIFO, if SHIFTCTRL_FJOIN_RX_PUT xor
+// SHIFTCTRL_FJOIN_RX_GET is set.
+const RXF3_PUTGET3_OFFSET: u32 = 0x00000164
+const RXF3_PUTGET3_RXF3_PUTGET3_MASK: u32 = 0xffffffff
+const RXF3_PUTGET3_RXF3_PUTGET3_SHIFT: u32 = 0
+
+// Relocate GPIO 0 (from PIO's point of view) in the system GPIO numbering, to access more than 32
+// GPIOs from PIO. Only the values 0 and 16 are supported (only bit 4 is writable).
+const GPIOBASE_OFFSET: u32 = 0x00000168
+const GPIOBASE_GPIOBASE_MASK: u32 = 0x00000010
+const GPIOBASE_GPIOBASE_SHIFT: u32 = 4
+
+// Raw Interrupts
+const INTR_OFFSET: u32 = 0x0000016c
+const INTR_SM7_MASK: u32 = 0x00008000
+const INTR_SM7_SHIFT: u32 = 15
+const INTR_SM6_MASK: u32 = 0x00004000
+const INTR_SM6_SHIFT: u32 = 14
+const INTR_SM5_MASK: u32 = 0x00002000
+const INTR_SM5_SHIFT: u32 = 13
+const INTR_SM4_MASK: u32 = 0x00001000
+const INTR_SM4_SHIFT: u32 = 12
+const INTR_SM3_MASK: u32 = 0x00000800
+const INTR_SM3_SHIFT: u32 = 11
+const INTR_SM2_MASK: u32 = 0x00000400
+const INTR_SM2_SHIFT: u32 = 10
+const INTR_SM1_MASK: u32 = 0x00000200
+const INTR_SM1_SHIFT: u32 = 9
+const INTR_SM0_MASK: u32 = 0x00000100
+const INTR_SM0_SHIFT: u32 = 8
+const INTR_SM3_TXNFULL_MASK: u32 = 0x00000080
+const INTR_SM3_TXNFULL_SHIFT: u32 = 7
+const INTR_SM2_TXNFULL_MASK: u32 = 0x00000040
+const INTR_SM2_TXNFULL_SHIFT: u32 = 6
+const INTR_SM1_TXNFULL_MASK: u32 = 0x00000020
+const INTR_SM1_TXNFULL_SHIFT: u32 = 5
+const INTR_SM0_TXNFULL_MASK: u32 = 0x00000010
+const INTR_SM0_TXNFULL_SHIFT: u32 = 4
+const INTR_SM3_RXNEMPTY_MASK: u32 = 0x00000008
+const INTR_SM3_RXNEMPTY_SHIFT: u32 = 3
+const INTR_SM2_RXNEMPTY_MASK: u32 = 0x00000004
+const INTR_SM2_RXNEMPTY_SHIFT: u32 = 2
+const INTR_SM1_RXNEMPTY_MASK: u32 = 0x00000002
+const INTR_SM1_RXNEMPTY_SHIFT: u32 = 1
+const INTR_SM0_RXNEMPTY_MASK: u32 = 0x00000001
+const INTR_SM0_RXNEMPTY_SHIFT: u32 = 0
+
+// Interrupt Enable for irq0
+const IRQ0_INTE_OFFSET: u32 = 0x00000170
+const IRQ0_INTE_SM7_MASK: u32 = 0x00008000
+const IRQ0_INTE_SM7_SHIFT: u32 = 15
+const IRQ0_INTE_SM6_MASK: u32 = 0x00004000
+const IRQ0_INTE_SM6_SHIFT: u32 = 14
+const IRQ0_INTE_SM5_MASK: u32 = 0x00002000
+const IRQ0_INTE_SM5_SHIFT: u32 = 13
+const IRQ0_INTE_SM4_MASK: u32 = 0x00001000
+const IRQ0_INTE_SM4_SHIFT: u32 = 12
+const IRQ0_INTE_SM3_MASK: u32 = 0x00000800
+const IRQ0_INTE_SM3_SHIFT: u32 = 11
+const IRQ0_INTE_SM2_MASK: u32 = 0x00000400
+const IRQ0_INTE_SM2_SHIFT: u32 = 10
+const IRQ0_INTE_SM1_MASK: u32 = 0x00000200
+const IRQ0_INTE_SM1_SHIFT: u32 = 9
+const IRQ0_INTE_SM0_MASK: u32 = 0x00000100
+const IRQ0_INTE_SM0_SHIFT: u32 = 8
+const IRQ0_INTE_SM3_TXNFULL_MASK: u32 = 0x00000080
+const IRQ0_INTE_SM3_TXNFULL_SHIFT: u32 = 7
+const IRQ0_INTE_SM2_TXNFULL_MASK: u32 = 0x00000040
+const IRQ0_INTE_SM2_TXNFULL_SHIFT: u32 = 6
+const IRQ0_INTE_SM1_TXNFULL_MASK: u32 = 0x00000020
+const IRQ0_INTE_SM1_TXNFULL_SHIFT: u32 = 5
+const IRQ0_INTE_SM0_TXNFULL_MASK: u32 = 0x00000010
+const IRQ0_INTE_SM0_TXNFULL_SHIFT: u32 = 4
+const IRQ0_INTE_SM3_RXNEMPTY_MASK: u32 = 0x00000008
+const IRQ0_INTE_SM3_RXNEMPTY_SHIFT: u32 = 3
+const IRQ0_INTE_SM2_RXNEMPTY_MASK: u32 = 0x00000004
+const IRQ0_INTE_SM2_RXNEMPTY_SHIFT: u32 = 2
+const IRQ0_INTE_SM1_RXNEMPTY_MASK: u32 = 0x00000002
+const IRQ0_INTE_SM1_RXNEMPTY_SHIFT: u32 = 1
+const IRQ0_INTE_SM0_RXNEMPTY_MASK: u32 = 0x00000001
+const IRQ0_INTE_SM0_RXNEMPTY_SHIFT: u32 = 0
+
+// Interrupt Force for irq0
+const IRQ0_INTF_OFFSET: u32 = 0x00000174
+const IRQ0_INTF_SM7_MASK: u32 = 0x00008000
+const IRQ0_INTF_SM7_SHIFT: u32 = 15
+const IRQ0_INTF_SM6_MASK: u32 = 0x00004000
+const IRQ0_INTF_SM6_SHIFT: u32 = 14
+const IRQ0_INTF_SM5_MASK: u32 = 0x00002000
+const IRQ0_INTF_SM5_SHIFT: u32 = 13
+const IRQ0_INTF_SM4_MASK: u32 = 0x00001000
+const IRQ0_INTF_SM4_SHIFT: u32 = 12
+const IRQ0_INTF_SM3_MASK: u32 = 0x00000800
+const IRQ0_INTF_SM3_SHIFT: u32 = 11
+const IRQ0_INTF_SM2_MASK: u32 = 0x00000400
+const IRQ0_INTF_SM2_SHIFT: u32 = 10
+const IRQ0_INTF_SM1_MASK: u32 = 0x00000200
+const IRQ0_INTF_SM1_SHIFT: u32 = 9
+const IRQ0_INTF_SM0_MASK: u32 = 0x00000100
+const IRQ0_INTF_SM0_SHIFT: u32 = 8
+const IRQ0_INTF_SM3_TXNFULL_MASK: u32 = 0x00000080
+const IRQ0_INTF_SM3_TXNFULL_SHIFT: u32 = 7
+const IRQ0_INTF_SM2_TXNFULL_MASK: u32 = 0x00000040
+const IRQ0_INTF_SM2_TXNFULL_SHIFT: u32 = 6
+const IRQ0_INTF_SM1_TXNFULL_MASK: u32 = 0x00000020
+const IRQ0_INTF_SM1_TXNFULL_SHIFT: u32 = 5
+const IRQ0_INTF_SM0_TXNFULL_MASK: u32 = 0x00000010
+const IRQ0_INTF_SM0_TXNFULL_SHIFT: u32 = 4
+const IRQ0_INTF_SM3_RXNEMPTY_MASK: u32 = 0x00000008
+const IRQ0_INTF_SM3_RXNEMPTY_SHIFT: u32 = 3
+const IRQ0_INTF_SM2_RXNEMPTY_MASK: u32 = 0x00000004
+const IRQ0_INTF_SM2_RXNEMPTY_SHIFT: u32 = 2
+const IRQ0_INTF_SM1_RXNEMPTY_MASK: u32 = 0x00000002
+const IRQ0_INTF_SM1_RXNEMPTY_SHIFT: u32 = 1
+const IRQ0_INTF_SM0_RXNEMPTY_MASK: u32 = 0x00000001
+const IRQ0_INTF_SM0_RXNEMPTY_SHIFT: u32 = 0
+
+// Interrupt status after masking & forcing for irq0
+const IRQ0_INTS_OFFSET: u32 = 0x00000178
+const IRQ0_INTS_SM7_MASK: u32 = 0x00008000
+const IRQ0_INTS_SM7_SHIFT: u32 = 15
+const IRQ0_INTS_SM6_MASK: u32 = 0x00004000
+const IRQ0_INTS_SM6_SHIFT: u32 = 14
+const IRQ0_INTS_SM5_MASK: u32 = 0x00002000
+const IRQ0_INTS_SM5_SHIFT: u32 = 13
+const IRQ0_INTS_SM4_MASK: u32 = 0x00001000
+const IRQ0_INTS_SM4_SHIFT: u32 = 12
+const IRQ0_INTS_SM3_MASK: u32 = 0x00000800
+const IRQ0_INTS_SM3_SHIFT: u32 = 11
+const IRQ0_INTS_SM2_MASK: u32 = 0x00000400
+const IRQ0_INTS_SM2_SHIFT: u32 = 10
+const IRQ0_INTS_SM1_MASK: u32 = 0x00000200
+const IRQ0_INTS_SM1_SHIFT: u32 = 9
+const IRQ0_INTS_SM0_MASK: u32 = 0x00000100
+const IRQ0_INTS_SM0_SHIFT: u32 = 8
+const IRQ0_INTS_SM3_TXNFULL_MASK: u32 = 0x00000080
+const IRQ0_INTS_SM3_TXNFULL_SHIFT: u32 = 7
+const IRQ0_INTS_SM2_TXNFULL_MASK: u32 = 0x00000040
+const IRQ0_INTS_SM2_TXNFULL_SHIFT: u32 = 6
+const IRQ0_INTS_SM1_TXNFULL_MASK: u32 = 0x00000020
+const IRQ0_INTS_SM1_TXNFULL_SHIFT: u32 = 5
+const IRQ0_INTS_SM0_TXNFULL_MASK: u32 = 0x00000010
+const IRQ0_INTS_SM0_TXNFULL_SHIFT: u32 = 4
+const IRQ0_INTS_SM3_RXNEMPTY_MASK: u32 = 0x00000008
+const IRQ0_INTS_SM3_RXNEMPTY_SHIFT: u32 = 3
+const IRQ0_INTS_SM2_RXNEMPTY_MASK: u32 = 0x00000004
+const IRQ0_INTS_SM2_RXNEMPTY_SHIFT: u32 = 2
+const IRQ0_INTS_SM1_RXNEMPTY_MASK: u32 = 0x00000002
+const IRQ0_INTS_SM1_RXNEMPTY_SHIFT: u32 = 1
+const IRQ0_INTS_SM0_RXNEMPTY_MASK: u32 = 0x00000001
+const IRQ0_INTS_SM0_RXNEMPTY_SHIFT: u32 = 0
+
+// Interrupt Enable for irq1
+const IRQ1_INTE_OFFSET: u32 = 0x0000017c
+const IRQ1_INTE_SM7_MASK: u32 = 0x00008000
+const IRQ1_INTE_SM7_SHIFT: u32 = 15
+const IRQ1_INTE_SM6_MASK: u32 = 0x00004000
+const IRQ1_INTE_SM6_SHIFT: u32 = 14
+const IRQ1_INTE_SM5_MASK: u32 = 0x00002000
+const IRQ1_INTE_SM5_SHIFT: u32 = 13
+const IRQ1_INTE_SM4_MASK: u32 = 0x00001000
+const IRQ1_INTE_SM4_SHIFT: u32 = 12
+const IRQ1_INTE_SM3_MASK: u32 = 0x00000800
+const IRQ1_INTE_SM3_SHIFT: u32 = 11
+const IRQ1_INTE_SM2_MASK: u32 = 0x00000400
+const IRQ1_INTE_SM2_SHIFT: u32 = 10
+const IRQ1_INTE_SM1_MASK: u32 = 0x00000200
+const IRQ1_INTE_SM1_SHIFT: u32 = 9
+const IRQ1_INTE_SM0_MASK: u32 = 0x00000100
+const IRQ1_INTE_SM0_SHIFT: u32 = 8
+const IRQ1_INTE_SM3_TXNFULL_MASK: u32 = 0x00000080
+const IRQ1_INTE_SM3_TXNFULL_SHIFT: u32 = 7
+const IRQ1_INTE_SM2_TXNFULL_MASK: u32 = 0x00000040
+const IRQ1_INTE_SM2_TXNFULL_SHIFT: u32 = 6
+const IRQ1_INTE_SM1_TXNFULL_MASK: u32 = 0x00000020
+const IRQ1_INTE_SM1_TXNFULL_SHIFT: u32 = 5
+const IRQ1_INTE_SM0_TXNFULL_MASK: u32 = 0x00000010
+const IRQ1_INTE_SM0_TXNFULL_SHIFT: u32 = 4
+const IRQ1_INTE_SM3_RXNEMPTY_MASK: u32 = 0x00000008
+const IRQ1_INTE_SM3_RXNEMPTY_SHIFT: u32 = 3
+const IRQ1_INTE_SM2_RXNEMPTY_MASK: u32 = 0x00000004
+const IRQ1_INTE_SM2_RXNEMPTY_SHIFT: u32 = 2
+const IRQ1_INTE_SM1_RXNEMPTY_MASK: u32 = 0x00000002
+const IRQ1_INTE_SM1_RXNEMPTY_SHIFT: u32 = 1
+const IRQ1_INTE_SM0_RXNEMPTY_MASK: u32 = 0x00000001
+const IRQ1_INTE_SM0_RXNEMPTY_SHIFT: u32 = 0
+
+// Interrupt Force for irq1
+const IRQ1_INTF_OFFSET: u32 = 0x00000180
+const IRQ1_INTF_SM7_MASK: u32 = 0x00008000
+const IRQ1_INTF_SM7_SHIFT: u32 = 15
+const IRQ1_INTF_SM6_MASK: u32 = 0x00004000
+const IRQ1_INTF_SM6_SHIFT: u32 = 14
+const IRQ1_INTF_SM5_MASK: u32 = 0x00002000
+const IRQ1_INTF_SM5_SHIFT: u32 = 13
+const IRQ1_INTF_SM4_MASK: u32 = 0x00001000
+const IRQ1_INTF_SM4_SHIFT: u32 = 12
+const IRQ1_INTF_SM3_MASK: u32 = 0x00000800
+const IRQ1_INTF_SM3_SHIFT: u32 = 11
+const IRQ1_INTF_SM2_MASK: u32 = 0x00000400
+const IRQ1_INTF_SM2_SHIFT: u32 = 10
+const IRQ1_INTF_SM1_MASK: u32 = 0x00000200
+const IRQ1_INTF_SM1_SHIFT: u32 = 9
+const IRQ1_INTF_SM0_MASK: u32 = 0x00000100
+const IRQ1_INTF_SM0_SHIFT: u32 = 8
+const IRQ1_INTF_SM3_TXNFULL_MASK: u32 = 0x00000080
+const IRQ1_INTF_SM3_TXNFULL_SHIFT: u32 = 7
+const IRQ1_INTF_SM2_TXNFULL_MASK: u32 = 0x00000040
+const IRQ1_INTF_SM2_TXNFULL_SHIFT: u32 = 6
+const IRQ1_INTF_SM1_TXNFULL_MASK: u32 = 0x00000020
+const IRQ1_INTF_SM1_TXNFULL_SHIFT: u32 = 5
+const IRQ1_INTF_SM0_TXNFULL_MASK: u32 = 0x00000010
+const IRQ1_INTF_SM0_TXNFULL_SHIFT: u32 = 4
+const IRQ1_INTF_SM3_RXNEMPTY_MASK: u32 = 0x00000008
+const IRQ1_INTF_SM3_RXNEMPTY_SHIFT: u32 = 3
+const IRQ1_INTF_SM2_RXNEMPTY_MASK: u32 = 0x00000004
+const IRQ1_INTF_SM2_RXNEMPTY_SHIFT: u32 = 2
+const IRQ1_INTF_SM1_RXNEMPTY_MASK: u32 = 0x00000002
+const IRQ1_INTF_SM1_RXNEMPTY_SHIFT: u32 = 1
+const IRQ1_INTF_SM0_RXNEMPTY_MASK: u32 = 0x00000001
+const IRQ1_INTF_SM0_RXNEMPTY_SHIFT: u32 = 0
+
+// Interrupt status after masking & forcing for irq1
+const IRQ1_INTS_OFFSET: u32 = 0x00000184
+const IRQ1_INTS_SM7_MASK: u32 = 0x00008000
+const IRQ1_INTS_SM7_SHIFT: u32 = 15
+const IRQ1_INTS_SM6_MASK: u32 = 0x00004000
+const IRQ1_INTS_SM6_SHIFT: u32 = 14
+const IRQ1_INTS_SM5_MASK: u32 = 0x00002000
+const IRQ1_INTS_SM5_SHIFT: u32 = 13
+const IRQ1_INTS_SM4_MASK: u32 = 0x00001000
+const IRQ1_INTS_SM4_SHIFT: u32 = 12
+const IRQ1_INTS_SM3_MASK: u32 = 0x00000800
+const IRQ1_INTS_SM3_SHIFT: u32 = 11
+const IRQ1_INTS_SM2_MASK: u32 = 0x00000400
+const IRQ1_INTS_SM2_SHIFT: u32 = 10
+const IRQ1_INTS_SM1_MASK: u32 = 0x00000200
+const IRQ1_INTS_SM1_SHIFT: u32 = 9
+const IRQ1_INTS_SM0_MASK: u32 = 0x00000100
+const IRQ1_INTS_SM0_SHIFT: u32 = 8
+const IRQ1_INTS_SM3_TXNFULL_MASK: u32 = 0x00000080
+const IRQ1_INTS_SM3_TXNFULL_SHIFT: u32 = 7
+const IRQ1_INTS_SM2_TXNFULL_MASK: u32 = 0x00000040
+const IRQ1_INTS_SM2_TXNFULL_SHIFT: u32 = 6
+const IRQ1_INTS_SM1_TXNFULL_MASK: u32 = 0x00000020
+const IRQ1_INTS_SM1_TXNFULL_SHIFT: u32 = 5
+const IRQ1_INTS_SM0_TXNFULL_MASK: u32 = 0x00000010
+const IRQ1_INTS_SM0_TXNFULL_SHIFT: u32 = 4
+const IRQ1_INTS_SM3_RXNEMPTY_MASK: u32 = 0x00000008
+const IRQ1_INTS_SM3_RXNEMPTY_SHIFT: u32 = 3
+const IRQ1_INTS_SM2_RXNEMPTY_MASK: u32 = 0x00000004
+const IRQ1_INTS_SM2_RXNEMPTY_SHIFT: u32 = 2
+const IRQ1_INTS_SM1_RXNEMPTY_MASK: u32 = 0x00000002
+const IRQ1_INTS_SM1_RXNEMPTY_SHIFT: u32 = 1
+const IRQ1_INTS_SM0_RXNEMPTY_MASK: u32 = 0x00000001
+const IRQ1_INTS_SM0_RXNEMPTY_SHIFT: u32 = 0

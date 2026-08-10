@@ -1,0 +1,1260 @@
+// Hardware access control registers
+
+module sh.sysl.rp2350.accessctrl
+
+// The peripheral's base address. Every offset below is from here.
+const BASE: u32 = 0x40060000
+
+// Once a LOCK bit is written to 1, ACCESSCTRL silently ignores writes from that master. LOCK is
+// writable only by a Secure, Privileged processor or debugger. LOCK bits are only writable when
+// their value is zero. Once set, they can never be cleared, except by a full reset of ACCESSCTRL
+// Setting the LOCK bit does not affect whether an access raises a bus error. Unprivileged writes,
+// or writes from the DMA, will continue to raise bus errors. All other accesses will continue not
+// to.
+const LOCK_OFFSET: u32 = 0x00000000
+const LOCK_DEBUG_MASK: u32 = 0x00000008
+const LOCK_DEBUG_SHIFT: u32 = 3
+const LOCK_DMA_MASK: u32 = 0x00000004
+const LOCK_DMA_SHIFT: u32 = 2
+const LOCK_CORE1_MASK: u32 = 0x00000002
+const LOCK_CORE1_SHIFT: u32 = 1
+const LOCK_CORE0_MASK: u32 = 0x00000001
+const LOCK_CORE0_SHIFT: u32 = 0
+
+// Force core 1's bus accesses to always be Non-secure, no matter the core's internal state. Useful
+// for schemes where one core is designated as the Non-secure core, since some peripherals may
+// filter individual registers internally based on security state but not on master ID.
+const FORCE_CORE_NS_OFFSET: u32 = 0x00000004
+const FORCE_CORE_NS_CORE1_MASK: u32 = 0x00000002
+const FORCE_CORE_NS_CORE1_SHIFT: u32 = 1
+
+// Write 1 to reset all ACCESSCTRL configuration, except for the LOCK and FORCE_CORE_NS registers.
+// This bit is used in the RP2350 bootrom to quickly restore ACCESSCTRL to a known state during the
+// boot path. Note that, like all registers in ACCESSCTRL, this register is not writable when the
+// writer's corresponding LOCK bit is set, therefore a master which has been locked out of
+// ACCESSCTRL can not use the CFGRESET register to disturb its contents.
+const CFGRESET_OFFSET: u32 = 0x00000008
+const CFGRESET_CFGRESET_MASK: u32 = 0x00000001
+const CFGRESET_CFGRESET_SHIFT: u32 = 0
+
+// Control whether GPIO0...31 are accessible to Non-secure code. Writable only by a Secure,
+// Privileged processor or debugger. 0 -> Secure access only 1 -> Secure + Non-secure access
+const GPIO_NSMASK0_OFFSET: u32 = 0x0000000c
+const GPIO_NSMASK0_GPIO_NSMASK0_MASK: u32 = 0xffffffff
+const GPIO_NSMASK0_GPIO_NSMASK0_SHIFT: u32 = 0
+
+// Control whether GPIO32..47 are accessible to Non-secure code, and whether QSPI and USB bitbang
+// are accessible through the Non-secure SIO. Writable only by a Secure, Privileged processor or
+// debugger.
+const GPIO_NSMASK1_OFFSET: u32 = 0x00000010
+const GPIO_NSMASK1_QSPI_SD_MASK: u32 = 0xf0000000
+const GPIO_NSMASK1_QSPI_SD_SHIFT: u32 = 28
+const GPIO_NSMASK1_QSPI_CSN_MASK: u32 = 0x08000000
+const GPIO_NSMASK1_QSPI_CSN_SHIFT: u32 = 27
+const GPIO_NSMASK1_QSPI_SCK_MASK: u32 = 0x04000000
+const GPIO_NSMASK1_QSPI_SCK_SHIFT: u32 = 26
+const GPIO_NSMASK1_USB_DM_MASK: u32 = 0x02000000
+const GPIO_NSMASK1_USB_DM_SHIFT: u32 = 25
+const GPIO_NSMASK1_USB_DP_MASK: u32 = 0x01000000
+const GPIO_NSMASK1_USB_DP_SHIFT: u32 = 24
+const GPIO_NSMASK1_GPIO_MASK: u32 = 0x0000ffff
+const GPIO_NSMASK1_GPIO_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access ROM, and at what security/privilege
+// levels they can do so. Defaults to fully open access. This register is writable only from a
+// Secure, Privileged processor or debugger, with the exception of the NSU bit, which becomes
+// Non-secure-Privileged-writable when the NSP bit is set.
+const ROM_OFFSET: u32 = 0x00000014
+const ROM_DBG_MASK: u32 = 0x00000080
+const ROM_DBG_SHIFT: u32 = 7
+const ROM_DMA_MASK: u32 = 0x00000040
+const ROM_DMA_SHIFT: u32 = 6
+const ROM_CORE1_MASK: u32 = 0x00000020
+const ROM_CORE1_SHIFT: u32 = 5
+const ROM_CORE0_MASK: u32 = 0x00000010
+const ROM_CORE0_SHIFT: u32 = 4
+const ROM_SP_MASK: u32 = 0x00000008
+const ROM_SP_SHIFT: u32 = 3
+const ROM_SU_MASK: u32 = 0x00000004
+const ROM_SU_SHIFT: u32 = 2
+const ROM_NSP_MASK: u32 = 0x00000002
+const ROM_NSP_SHIFT: u32 = 1
+const ROM_NSU_MASK: u32 = 0x00000001
+const ROM_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access XIP_MAIN, and at what
+// security/privilege levels they can do so. Defaults to fully open access. This register is
+// writable only from a Secure, Privileged processor or debugger, with the exception of the NSU
+// bit, which becomes Non-secure-Privileged-writable when the NSP bit is set.
+const XIP_MAIN_OFFSET: u32 = 0x00000018
+const XIP_MAIN_DBG_MASK: u32 = 0x00000080
+const XIP_MAIN_DBG_SHIFT: u32 = 7
+const XIP_MAIN_DMA_MASK: u32 = 0x00000040
+const XIP_MAIN_DMA_SHIFT: u32 = 6
+const XIP_MAIN_CORE1_MASK: u32 = 0x00000020
+const XIP_MAIN_CORE1_SHIFT: u32 = 5
+const XIP_MAIN_CORE0_MASK: u32 = 0x00000010
+const XIP_MAIN_CORE0_SHIFT: u32 = 4
+const XIP_MAIN_SP_MASK: u32 = 0x00000008
+const XIP_MAIN_SP_SHIFT: u32 = 3
+const XIP_MAIN_SU_MASK: u32 = 0x00000004
+const XIP_MAIN_SU_SHIFT: u32 = 2
+const XIP_MAIN_NSP_MASK: u32 = 0x00000002
+const XIP_MAIN_NSP_SHIFT: u32 = 1
+const XIP_MAIN_NSU_MASK: u32 = 0x00000001
+const XIP_MAIN_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access SRAM0, and at what
+// security/privilege levels they can do so. Defaults to fully open access. This register is
+// writable only from a Secure, Privileged processor or debugger, with the exception of the NSU
+// bit, which becomes Non-secure-Privileged-writable when the NSP bit is set.
+const SRAM0_OFFSET: u32 = 0x0000001c
+const SRAM0_DBG_MASK: u32 = 0x00000080
+const SRAM0_DBG_SHIFT: u32 = 7
+const SRAM0_DMA_MASK: u32 = 0x00000040
+const SRAM0_DMA_SHIFT: u32 = 6
+const SRAM0_CORE1_MASK: u32 = 0x00000020
+const SRAM0_CORE1_SHIFT: u32 = 5
+const SRAM0_CORE0_MASK: u32 = 0x00000010
+const SRAM0_CORE0_SHIFT: u32 = 4
+const SRAM0_SP_MASK: u32 = 0x00000008
+const SRAM0_SP_SHIFT: u32 = 3
+const SRAM0_SU_MASK: u32 = 0x00000004
+const SRAM0_SU_SHIFT: u32 = 2
+const SRAM0_NSP_MASK: u32 = 0x00000002
+const SRAM0_NSP_SHIFT: u32 = 1
+const SRAM0_NSU_MASK: u32 = 0x00000001
+const SRAM0_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access SRAM1, and at what
+// security/privilege levels they can do so. Defaults to fully open access. This register is
+// writable only from a Secure, Privileged processor or debugger, with the exception of the NSU
+// bit, which becomes Non-secure-Privileged-writable when the NSP bit is set.
+const SRAM1_OFFSET: u32 = 0x00000020
+const SRAM1_DBG_MASK: u32 = 0x00000080
+const SRAM1_DBG_SHIFT: u32 = 7
+const SRAM1_DMA_MASK: u32 = 0x00000040
+const SRAM1_DMA_SHIFT: u32 = 6
+const SRAM1_CORE1_MASK: u32 = 0x00000020
+const SRAM1_CORE1_SHIFT: u32 = 5
+const SRAM1_CORE0_MASK: u32 = 0x00000010
+const SRAM1_CORE0_SHIFT: u32 = 4
+const SRAM1_SP_MASK: u32 = 0x00000008
+const SRAM1_SP_SHIFT: u32 = 3
+const SRAM1_SU_MASK: u32 = 0x00000004
+const SRAM1_SU_SHIFT: u32 = 2
+const SRAM1_NSP_MASK: u32 = 0x00000002
+const SRAM1_NSP_SHIFT: u32 = 1
+const SRAM1_NSU_MASK: u32 = 0x00000001
+const SRAM1_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access SRAM2, and at what
+// security/privilege levels they can do so. Defaults to fully open access. This register is
+// writable only from a Secure, Privileged processor or debugger, with the exception of the NSU
+// bit, which becomes Non-secure-Privileged-writable when the NSP bit is set.
+const SRAM2_OFFSET: u32 = 0x00000024
+const SRAM2_DBG_MASK: u32 = 0x00000080
+const SRAM2_DBG_SHIFT: u32 = 7
+const SRAM2_DMA_MASK: u32 = 0x00000040
+const SRAM2_DMA_SHIFT: u32 = 6
+const SRAM2_CORE1_MASK: u32 = 0x00000020
+const SRAM2_CORE1_SHIFT: u32 = 5
+const SRAM2_CORE0_MASK: u32 = 0x00000010
+const SRAM2_CORE0_SHIFT: u32 = 4
+const SRAM2_SP_MASK: u32 = 0x00000008
+const SRAM2_SP_SHIFT: u32 = 3
+const SRAM2_SU_MASK: u32 = 0x00000004
+const SRAM2_SU_SHIFT: u32 = 2
+const SRAM2_NSP_MASK: u32 = 0x00000002
+const SRAM2_NSP_SHIFT: u32 = 1
+const SRAM2_NSU_MASK: u32 = 0x00000001
+const SRAM2_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access SRAM3, and at what
+// security/privilege levels they can do so. Defaults to fully open access. This register is
+// writable only from a Secure, Privileged processor or debugger, with the exception of the NSU
+// bit, which becomes Non-secure-Privileged-writable when the NSP bit is set.
+const SRAM3_OFFSET: u32 = 0x00000028
+const SRAM3_DBG_MASK: u32 = 0x00000080
+const SRAM3_DBG_SHIFT: u32 = 7
+const SRAM3_DMA_MASK: u32 = 0x00000040
+const SRAM3_DMA_SHIFT: u32 = 6
+const SRAM3_CORE1_MASK: u32 = 0x00000020
+const SRAM3_CORE1_SHIFT: u32 = 5
+const SRAM3_CORE0_MASK: u32 = 0x00000010
+const SRAM3_CORE0_SHIFT: u32 = 4
+const SRAM3_SP_MASK: u32 = 0x00000008
+const SRAM3_SP_SHIFT: u32 = 3
+const SRAM3_SU_MASK: u32 = 0x00000004
+const SRAM3_SU_SHIFT: u32 = 2
+const SRAM3_NSP_MASK: u32 = 0x00000002
+const SRAM3_NSP_SHIFT: u32 = 1
+const SRAM3_NSU_MASK: u32 = 0x00000001
+const SRAM3_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access SRAM4, and at what
+// security/privilege levels they can do so. Defaults to fully open access. This register is
+// writable only from a Secure, Privileged processor or debugger, with the exception of the NSU
+// bit, which becomes Non-secure-Privileged-writable when the NSP bit is set.
+const SRAM4_OFFSET: u32 = 0x0000002c
+const SRAM4_DBG_MASK: u32 = 0x00000080
+const SRAM4_DBG_SHIFT: u32 = 7
+const SRAM4_DMA_MASK: u32 = 0x00000040
+const SRAM4_DMA_SHIFT: u32 = 6
+const SRAM4_CORE1_MASK: u32 = 0x00000020
+const SRAM4_CORE1_SHIFT: u32 = 5
+const SRAM4_CORE0_MASK: u32 = 0x00000010
+const SRAM4_CORE0_SHIFT: u32 = 4
+const SRAM4_SP_MASK: u32 = 0x00000008
+const SRAM4_SP_SHIFT: u32 = 3
+const SRAM4_SU_MASK: u32 = 0x00000004
+const SRAM4_SU_SHIFT: u32 = 2
+const SRAM4_NSP_MASK: u32 = 0x00000002
+const SRAM4_NSP_SHIFT: u32 = 1
+const SRAM4_NSU_MASK: u32 = 0x00000001
+const SRAM4_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access SRAM5, and at what
+// security/privilege levels they can do so. Defaults to fully open access. This register is
+// writable only from a Secure, Privileged processor or debugger, with the exception of the NSU
+// bit, which becomes Non-secure-Privileged-writable when the NSP bit is set.
+const SRAM5_OFFSET: u32 = 0x00000030
+const SRAM5_DBG_MASK: u32 = 0x00000080
+const SRAM5_DBG_SHIFT: u32 = 7
+const SRAM5_DMA_MASK: u32 = 0x00000040
+const SRAM5_DMA_SHIFT: u32 = 6
+const SRAM5_CORE1_MASK: u32 = 0x00000020
+const SRAM5_CORE1_SHIFT: u32 = 5
+const SRAM5_CORE0_MASK: u32 = 0x00000010
+const SRAM5_CORE0_SHIFT: u32 = 4
+const SRAM5_SP_MASK: u32 = 0x00000008
+const SRAM5_SP_SHIFT: u32 = 3
+const SRAM5_SU_MASK: u32 = 0x00000004
+const SRAM5_SU_SHIFT: u32 = 2
+const SRAM5_NSP_MASK: u32 = 0x00000002
+const SRAM5_NSP_SHIFT: u32 = 1
+const SRAM5_NSU_MASK: u32 = 0x00000001
+const SRAM5_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access SRAM6, and at what
+// security/privilege levels they can do so. Defaults to fully open access. This register is
+// writable only from a Secure, Privileged processor or debugger, with the exception of the NSU
+// bit, which becomes Non-secure-Privileged-writable when the NSP bit is set.
+const SRAM6_OFFSET: u32 = 0x00000034
+const SRAM6_DBG_MASK: u32 = 0x00000080
+const SRAM6_DBG_SHIFT: u32 = 7
+const SRAM6_DMA_MASK: u32 = 0x00000040
+const SRAM6_DMA_SHIFT: u32 = 6
+const SRAM6_CORE1_MASK: u32 = 0x00000020
+const SRAM6_CORE1_SHIFT: u32 = 5
+const SRAM6_CORE0_MASK: u32 = 0x00000010
+const SRAM6_CORE0_SHIFT: u32 = 4
+const SRAM6_SP_MASK: u32 = 0x00000008
+const SRAM6_SP_SHIFT: u32 = 3
+const SRAM6_SU_MASK: u32 = 0x00000004
+const SRAM6_SU_SHIFT: u32 = 2
+const SRAM6_NSP_MASK: u32 = 0x00000002
+const SRAM6_NSP_SHIFT: u32 = 1
+const SRAM6_NSU_MASK: u32 = 0x00000001
+const SRAM6_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access SRAM7, and at what
+// security/privilege levels they can do so. Defaults to fully open access. This register is
+// writable only from a Secure, Privileged processor or debugger, with the exception of the NSU
+// bit, which becomes Non-secure-Privileged-writable when the NSP bit is set.
+const SRAM7_OFFSET: u32 = 0x00000038
+const SRAM7_DBG_MASK: u32 = 0x00000080
+const SRAM7_DBG_SHIFT: u32 = 7
+const SRAM7_DMA_MASK: u32 = 0x00000040
+const SRAM7_DMA_SHIFT: u32 = 6
+const SRAM7_CORE1_MASK: u32 = 0x00000020
+const SRAM7_CORE1_SHIFT: u32 = 5
+const SRAM7_CORE0_MASK: u32 = 0x00000010
+const SRAM7_CORE0_SHIFT: u32 = 4
+const SRAM7_SP_MASK: u32 = 0x00000008
+const SRAM7_SP_SHIFT: u32 = 3
+const SRAM7_SU_MASK: u32 = 0x00000004
+const SRAM7_SU_SHIFT: u32 = 2
+const SRAM7_NSP_MASK: u32 = 0x00000002
+const SRAM7_NSP_SHIFT: u32 = 1
+const SRAM7_NSU_MASK: u32 = 0x00000001
+const SRAM7_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access SRAM8, and at what
+// security/privilege levels they can do so. Defaults to fully open access. This register is
+// writable only from a Secure, Privileged processor or debugger, with the exception of the NSU
+// bit, which becomes Non-secure-Privileged-writable when the NSP bit is set.
+const SRAM8_OFFSET: u32 = 0x0000003c
+const SRAM8_DBG_MASK: u32 = 0x00000080
+const SRAM8_DBG_SHIFT: u32 = 7
+const SRAM8_DMA_MASK: u32 = 0x00000040
+const SRAM8_DMA_SHIFT: u32 = 6
+const SRAM8_CORE1_MASK: u32 = 0x00000020
+const SRAM8_CORE1_SHIFT: u32 = 5
+const SRAM8_CORE0_MASK: u32 = 0x00000010
+const SRAM8_CORE0_SHIFT: u32 = 4
+const SRAM8_SP_MASK: u32 = 0x00000008
+const SRAM8_SP_SHIFT: u32 = 3
+const SRAM8_SU_MASK: u32 = 0x00000004
+const SRAM8_SU_SHIFT: u32 = 2
+const SRAM8_NSP_MASK: u32 = 0x00000002
+const SRAM8_NSP_SHIFT: u32 = 1
+const SRAM8_NSU_MASK: u32 = 0x00000001
+const SRAM8_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access SRAM9, and at what
+// security/privilege levels they can do so. Defaults to fully open access. This register is
+// writable only from a Secure, Privileged processor or debugger, with the exception of the NSU
+// bit, which becomes Non-secure-Privileged-writable when the NSP bit is set.
+const SRAM9_OFFSET: u32 = 0x00000040
+const SRAM9_DBG_MASK: u32 = 0x00000080
+const SRAM9_DBG_SHIFT: u32 = 7
+const SRAM9_DMA_MASK: u32 = 0x00000040
+const SRAM9_DMA_SHIFT: u32 = 6
+const SRAM9_CORE1_MASK: u32 = 0x00000020
+const SRAM9_CORE1_SHIFT: u32 = 5
+const SRAM9_CORE0_MASK: u32 = 0x00000010
+const SRAM9_CORE0_SHIFT: u32 = 4
+const SRAM9_SP_MASK: u32 = 0x00000008
+const SRAM9_SP_SHIFT: u32 = 3
+const SRAM9_SU_MASK: u32 = 0x00000004
+const SRAM9_SU_SHIFT: u32 = 2
+const SRAM9_NSP_MASK: u32 = 0x00000002
+const SRAM9_NSP_SHIFT: u32 = 1
+const SRAM9_NSU_MASK: u32 = 0x00000001
+const SRAM9_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access DMA, and at what security/privilege
+// levels they can do so. Defaults to Secure access from any master. This register is writable only
+// from a Secure, Privileged processor or debugger, with the exception of the NSU bit, which
+// becomes Non-secure-Privileged-writable when the NSP bit is set.
+const DMA_OFFSET: u32 = 0x00000044
+const DMA_DBG_MASK: u32 = 0x00000080
+const DMA_DBG_SHIFT: u32 = 7
+const DMA_DMA_MASK: u32 = 0x00000040
+const DMA_DMA_SHIFT: u32 = 6
+const DMA_CORE1_MASK: u32 = 0x00000020
+const DMA_CORE1_SHIFT: u32 = 5
+const DMA_CORE0_MASK: u32 = 0x00000010
+const DMA_CORE0_SHIFT: u32 = 4
+const DMA_SP_MASK: u32 = 0x00000008
+const DMA_SP_SHIFT: u32 = 3
+const DMA_SU_MASK: u32 = 0x00000004
+const DMA_SU_SHIFT: u32 = 2
+const DMA_NSP_MASK: u32 = 0x00000002
+const DMA_NSP_SHIFT: u32 = 1
+const DMA_NSU_MASK: u32 = 0x00000001
+const DMA_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access USBCTRL, and at what
+// security/privilege levels they can do so. Defaults to Secure access from any master. This
+// register is writable only from a Secure, Privileged processor or debugger, with the exception of
+// the NSU bit, which becomes Non-secure-Privileged-writable when the NSP bit is set.
+const USBCTRL_OFFSET: u32 = 0x00000048
+const USBCTRL_DBG_MASK: u32 = 0x00000080
+const USBCTRL_DBG_SHIFT: u32 = 7
+const USBCTRL_DMA_MASK: u32 = 0x00000040
+const USBCTRL_DMA_SHIFT: u32 = 6
+const USBCTRL_CORE1_MASK: u32 = 0x00000020
+const USBCTRL_CORE1_SHIFT: u32 = 5
+const USBCTRL_CORE0_MASK: u32 = 0x00000010
+const USBCTRL_CORE0_SHIFT: u32 = 4
+const USBCTRL_SP_MASK: u32 = 0x00000008
+const USBCTRL_SP_SHIFT: u32 = 3
+const USBCTRL_SU_MASK: u32 = 0x00000004
+const USBCTRL_SU_SHIFT: u32 = 2
+const USBCTRL_NSP_MASK: u32 = 0x00000002
+const USBCTRL_NSP_SHIFT: u32 = 1
+const USBCTRL_NSU_MASK: u32 = 0x00000001
+const USBCTRL_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access PIO0, and at what security/privilege
+// levels they can do so. Defaults to Secure access from any master. This register is writable only
+// from a Secure, Privileged processor or debugger, with the exception of the NSU bit, which
+// becomes Non-secure-Privileged-writable when the NSP bit is set.
+const PIO0_OFFSET: u32 = 0x0000004c
+const PIO0_DBG_MASK: u32 = 0x00000080
+const PIO0_DBG_SHIFT: u32 = 7
+const PIO0_DMA_MASK: u32 = 0x00000040
+const PIO0_DMA_SHIFT: u32 = 6
+const PIO0_CORE1_MASK: u32 = 0x00000020
+const PIO0_CORE1_SHIFT: u32 = 5
+const PIO0_CORE0_MASK: u32 = 0x00000010
+const PIO0_CORE0_SHIFT: u32 = 4
+const PIO0_SP_MASK: u32 = 0x00000008
+const PIO0_SP_SHIFT: u32 = 3
+const PIO0_SU_MASK: u32 = 0x00000004
+const PIO0_SU_SHIFT: u32 = 2
+const PIO0_NSP_MASK: u32 = 0x00000002
+const PIO0_NSP_SHIFT: u32 = 1
+const PIO0_NSU_MASK: u32 = 0x00000001
+const PIO0_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access PIO1, and at what security/privilege
+// levels they can do so. Defaults to Secure access from any master. This register is writable only
+// from a Secure, Privileged processor or debugger, with the exception of the NSU bit, which
+// becomes Non-secure-Privileged-writable when the NSP bit is set.
+const PIO1_OFFSET: u32 = 0x00000050
+const PIO1_DBG_MASK: u32 = 0x00000080
+const PIO1_DBG_SHIFT: u32 = 7
+const PIO1_DMA_MASK: u32 = 0x00000040
+const PIO1_DMA_SHIFT: u32 = 6
+const PIO1_CORE1_MASK: u32 = 0x00000020
+const PIO1_CORE1_SHIFT: u32 = 5
+const PIO1_CORE0_MASK: u32 = 0x00000010
+const PIO1_CORE0_SHIFT: u32 = 4
+const PIO1_SP_MASK: u32 = 0x00000008
+const PIO1_SP_SHIFT: u32 = 3
+const PIO1_SU_MASK: u32 = 0x00000004
+const PIO1_SU_SHIFT: u32 = 2
+const PIO1_NSP_MASK: u32 = 0x00000002
+const PIO1_NSP_SHIFT: u32 = 1
+const PIO1_NSU_MASK: u32 = 0x00000001
+const PIO1_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access PIO2, and at what security/privilege
+// levels they can do so. Defaults to Secure access from any master. This register is writable only
+// from a Secure, Privileged processor or debugger, with the exception of the NSU bit, which
+// becomes Non-secure-Privileged-writable when the NSP bit is set.
+const PIO2_OFFSET: u32 = 0x00000054
+const PIO2_DBG_MASK: u32 = 0x00000080
+const PIO2_DBG_SHIFT: u32 = 7
+const PIO2_DMA_MASK: u32 = 0x00000040
+const PIO2_DMA_SHIFT: u32 = 6
+const PIO2_CORE1_MASK: u32 = 0x00000020
+const PIO2_CORE1_SHIFT: u32 = 5
+const PIO2_CORE0_MASK: u32 = 0x00000010
+const PIO2_CORE0_SHIFT: u32 = 4
+const PIO2_SP_MASK: u32 = 0x00000008
+const PIO2_SP_SHIFT: u32 = 3
+const PIO2_SU_MASK: u32 = 0x00000004
+const PIO2_SU_SHIFT: u32 = 2
+const PIO2_NSP_MASK: u32 = 0x00000002
+const PIO2_NSP_SHIFT: u32 = 1
+const PIO2_NSU_MASK: u32 = 0x00000001
+const PIO2_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access CORESIGHT_TRACE, and at what
+// security/privilege levels they can do so. Defaults to Secure, Privileged processor or debug
+// access only. This register is writable only from a Secure, Privileged processor or debugger,
+// with the exception of the NSU bit, which becomes Non-secure-Privileged-writable when the NSP bit
+// is set.
+const CORESIGHT_TRACE_OFFSET: u32 = 0x00000058
+const CORESIGHT_TRACE_DBG_MASK: u32 = 0x00000080
+const CORESIGHT_TRACE_DBG_SHIFT: u32 = 7
+const CORESIGHT_TRACE_DMA_MASK: u32 = 0x00000040
+const CORESIGHT_TRACE_DMA_SHIFT: u32 = 6
+const CORESIGHT_TRACE_CORE1_MASK: u32 = 0x00000020
+const CORESIGHT_TRACE_CORE1_SHIFT: u32 = 5
+const CORESIGHT_TRACE_CORE0_MASK: u32 = 0x00000010
+const CORESIGHT_TRACE_CORE0_SHIFT: u32 = 4
+const CORESIGHT_TRACE_SP_MASK: u32 = 0x00000008
+const CORESIGHT_TRACE_SP_SHIFT: u32 = 3
+const CORESIGHT_TRACE_SU_MASK: u32 = 0x00000004
+const CORESIGHT_TRACE_SU_SHIFT: u32 = 2
+const CORESIGHT_TRACE_NSP_MASK: u32 = 0x00000002
+const CORESIGHT_TRACE_NSP_SHIFT: u32 = 1
+const CORESIGHT_TRACE_NSU_MASK: u32 = 0x00000001
+const CORESIGHT_TRACE_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access CORESIGHT_PERIPH, and at what
+// security/privilege levels they can do so. Defaults to Secure, Privileged processor or debug
+// access only. This register is writable only from a Secure, Privileged processor or debugger,
+// with the exception of the NSU bit, which becomes Non-secure-Privileged-writable when the NSP bit
+// is set.
+const CORESIGHT_PERIPH_OFFSET: u32 = 0x0000005c
+const CORESIGHT_PERIPH_DBG_MASK: u32 = 0x00000080
+const CORESIGHT_PERIPH_DBG_SHIFT: u32 = 7
+const CORESIGHT_PERIPH_DMA_MASK: u32 = 0x00000040
+const CORESIGHT_PERIPH_DMA_SHIFT: u32 = 6
+const CORESIGHT_PERIPH_CORE1_MASK: u32 = 0x00000020
+const CORESIGHT_PERIPH_CORE1_SHIFT: u32 = 5
+const CORESIGHT_PERIPH_CORE0_MASK: u32 = 0x00000010
+const CORESIGHT_PERIPH_CORE0_SHIFT: u32 = 4
+const CORESIGHT_PERIPH_SP_MASK: u32 = 0x00000008
+const CORESIGHT_PERIPH_SP_SHIFT: u32 = 3
+const CORESIGHT_PERIPH_SU_MASK: u32 = 0x00000004
+const CORESIGHT_PERIPH_SU_SHIFT: u32 = 2
+const CORESIGHT_PERIPH_NSP_MASK: u32 = 0x00000002
+const CORESIGHT_PERIPH_NSP_SHIFT: u32 = 1
+const CORESIGHT_PERIPH_NSU_MASK: u32 = 0x00000001
+const CORESIGHT_PERIPH_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access SYSINFO, and at what
+// security/privilege levels they can do so. Defaults to fully open access. This register is
+// writable only from a Secure, Privileged processor or debugger, with the exception of the NSU
+// bit, which becomes Non-secure-Privileged-writable when the NSP bit is set.
+const SYSINFO_OFFSET: u32 = 0x00000060
+const SYSINFO_DBG_MASK: u32 = 0x00000080
+const SYSINFO_DBG_SHIFT: u32 = 7
+const SYSINFO_DMA_MASK: u32 = 0x00000040
+const SYSINFO_DMA_SHIFT: u32 = 6
+const SYSINFO_CORE1_MASK: u32 = 0x00000020
+const SYSINFO_CORE1_SHIFT: u32 = 5
+const SYSINFO_CORE0_MASK: u32 = 0x00000010
+const SYSINFO_CORE0_SHIFT: u32 = 4
+const SYSINFO_SP_MASK: u32 = 0x00000008
+const SYSINFO_SP_SHIFT: u32 = 3
+const SYSINFO_SU_MASK: u32 = 0x00000004
+const SYSINFO_SU_SHIFT: u32 = 2
+const SYSINFO_NSP_MASK: u32 = 0x00000002
+const SYSINFO_NSP_SHIFT: u32 = 1
+const SYSINFO_NSU_MASK: u32 = 0x00000001
+const SYSINFO_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access RESETS, and at what
+// security/privilege levels they can do so. Defaults to Secure access from any master. This
+// register is writable only from a Secure, Privileged processor or debugger, with the exception of
+// the NSU bit, which becomes Non-secure-Privileged-writable when the NSP bit is set.
+const RESETS_OFFSET: u32 = 0x00000064
+const RESETS_DBG_MASK: u32 = 0x00000080
+const RESETS_DBG_SHIFT: u32 = 7
+const RESETS_DMA_MASK: u32 = 0x00000040
+const RESETS_DMA_SHIFT: u32 = 6
+const RESETS_CORE1_MASK: u32 = 0x00000020
+const RESETS_CORE1_SHIFT: u32 = 5
+const RESETS_CORE0_MASK: u32 = 0x00000010
+const RESETS_CORE0_SHIFT: u32 = 4
+const RESETS_SP_MASK: u32 = 0x00000008
+const RESETS_SP_SHIFT: u32 = 3
+const RESETS_SU_MASK: u32 = 0x00000004
+const RESETS_SU_SHIFT: u32 = 2
+const RESETS_NSP_MASK: u32 = 0x00000002
+const RESETS_NSP_SHIFT: u32 = 1
+const RESETS_NSU_MASK: u32 = 0x00000001
+const RESETS_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access IO_BANK0, and at what
+// security/privilege levels they can do so. Defaults to Secure access from any master. This
+// register is writable only from a Secure, Privileged processor or debugger, with the exception of
+// the NSU bit, which becomes Non-secure-Privileged-writable when the NSP bit is set.
+const IO_BANK0_OFFSET: u32 = 0x00000068
+const IO_BANK0_DBG_MASK: u32 = 0x00000080
+const IO_BANK0_DBG_SHIFT: u32 = 7
+const IO_BANK0_DMA_MASK: u32 = 0x00000040
+const IO_BANK0_DMA_SHIFT: u32 = 6
+const IO_BANK0_CORE1_MASK: u32 = 0x00000020
+const IO_BANK0_CORE1_SHIFT: u32 = 5
+const IO_BANK0_CORE0_MASK: u32 = 0x00000010
+const IO_BANK0_CORE0_SHIFT: u32 = 4
+const IO_BANK0_SP_MASK: u32 = 0x00000008
+const IO_BANK0_SP_SHIFT: u32 = 3
+const IO_BANK0_SU_MASK: u32 = 0x00000004
+const IO_BANK0_SU_SHIFT: u32 = 2
+const IO_BANK0_NSP_MASK: u32 = 0x00000002
+const IO_BANK0_NSP_SHIFT: u32 = 1
+const IO_BANK0_NSU_MASK: u32 = 0x00000001
+const IO_BANK0_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access IO_BANK1, and at what
+// security/privilege levels they can do so. Defaults to Secure access from any master. This
+// register is writable only from a Secure, Privileged processor or debugger, with the exception of
+// the NSU bit, which becomes Non-secure-Privileged-writable when the NSP bit is set.
+const IO_BANK1_OFFSET: u32 = 0x0000006c
+const IO_BANK1_DBG_MASK: u32 = 0x00000080
+const IO_BANK1_DBG_SHIFT: u32 = 7
+const IO_BANK1_DMA_MASK: u32 = 0x00000040
+const IO_BANK1_DMA_SHIFT: u32 = 6
+const IO_BANK1_CORE1_MASK: u32 = 0x00000020
+const IO_BANK1_CORE1_SHIFT: u32 = 5
+const IO_BANK1_CORE0_MASK: u32 = 0x00000010
+const IO_BANK1_CORE0_SHIFT: u32 = 4
+const IO_BANK1_SP_MASK: u32 = 0x00000008
+const IO_BANK1_SP_SHIFT: u32 = 3
+const IO_BANK1_SU_MASK: u32 = 0x00000004
+const IO_BANK1_SU_SHIFT: u32 = 2
+const IO_BANK1_NSP_MASK: u32 = 0x00000002
+const IO_BANK1_NSP_SHIFT: u32 = 1
+const IO_BANK1_NSU_MASK: u32 = 0x00000001
+const IO_BANK1_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access PADS_BANK0, and at what
+// security/privilege levels they can do so. Defaults to Secure access from any master. This
+// register is writable only from a Secure, Privileged processor or debugger, with the exception of
+// the NSU bit, which becomes Non-secure-Privileged-writable when the NSP bit is set.
+const PADS_BANK0_OFFSET: u32 = 0x00000070
+const PADS_BANK0_DBG_MASK: u32 = 0x00000080
+const PADS_BANK0_DBG_SHIFT: u32 = 7
+const PADS_BANK0_DMA_MASK: u32 = 0x00000040
+const PADS_BANK0_DMA_SHIFT: u32 = 6
+const PADS_BANK0_CORE1_MASK: u32 = 0x00000020
+const PADS_BANK0_CORE1_SHIFT: u32 = 5
+const PADS_BANK0_CORE0_MASK: u32 = 0x00000010
+const PADS_BANK0_CORE0_SHIFT: u32 = 4
+const PADS_BANK0_SP_MASK: u32 = 0x00000008
+const PADS_BANK0_SP_SHIFT: u32 = 3
+const PADS_BANK0_SU_MASK: u32 = 0x00000004
+const PADS_BANK0_SU_SHIFT: u32 = 2
+const PADS_BANK0_NSP_MASK: u32 = 0x00000002
+const PADS_BANK0_NSP_SHIFT: u32 = 1
+const PADS_BANK0_NSU_MASK: u32 = 0x00000001
+const PADS_BANK0_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access PADS_QSPI, and at what
+// security/privilege levels they can do so. Defaults to Secure access from any master. This
+// register is writable only from a Secure, Privileged processor or debugger, with the exception of
+// the NSU bit, which becomes Non-secure-Privileged-writable when the NSP bit is set.
+const PADS_QSPI_OFFSET: u32 = 0x00000074
+const PADS_QSPI_DBG_MASK: u32 = 0x00000080
+const PADS_QSPI_DBG_SHIFT: u32 = 7
+const PADS_QSPI_DMA_MASK: u32 = 0x00000040
+const PADS_QSPI_DMA_SHIFT: u32 = 6
+const PADS_QSPI_CORE1_MASK: u32 = 0x00000020
+const PADS_QSPI_CORE1_SHIFT: u32 = 5
+const PADS_QSPI_CORE0_MASK: u32 = 0x00000010
+const PADS_QSPI_CORE0_SHIFT: u32 = 4
+const PADS_QSPI_SP_MASK: u32 = 0x00000008
+const PADS_QSPI_SP_SHIFT: u32 = 3
+const PADS_QSPI_SU_MASK: u32 = 0x00000004
+const PADS_QSPI_SU_SHIFT: u32 = 2
+const PADS_QSPI_NSP_MASK: u32 = 0x00000002
+const PADS_QSPI_NSP_SHIFT: u32 = 1
+const PADS_QSPI_NSU_MASK: u32 = 0x00000001
+const PADS_QSPI_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access BUSCTRL, and at what
+// security/privilege levels they can do so. Defaults to Secure access from any master. This
+// register is writable only from a Secure, Privileged processor or debugger, with the exception of
+// the NSU bit, which becomes Non-secure-Privileged-writable when the NSP bit is set.
+const BUSCTRL_OFFSET: u32 = 0x00000078
+const BUSCTRL_DBG_MASK: u32 = 0x00000080
+const BUSCTRL_DBG_SHIFT: u32 = 7
+const BUSCTRL_DMA_MASK: u32 = 0x00000040
+const BUSCTRL_DMA_SHIFT: u32 = 6
+const BUSCTRL_CORE1_MASK: u32 = 0x00000020
+const BUSCTRL_CORE1_SHIFT: u32 = 5
+const BUSCTRL_CORE0_MASK: u32 = 0x00000010
+const BUSCTRL_CORE0_SHIFT: u32 = 4
+const BUSCTRL_SP_MASK: u32 = 0x00000008
+const BUSCTRL_SP_SHIFT: u32 = 3
+const BUSCTRL_SU_MASK: u32 = 0x00000004
+const BUSCTRL_SU_SHIFT: u32 = 2
+const BUSCTRL_NSP_MASK: u32 = 0x00000002
+const BUSCTRL_NSP_SHIFT: u32 = 1
+const BUSCTRL_NSU_MASK: u32 = 0x00000001
+const BUSCTRL_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access ADC, and at what security/privilege
+// levels they can do so. Defaults to Secure access from any master. This register is writable only
+// from a Secure, Privileged processor or debugger, with the exception of the NSU bit, which
+// becomes Non-secure-Privileged-writable when the NSP bit is set.
+const ADC_OFFSET: u32 = 0x0000007c
+const ADC_DBG_MASK: u32 = 0x00000080
+const ADC_DBG_SHIFT: u32 = 7
+const ADC_DMA_MASK: u32 = 0x00000040
+const ADC_DMA_SHIFT: u32 = 6
+const ADC_CORE1_MASK: u32 = 0x00000020
+const ADC_CORE1_SHIFT: u32 = 5
+const ADC_CORE0_MASK: u32 = 0x00000010
+const ADC_CORE0_SHIFT: u32 = 4
+const ADC_SP_MASK: u32 = 0x00000008
+const ADC_SP_SHIFT: u32 = 3
+const ADC_SU_MASK: u32 = 0x00000004
+const ADC_SU_SHIFT: u32 = 2
+const ADC_NSP_MASK: u32 = 0x00000002
+const ADC_NSP_SHIFT: u32 = 1
+const ADC_NSU_MASK: u32 = 0x00000001
+const ADC_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access HSTX, and at what security/privilege
+// levels they can do so. Defaults to Secure access from any master. This register is writable only
+// from a Secure, Privileged processor or debugger, with the exception of the NSU bit, which
+// becomes Non-secure-Privileged-writable when the NSP bit is set.
+const HSTX_OFFSET: u32 = 0x00000080
+const HSTX_DBG_MASK: u32 = 0x00000080
+const HSTX_DBG_SHIFT: u32 = 7
+const HSTX_DMA_MASK: u32 = 0x00000040
+const HSTX_DMA_SHIFT: u32 = 6
+const HSTX_CORE1_MASK: u32 = 0x00000020
+const HSTX_CORE1_SHIFT: u32 = 5
+const HSTX_CORE0_MASK: u32 = 0x00000010
+const HSTX_CORE0_SHIFT: u32 = 4
+const HSTX_SP_MASK: u32 = 0x00000008
+const HSTX_SP_SHIFT: u32 = 3
+const HSTX_SU_MASK: u32 = 0x00000004
+const HSTX_SU_SHIFT: u32 = 2
+const HSTX_NSP_MASK: u32 = 0x00000002
+const HSTX_NSP_SHIFT: u32 = 1
+const HSTX_NSU_MASK: u32 = 0x00000001
+const HSTX_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access I2C0, and at what security/privilege
+// levels they can do so. Defaults to Secure access from any master. This register is writable only
+// from a Secure, Privileged processor or debugger, with the exception of the NSU bit, which
+// becomes Non-secure-Privileged-writable when the NSP bit is set.
+const I2C0_OFFSET: u32 = 0x00000084
+const I2C0_DBG_MASK: u32 = 0x00000080
+const I2C0_DBG_SHIFT: u32 = 7
+const I2C0_DMA_MASK: u32 = 0x00000040
+const I2C0_DMA_SHIFT: u32 = 6
+const I2C0_CORE1_MASK: u32 = 0x00000020
+const I2C0_CORE1_SHIFT: u32 = 5
+const I2C0_CORE0_MASK: u32 = 0x00000010
+const I2C0_CORE0_SHIFT: u32 = 4
+const I2C0_SP_MASK: u32 = 0x00000008
+const I2C0_SP_SHIFT: u32 = 3
+const I2C0_SU_MASK: u32 = 0x00000004
+const I2C0_SU_SHIFT: u32 = 2
+const I2C0_NSP_MASK: u32 = 0x00000002
+const I2C0_NSP_SHIFT: u32 = 1
+const I2C0_NSU_MASK: u32 = 0x00000001
+const I2C0_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access I2C1, and at what security/privilege
+// levels they can do so. Defaults to Secure access from any master. This register is writable only
+// from a Secure, Privileged processor or debugger, with the exception of the NSU bit, which
+// becomes Non-secure-Privileged-writable when the NSP bit is set.
+const I2C1_OFFSET: u32 = 0x00000088
+const I2C1_DBG_MASK: u32 = 0x00000080
+const I2C1_DBG_SHIFT: u32 = 7
+const I2C1_DMA_MASK: u32 = 0x00000040
+const I2C1_DMA_SHIFT: u32 = 6
+const I2C1_CORE1_MASK: u32 = 0x00000020
+const I2C1_CORE1_SHIFT: u32 = 5
+const I2C1_CORE0_MASK: u32 = 0x00000010
+const I2C1_CORE0_SHIFT: u32 = 4
+const I2C1_SP_MASK: u32 = 0x00000008
+const I2C1_SP_SHIFT: u32 = 3
+const I2C1_SU_MASK: u32 = 0x00000004
+const I2C1_SU_SHIFT: u32 = 2
+const I2C1_NSP_MASK: u32 = 0x00000002
+const I2C1_NSP_SHIFT: u32 = 1
+const I2C1_NSU_MASK: u32 = 0x00000001
+const I2C1_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access PWM, and at what security/privilege
+// levels they can do so. Defaults to Secure access from any master. This register is writable only
+// from a Secure, Privileged processor or debugger, with the exception of the NSU bit, which
+// becomes Non-secure-Privileged-writable when the NSP bit is set.
+const PWM_OFFSET: u32 = 0x0000008c
+const PWM_DBG_MASK: u32 = 0x00000080
+const PWM_DBG_SHIFT: u32 = 7
+const PWM_DMA_MASK: u32 = 0x00000040
+const PWM_DMA_SHIFT: u32 = 6
+const PWM_CORE1_MASK: u32 = 0x00000020
+const PWM_CORE1_SHIFT: u32 = 5
+const PWM_CORE0_MASK: u32 = 0x00000010
+const PWM_CORE0_SHIFT: u32 = 4
+const PWM_SP_MASK: u32 = 0x00000008
+const PWM_SP_SHIFT: u32 = 3
+const PWM_SU_MASK: u32 = 0x00000004
+const PWM_SU_SHIFT: u32 = 2
+const PWM_NSP_MASK: u32 = 0x00000002
+const PWM_NSP_SHIFT: u32 = 1
+const PWM_NSU_MASK: u32 = 0x00000001
+const PWM_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access SPI0, and at what security/privilege
+// levels they can do so. Defaults to Secure access from any master. This register is writable only
+// from a Secure, Privileged processor or debugger, with the exception of the NSU bit, which
+// becomes Non-secure-Privileged-writable when the NSP bit is set.
+const SPI0_OFFSET: u32 = 0x00000090
+const SPI0_DBG_MASK: u32 = 0x00000080
+const SPI0_DBG_SHIFT: u32 = 7
+const SPI0_DMA_MASK: u32 = 0x00000040
+const SPI0_DMA_SHIFT: u32 = 6
+const SPI0_CORE1_MASK: u32 = 0x00000020
+const SPI0_CORE1_SHIFT: u32 = 5
+const SPI0_CORE0_MASK: u32 = 0x00000010
+const SPI0_CORE0_SHIFT: u32 = 4
+const SPI0_SP_MASK: u32 = 0x00000008
+const SPI0_SP_SHIFT: u32 = 3
+const SPI0_SU_MASK: u32 = 0x00000004
+const SPI0_SU_SHIFT: u32 = 2
+const SPI0_NSP_MASK: u32 = 0x00000002
+const SPI0_NSP_SHIFT: u32 = 1
+const SPI0_NSU_MASK: u32 = 0x00000001
+const SPI0_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access SPI1, and at what security/privilege
+// levels they can do so. Defaults to Secure access from any master. This register is writable only
+// from a Secure, Privileged processor or debugger, with the exception of the NSU bit, which
+// becomes Non-secure-Privileged-writable when the NSP bit is set.
+const SPI1_OFFSET: u32 = 0x00000094
+const SPI1_DBG_MASK: u32 = 0x00000080
+const SPI1_DBG_SHIFT: u32 = 7
+const SPI1_DMA_MASK: u32 = 0x00000040
+const SPI1_DMA_SHIFT: u32 = 6
+const SPI1_CORE1_MASK: u32 = 0x00000020
+const SPI1_CORE1_SHIFT: u32 = 5
+const SPI1_CORE0_MASK: u32 = 0x00000010
+const SPI1_CORE0_SHIFT: u32 = 4
+const SPI1_SP_MASK: u32 = 0x00000008
+const SPI1_SP_SHIFT: u32 = 3
+const SPI1_SU_MASK: u32 = 0x00000004
+const SPI1_SU_SHIFT: u32 = 2
+const SPI1_NSP_MASK: u32 = 0x00000002
+const SPI1_NSP_SHIFT: u32 = 1
+const SPI1_NSU_MASK: u32 = 0x00000001
+const SPI1_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access TIMER0, and at what
+// security/privilege levels they can do so. Defaults to Secure access from any master. This
+// register is writable only from a Secure, Privileged processor or debugger, with the exception of
+// the NSU bit, which becomes Non-secure-Privileged-writable when the NSP bit is set.
+const TIMER0_OFFSET: u32 = 0x00000098
+const TIMER0_DBG_MASK: u32 = 0x00000080
+const TIMER0_DBG_SHIFT: u32 = 7
+const TIMER0_DMA_MASK: u32 = 0x00000040
+const TIMER0_DMA_SHIFT: u32 = 6
+const TIMER0_CORE1_MASK: u32 = 0x00000020
+const TIMER0_CORE1_SHIFT: u32 = 5
+const TIMER0_CORE0_MASK: u32 = 0x00000010
+const TIMER0_CORE0_SHIFT: u32 = 4
+const TIMER0_SP_MASK: u32 = 0x00000008
+const TIMER0_SP_SHIFT: u32 = 3
+const TIMER0_SU_MASK: u32 = 0x00000004
+const TIMER0_SU_SHIFT: u32 = 2
+const TIMER0_NSP_MASK: u32 = 0x00000002
+const TIMER0_NSP_SHIFT: u32 = 1
+const TIMER0_NSU_MASK: u32 = 0x00000001
+const TIMER0_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access TIMER1, and at what
+// security/privilege levels they can do so. Defaults to Secure access from any master. This
+// register is writable only from a Secure, Privileged processor or debugger, with the exception of
+// the NSU bit, which becomes Non-secure-Privileged-writable when the NSP bit is set.
+const TIMER1_OFFSET: u32 = 0x0000009c
+const TIMER1_DBG_MASK: u32 = 0x00000080
+const TIMER1_DBG_SHIFT: u32 = 7
+const TIMER1_DMA_MASK: u32 = 0x00000040
+const TIMER1_DMA_SHIFT: u32 = 6
+const TIMER1_CORE1_MASK: u32 = 0x00000020
+const TIMER1_CORE1_SHIFT: u32 = 5
+const TIMER1_CORE0_MASK: u32 = 0x00000010
+const TIMER1_CORE0_SHIFT: u32 = 4
+const TIMER1_SP_MASK: u32 = 0x00000008
+const TIMER1_SP_SHIFT: u32 = 3
+const TIMER1_SU_MASK: u32 = 0x00000004
+const TIMER1_SU_SHIFT: u32 = 2
+const TIMER1_NSP_MASK: u32 = 0x00000002
+const TIMER1_NSP_SHIFT: u32 = 1
+const TIMER1_NSU_MASK: u32 = 0x00000001
+const TIMER1_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access UART0, and at what
+// security/privilege levels they can do so. Defaults to Secure access from any master. This
+// register is writable only from a Secure, Privileged processor or debugger, with the exception of
+// the NSU bit, which becomes Non-secure-Privileged-writable when the NSP bit is set.
+const UART0_OFFSET: u32 = 0x000000a0
+const UART0_DBG_MASK: u32 = 0x00000080
+const UART0_DBG_SHIFT: u32 = 7
+const UART0_DMA_MASK: u32 = 0x00000040
+const UART0_DMA_SHIFT: u32 = 6
+const UART0_CORE1_MASK: u32 = 0x00000020
+const UART0_CORE1_SHIFT: u32 = 5
+const UART0_CORE0_MASK: u32 = 0x00000010
+const UART0_CORE0_SHIFT: u32 = 4
+const UART0_SP_MASK: u32 = 0x00000008
+const UART0_SP_SHIFT: u32 = 3
+const UART0_SU_MASK: u32 = 0x00000004
+const UART0_SU_SHIFT: u32 = 2
+const UART0_NSP_MASK: u32 = 0x00000002
+const UART0_NSP_SHIFT: u32 = 1
+const UART0_NSU_MASK: u32 = 0x00000001
+const UART0_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access UART1, and at what
+// security/privilege levels they can do so. Defaults to Secure access from any master. This
+// register is writable only from a Secure, Privileged processor or debugger, with the exception of
+// the NSU bit, which becomes Non-secure-Privileged-writable when the NSP bit is set.
+const UART1_OFFSET: u32 = 0x000000a4
+const UART1_DBG_MASK: u32 = 0x00000080
+const UART1_DBG_SHIFT: u32 = 7
+const UART1_DMA_MASK: u32 = 0x00000040
+const UART1_DMA_SHIFT: u32 = 6
+const UART1_CORE1_MASK: u32 = 0x00000020
+const UART1_CORE1_SHIFT: u32 = 5
+const UART1_CORE0_MASK: u32 = 0x00000010
+const UART1_CORE0_SHIFT: u32 = 4
+const UART1_SP_MASK: u32 = 0x00000008
+const UART1_SP_SHIFT: u32 = 3
+const UART1_SU_MASK: u32 = 0x00000004
+const UART1_SU_SHIFT: u32 = 2
+const UART1_NSP_MASK: u32 = 0x00000002
+const UART1_NSP_SHIFT: u32 = 1
+const UART1_NSU_MASK: u32 = 0x00000001
+const UART1_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access OTP, and at what security/privilege
+// levels they can do so. Defaults to Secure access from any master. This register is writable only
+// from a Secure, Privileged processor or debugger, with the exception of the NSU bit, which
+// becomes Non-secure-Privileged-writable when the NSP bit is set.
+const OTP_OFFSET: u32 = 0x000000a8
+const OTP_DBG_MASK: u32 = 0x00000080
+const OTP_DBG_SHIFT: u32 = 7
+const OTP_DMA_MASK: u32 = 0x00000040
+const OTP_DMA_SHIFT: u32 = 6
+const OTP_CORE1_MASK: u32 = 0x00000020
+const OTP_CORE1_SHIFT: u32 = 5
+const OTP_CORE0_MASK: u32 = 0x00000010
+const OTP_CORE0_SHIFT: u32 = 4
+const OTP_SP_MASK: u32 = 0x00000008
+const OTP_SP_SHIFT: u32 = 3
+const OTP_SU_MASK: u32 = 0x00000004
+const OTP_SU_SHIFT: u32 = 2
+const OTP_NSP_MASK: u32 = 0x00000002
+const OTP_NSP_SHIFT: u32 = 1
+const OTP_NSU_MASK: u32 = 0x00000001
+const OTP_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access TBMAN, and at what
+// security/privilege levels they can do so. Defaults to Secure access from any master. This
+// register is writable only from a Secure, Privileged processor or debugger, with the exception of
+// the NSU bit, which becomes Non-secure-Privileged-writable when the NSP bit is set.
+const TBMAN_OFFSET: u32 = 0x000000ac
+const TBMAN_DBG_MASK: u32 = 0x00000080
+const TBMAN_DBG_SHIFT: u32 = 7
+const TBMAN_DMA_MASK: u32 = 0x00000040
+const TBMAN_DMA_SHIFT: u32 = 6
+const TBMAN_CORE1_MASK: u32 = 0x00000020
+const TBMAN_CORE1_SHIFT: u32 = 5
+const TBMAN_CORE0_MASK: u32 = 0x00000010
+const TBMAN_CORE0_SHIFT: u32 = 4
+const TBMAN_SP_MASK: u32 = 0x00000008
+const TBMAN_SP_SHIFT: u32 = 3
+const TBMAN_SU_MASK: u32 = 0x00000004
+const TBMAN_SU_SHIFT: u32 = 2
+const TBMAN_NSP_MASK: u32 = 0x00000002
+const TBMAN_NSP_SHIFT: u32 = 1
+const TBMAN_NSU_MASK: u32 = 0x00000001
+const TBMAN_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access POWMAN, and at what
+// security/privilege levels they can do so. Defaults to Secure, Privileged processor or debug
+// access only. This register is writable only from a Secure, Privileged processor or debugger,
+// with the exception of the NSU bit, which becomes Non-secure-Privileged-writable when the NSP bit
+// is set.
+const POWMAN_OFFSET: u32 = 0x000000b0
+const POWMAN_DBG_MASK: u32 = 0x00000080
+const POWMAN_DBG_SHIFT: u32 = 7
+const POWMAN_DMA_MASK: u32 = 0x00000040
+const POWMAN_DMA_SHIFT: u32 = 6
+const POWMAN_CORE1_MASK: u32 = 0x00000020
+const POWMAN_CORE1_SHIFT: u32 = 5
+const POWMAN_CORE0_MASK: u32 = 0x00000010
+const POWMAN_CORE0_SHIFT: u32 = 4
+const POWMAN_SP_MASK: u32 = 0x00000008
+const POWMAN_SP_SHIFT: u32 = 3
+const POWMAN_SU_MASK: u32 = 0x00000004
+const POWMAN_SU_SHIFT: u32 = 2
+const POWMAN_NSP_MASK: u32 = 0x00000002
+const POWMAN_NSP_SHIFT: u32 = 1
+const POWMAN_NSU_MASK: u32 = 0x00000001
+const POWMAN_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access TRNG, and at what security/privilege
+// levels they can do so. Defaults to Secure, Privileged processor or debug access only. This
+// register is writable only from a Secure, Privileged processor or debugger, with the exception of
+// the NSU bit, which becomes Non-secure-Privileged-writable when the NSP bit is set.
+const TRNG_OFFSET: u32 = 0x000000b4
+const TRNG_DBG_MASK: u32 = 0x00000080
+const TRNG_DBG_SHIFT: u32 = 7
+const TRNG_DMA_MASK: u32 = 0x00000040
+const TRNG_DMA_SHIFT: u32 = 6
+const TRNG_CORE1_MASK: u32 = 0x00000020
+const TRNG_CORE1_SHIFT: u32 = 5
+const TRNG_CORE0_MASK: u32 = 0x00000010
+const TRNG_CORE0_SHIFT: u32 = 4
+const TRNG_SP_MASK: u32 = 0x00000008
+const TRNG_SP_SHIFT: u32 = 3
+const TRNG_SU_MASK: u32 = 0x00000004
+const TRNG_SU_SHIFT: u32 = 2
+const TRNG_NSP_MASK: u32 = 0x00000002
+const TRNG_NSP_SHIFT: u32 = 1
+const TRNG_NSU_MASK: u32 = 0x00000001
+const TRNG_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access SHA256, and at what
+// security/privilege levels they can do so. Defaults to Secure, Privileged access only. This
+// register is writable only from a Secure, Privileged processor or debugger, with the exception of
+// the NSU bit, which becomes Non-secure-Privileged-writable when the NSP bit is set.
+const SHA256_OFFSET: u32 = 0x000000b8
+const SHA256_DBG_MASK: u32 = 0x00000080
+const SHA256_DBG_SHIFT: u32 = 7
+const SHA256_DMA_MASK: u32 = 0x00000040
+const SHA256_DMA_SHIFT: u32 = 6
+const SHA256_CORE1_MASK: u32 = 0x00000020
+const SHA256_CORE1_SHIFT: u32 = 5
+const SHA256_CORE0_MASK: u32 = 0x00000010
+const SHA256_CORE0_SHIFT: u32 = 4
+const SHA256_SP_MASK: u32 = 0x00000008
+const SHA256_SP_SHIFT: u32 = 3
+const SHA256_SU_MASK: u32 = 0x00000004
+const SHA256_SU_SHIFT: u32 = 2
+const SHA256_NSP_MASK: u32 = 0x00000002
+const SHA256_NSP_SHIFT: u32 = 1
+const SHA256_NSU_MASK: u32 = 0x00000001
+const SHA256_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access SYSCFG, and at what
+// security/privilege levels they can do so. Defaults to Secure, Privileged processor or debug
+// access only. This register is writable only from a Secure, Privileged processor or debugger,
+// with the exception of the NSU bit, which becomes Non-secure-Privileged-writable when the NSP bit
+// is set.
+const SYSCFG_OFFSET: u32 = 0x000000bc
+const SYSCFG_DBG_MASK: u32 = 0x00000080
+const SYSCFG_DBG_SHIFT: u32 = 7
+const SYSCFG_DMA_MASK: u32 = 0x00000040
+const SYSCFG_DMA_SHIFT: u32 = 6
+const SYSCFG_CORE1_MASK: u32 = 0x00000020
+const SYSCFG_CORE1_SHIFT: u32 = 5
+const SYSCFG_CORE0_MASK: u32 = 0x00000010
+const SYSCFG_CORE0_SHIFT: u32 = 4
+const SYSCFG_SP_MASK: u32 = 0x00000008
+const SYSCFG_SP_SHIFT: u32 = 3
+const SYSCFG_SU_MASK: u32 = 0x00000004
+const SYSCFG_SU_SHIFT: u32 = 2
+const SYSCFG_NSP_MASK: u32 = 0x00000002
+const SYSCFG_NSP_SHIFT: u32 = 1
+const SYSCFG_NSU_MASK: u32 = 0x00000001
+const SYSCFG_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access CLOCKS, and at what
+// security/privilege levels they can do so. Defaults to Secure, Privileged processor or debug
+// access only. This register is writable only from a Secure, Privileged processor or debugger,
+// with the exception of the NSU bit, which becomes Non-secure-Privileged-writable when the NSP bit
+// is set.
+const CLOCKS_OFFSET: u32 = 0x000000c0
+const CLOCKS_DBG_MASK: u32 = 0x00000080
+const CLOCKS_DBG_SHIFT: u32 = 7
+const CLOCKS_DMA_MASK: u32 = 0x00000040
+const CLOCKS_DMA_SHIFT: u32 = 6
+const CLOCKS_CORE1_MASK: u32 = 0x00000020
+const CLOCKS_CORE1_SHIFT: u32 = 5
+const CLOCKS_CORE0_MASK: u32 = 0x00000010
+const CLOCKS_CORE0_SHIFT: u32 = 4
+const CLOCKS_SP_MASK: u32 = 0x00000008
+const CLOCKS_SP_SHIFT: u32 = 3
+const CLOCKS_SU_MASK: u32 = 0x00000004
+const CLOCKS_SU_SHIFT: u32 = 2
+const CLOCKS_NSP_MASK: u32 = 0x00000002
+const CLOCKS_NSP_SHIFT: u32 = 1
+const CLOCKS_NSU_MASK: u32 = 0x00000001
+const CLOCKS_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access XOSC, and at what security/privilege
+// levels they can do so. Defaults to Secure, Privileged processor or debug access only. This
+// register is writable only from a Secure, Privileged processor or debugger, with the exception of
+// the NSU bit, which becomes Non-secure-Privileged-writable when the NSP bit is set.
+const XOSC_OFFSET: u32 = 0x000000c4
+const XOSC_DBG_MASK: u32 = 0x00000080
+const XOSC_DBG_SHIFT: u32 = 7
+const XOSC_DMA_MASK: u32 = 0x00000040
+const XOSC_DMA_SHIFT: u32 = 6
+const XOSC_CORE1_MASK: u32 = 0x00000020
+const XOSC_CORE1_SHIFT: u32 = 5
+const XOSC_CORE0_MASK: u32 = 0x00000010
+const XOSC_CORE0_SHIFT: u32 = 4
+const XOSC_SP_MASK: u32 = 0x00000008
+const XOSC_SP_SHIFT: u32 = 3
+const XOSC_SU_MASK: u32 = 0x00000004
+const XOSC_SU_SHIFT: u32 = 2
+const XOSC_NSP_MASK: u32 = 0x00000002
+const XOSC_NSP_SHIFT: u32 = 1
+const XOSC_NSU_MASK: u32 = 0x00000001
+const XOSC_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access ROSC, and at what security/privilege
+// levels they can do so. Defaults to Secure, Privileged processor or debug access only. This
+// register is writable only from a Secure, Privileged processor or debugger, with the exception of
+// the NSU bit, which becomes Non-secure-Privileged-writable when the NSP bit is set.
+const ROSC_OFFSET: u32 = 0x000000c8
+const ROSC_DBG_MASK: u32 = 0x00000080
+const ROSC_DBG_SHIFT: u32 = 7
+const ROSC_DMA_MASK: u32 = 0x00000040
+const ROSC_DMA_SHIFT: u32 = 6
+const ROSC_CORE1_MASK: u32 = 0x00000020
+const ROSC_CORE1_SHIFT: u32 = 5
+const ROSC_CORE0_MASK: u32 = 0x00000010
+const ROSC_CORE0_SHIFT: u32 = 4
+const ROSC_SP_MASK: u32 = 0x00000008
+const ROSC_SP_SHIFT: u32 = 3
+const ROSC_SU_MASK: u32 = 0x00000004
+const ROSC_SU_SHIFT: u32 = 2
+const ROSC_NSP_MASK: u32 = 0x00000002
+const ROSC_NSP_SHIFT: u32 = 1
+const ROSC_NSU_MASK: u32 = 0x00000001
+const ROSC_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access PLL_SYS, and at what
+// security/privilege levels they can do so. Defaults to Secure, Privileged processor or debug
+// access only. This register is writable only from a Secure, Privileged processor or debugger,
+// with the exception of the NSU bit, which becomes Non-secure-Privileged-writable when the NSP bit
+// is set.
+const PLL_SYS_OFFSET: u32 = 0x000000cc
+const PLL_SYS_DBG_MASK: u32 = 0x00000080
+const PLL_SYS_DBG_SHIFT: u32 = 7
+const PLL_SYS_DMA_MASK: u32 = 0x00000040
+const PLL_SYS_DMA_SHIFT: u32 = 6
+const PLL_SYS_CORE1_MASK: u32 = 0x00000020
+const PLL_SYS_CORE1_SHIFT: u32 = 5
+const PLL_SYS_CORE0_MASK: u32 = 0x00000010
+const PLL_SYS_CORE0_SHIFT: u32 = 4
+const PLL_SYS_SP_MASK: u32 = 0x00000008
+const PLL_SYS_SP_SHIFT: u32 = 3
+const PLL_SYS_SU_MASK: u32 = 0x00000004
+const PLL_SYS_SU_SHIFT: u32 = 2
+const PLL_SYS_NSP_MASK: u32 = 0x00000002
+const PLL_SYS_NSP_SHIFT: u32 = 1
+const PLL_SYS_NSU_MASK: u32 = 0x00000001
+const PLL_SYS_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access PLL_USB, and at what
+// security/privilege levels they can do so. Defaults to Secure, Privileged processor or debug
+// access only. This register is writable only from a Secure, Privileged processor or debugger,
+// with the exception of the NSU bit, which becomes Non-secure-Privileged-writable when the NSP bit
+// is set.
+const PLL_USB_OFFSET: u32 = 0x000000d0
+const PLL_USB_DBG_MASK: u32 = 0x00000080
+const PLL_USB_DBG_SHIFT: u32 = 7
+const PLL_USB_DMA_MASK: u32 = 0x00000040
+const PLL_USB_DMA_SHIFT: u32 = 6
+const PLL_USB_CORE1_MASK: u32 = 0x00000020
+const PLL_USB_CORE1_SHIFT: u32 = 5
+const PLL_USB_CORE0_MASK: u32 = 0x00000010
+const PLL_USB_CORE0_SHIFT: u32 = 4
+const PLL_USB_SP_MASK: u32 = 0x00000008
+const PLL_USB_SP_SHIFT: u32 = 3
+const PLL_USB_SU_MASK: u32 = 0x00000004
+const PLL_USB_SU_SHIFT: u32 = 2
+const PLL_USB_NSP_MASK: u32 = 0x00000002
+const PLL_USB_NSP_SHIFT: u32 = 1
+const PLL_USB_NSU_MASK: u32 = 0x00000001
+const PLL_USB_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access TICKS, and at what
+// security/privilege levels they can do so. Defaults to Secure, Privileged processor or debug
+// access only. This register is writable only from a Secure, Privileged processor or debugger,
+// with the exception of the NSU bit, which becomes Non-secure-Privileged-writable when the NSP bit
+// is set.
+const TICKS_OFFSET: u32 = 0x000000d4
+const TICKS_DBG_MASK: u32 = 0x00000080
+const TICKS_DBG_SHIFT: u32 = 7
+const TICKS_DMA_MASK: u32 = 0x00000040
+const TICKS_DMA_SHIFT: u32 = 6
+const TICKS_CORE1_MASK: u32 = 0x00000020
+const TICKS_CORE1_SHIFT: u32 = 5
+const TICKS_CORE0_MASK: u32 = 0x00000010
+const TICKS_CORE0_SHIFT: u32 = 4
+const TICKS_SP_MASK: u32 = 0x00000008
+const TICKS_SP_SHIFT: u32 = 3
+const TICKS_SU_MASK: u32 = 0x00000004
+const TICKS_SU_SHIFT: u32 = 2
+const TICKS_NSP_MASK: u32 = 0x00000002
+const TICKS_NSP_SHIFT: u32 = 1
+const TICKS_NSU_MASK: u32 = 0x00000001
+const TICKS_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access WATCHDOG, and at what
+// security/privilege levels they can do so. Defaults to Secure, Privileged processor or debug
+// access only. This register is writable only from a Secure, Privileged processor or debugger,
+// with the exception of the NSU bit, which becomes Non-secure-Privileged-writable when the NSP bit
+// is set.
+const WATCHDOG_OFFSET: u32 = 0x000000d8
+const WATCHDOG_DBG_MASK: u32 = 0x00000080
+const WATCHDOG_DBG_SHIFT: u32 = 7
+const WATCHDOG_DMA_MASK: u32 = 0x00000040
+const WATCHDOG_DMA_SHIFT: u32 = 6
+const WATCHDOG_CORE1_MASK: u32 = 0x00000020
+const WATCHDOG_CORE1_SHIFT: u32 = 5
+const WATCHDOG_CORE0_MASK: u32 = 0x00000010
+const WATCHDOG_CORE0_SHIFT: u32 = 4
+const WATCHDOG_SP_MASK: u32 = 0x00000008
+const WATCHDOG_SP_SHIFT: u32 = 3
+const WATCHDOG_SU_MASK: u32 = 0x00000004
+const WATCHDOG_SU_SHIFT: u32 = 2
+const WATCHDOG_NSP_MASK: u32 = 0x00000002
+const WATCHDOG_NSP_SHIFT: u32 = 1
+const WATCHDOG_NSU_MASK: u32 = 0x00000001
+const WATCHDOG_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access PSM, and at what security/privilege
+// levels they can do so. Defaults to Secure, Privileged processor or debug access only. This
+// register is writable only from a Secure, Privileged processor or debugger, with the exception of
+// the NSU bit, which becomes Non-secure-Privileged-writable when the NSP bit is set.
+const PSM_OFFSET: u32 = 0x000000dc
+const PSM_DBG_MASK: u32 = 0x00000080
+const PSM_DBG_SHIFT: u32 = 7
+const PSM_DMA_MASK: u32 = 0x00000040
+const PSM_DMA_SHIFT: u32 = 6
+const PSM_CORE1_MASK: u32 = 0x00000020
+const PSM_CORE1_SHIFT: u32 = 5
+const PSM_CORE0_MASK: u32 = 0x00000010
+const PSM_CORE0_SHIFT: u32 = 4
+const PSM_SP_MASK: u32 = 0x00000008
+const PSM_SP_SHIFT: u32 = 3
+const PSM_SU_MASK: u32 = 0x00000004
+const PSM_SU_SHIFT: u32 = 2
+const PSM_NSP_MASK: u32 = 0x00000002
+const PSM_NSP_SHIFT: u32 = 1
+const PSM_NSU_MASK: u32 = 0x00000001
+const PSM_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access XIP_CTRL, and at what
+// security/privilege levels they can do so. Defaults to Secure, Privileged processor or debug
+// access only. This register is writable only from a Secure, Privileged processor or debugger,
+// with the exception of the NSU bit, which becomes Non-secure-Privileged-writable when the NSP bit
+// is set.
+const XIP_CTRL_OFFSET: u32 = 0x000000e0
+const XIP_CTRL_DBG_MASK: u32 = 0x00000080
+const XIP_CTRL_DBG_SHIFT: u32 = 7
+const XIP_CTRL_DMA_MASK: u32 = 0x00000040
+const XIP_CTRL_DMA_SHIFT: u32 = 6
+const XIP_CTRL_CORE1_MASK: u32 = 0x00000020
+const XIP_CTRL_CORE1_SHIFT: u32 = 5
+const XIP_CTRL_CORE0_MASK: u32 = 0x00000010
+const XIP_CTRL_CORE0_SHIFT: u32 = 4
+const XIP_CTRL_SP_MASK: u32 = 0x00000008
+const XIP_CTRL_SP_SHIFT: u32 = 3
+const XIP_CTRL_SU_MASK: u32 = 0x00000004
+const XIP_CTRL_SU_SHIFT: u32 = 2
+const XIP_CTRL_NSP_MASK: u32 = 0x00000002
+const XIP_CTRL_NSP_SHIFT: u32 = 1
+const XIP_CTRL_NSU_MASK: u32 = 0x00000001
+const XIP_CTRL_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access XIP_QMI, and at what
+// security/privilege levels they can do so. Defaults to Secure, Privileged processor or debug
+// access only. This register is writable only from a Secure, Privileged processor or debugger,
+// with the exception of the NSU bit, which becomes Non-secure-Privileged-writable when the NSP bit
+// is set.
+const XIP_QMI_OFFSET: u32 = 0x000000e4
+const XIP_QMI_DBG_MASK: u32 = 0x00000080
+const XIP_QMI_DBG_SHIFT: u32 = 7
+const XIP_QMI_DMA_MASK: u32 = 0x00000040
+const XIP_QMI_DMA_SHIFT: u32 = 6
+const XIP_QMI_CORE1_MASK: u32 = 0x00000020
+const XIP_QMI_CORE1_SHIFT: u32 = 5
+const XIP_QMI_CORE0_MASK: u32 = 0x00000010
+const XIP_QMI_CORE0_SHIFT: u32 = 4
+const XIP_QMI_SP_MASK: u32 = 0x00000008
+const XIP_QMI_SP_SHIFT: u32 = 3
+const XIP_QMI_SU_MASK: u32 = 0x00000004
+const XIP_QMI_SU_SHIFT: u32 = 2
+const XIP_QMI_NSP_MASK: u32 = 0x00000002
+const XIP_QMI_NSP_SHIFT: u32 = 1
+const XIP_QMI_NSU_MASK: u32 = 0x00000001
+const XIP_QMI_NSU_SHIFT: u32 = 0
+
+// Control whether debugger, DMA, core 0 and core 1 can access XIP_AUX, and at what
+// security/privilege levels they can do so. Defaults to Secure, Privileged access only. This
+// register is writable only from a Secure, Privileged processor or debugger, with the exception of
+// the NSU bit, which becomes Non-secure-Privileged-writable when the NSP bit is set.
+const XIP_AUX_OFFSET: u32 = 0x000000e8
+const XIP_AUX_DBG_MASK: u32 = 0x00000080
+const XIP_AUX_DBG_SHIFT: u32 = 7
+const XIP_AUX_DMA_MASK: u32 = 0x00000040
+const XIP_AUX_DMA_SHIFT: u32 = 6
+const XIP_AUX_CORE1_MASK: u32 = 0x00000020
+const XIP_AUX_CORE1_SHIFT: u32 = 5
+const XIP_AUX_CORE0_MASK: u32 = 0x00000010
+const XIP_AUX_CORE0_SHIFT: u32 = 4
+const XIP_AUX_SP_MASK: u32 = 0x00000008
+const XIP_AUX_SP_SHIFT: u32 = 3
+const XIP_AUX_SU_MASK: u32 = 0x00000004
+const XIP_AUX_SU_SHIFT: u32 = 2
+const XIP_AUX_NSP_MASK: u32 = 0x00000002
+const XIP_AUX_NSP_SHIFT: u32 = 1
+const XIP_AUX_NSU_MASK: u32 = 0x00000001
+const XIP_AUX_NSU_SHIFT: u32 = 0

@@ -1,0 +1,72 @@
+// Additional registers mapped adjacent to the bootram, for use by the bootrom.
+
+module sh.sysl.rp2350.bootram
+
+// The peripheral's base address. Every offset below is from here.
+const BASE: u32 = 0x400e0000
+
+// This registers always ORs writes into its current contents. Once a bit is set, it can only be
+// cleared by a reset.
+const WRITE_ONCE0_OFFSET: u32 = 0x00000800
+const WRITE_ONCE0_WRITE_ONCE0_MASK: u32 = 0xffffffff
+const WRITE_ONCE0_WRITE_ONCE0_SHIFT: u32 = 0
+
+// This registers always ORs writes into its current contents. Once a bit is set, it can only be
+// cleared by a reset.
+const WRITE_ONCE1_OFFSET: u32 = 0x00000804
+const WRITE_ONCE1_WRITE_ONCE1_MASK: u32 = 0xffffffff
+const WRITE_ONCE1_WRITE_ONCE1_SHIFT: u32 = 0
+
+// Bootlock status register. 1=unclaimed, 0=claimed. These locks function identically to the SIO
+// spinlocks, but are reserved for bootrom use.
+const BOOTLOCK_STAT_OFFSET: u32 = 0x00000808
+const BOOTLOCK_STAT_BOOTLOCK_STAT_MASK: u32 = 0x000000ff
+const BOOTLOCK_STAT_BOOTLOCK_STAT_SHIFT: u32 = 0
+
+// Read to claim and check. Write to unclaim. The value returned on successful claim is 1 << n, and
+// on failed claim is zero.
+const BOOTLOCK0_OFFSET: u32 = 0x0000080c
+const BOOTLOCK0_BOOTLOCK0_MASK: u32 = 0xffffffff
+const BOOTLOCK0_BOOTLOCK0_SHIFT: u32 = 0
+
+// Read to claim and check. Write to unclaim. The value returned on successful claim is 1 << n, and
+// on failed claim is zero.
+const BOOTLOCK1_OFFSET: u32 = 0x00000810
+const BOOTLOCK1_BOOTLOCK1_MASK: u32 = 0xffffffff
+const BOOTLOCK1_BOOTLOCK1_SHIFT: u32 = 0
+
+// Read to claim and check. Write to unclaim. The value returned on successful claim is 1 << n, and
+// on failed claim is zero.
+const BOOTLOCK2_OFFSET: u32 = 0x00000814
+const BOOTLOCK2_BOOTLOCK2_MASK: u32 = 0xffffffff
+const BOOTLOCK2_BOOTLOCK2_SHIFT: u32 = 0
+
+// Read to claim and check. Write to unclaim. The value returned on successful claim is 1 << n, and
+// on failed claim is zero.
+const BOOTLOCK3_OFFSET: u32 = 0x00000818
+const BOOTLOCK3_BOOTLOCK3_MASK: u32 = 0xffffffff
+const BOOTLOCK3_BOOTLOCK3_SHIFT: u32 = 0
+
+// Read to claim and check. Write to unclaim. The value returned on successful claim is 1 << n, and
+// on failed claim is zero.
+const BOOTLOCK4_OFFSET: u32 = 0x0000081c
+const BOOTLOCK4_BOOTLOCK4_MASK: u32 = 0xffffffff
+const BOOTLOCK4_BOOTLOCK4_SHIFT: u32 = 0
+
+// Read to claim and check. Write to unclaim. The value returned on successful claim is 1 << n, and
+// on failed claim is zero.
+const BOOTLOCK5_OFFSET: u32 = 0x00000820
+const BOOTLOCK5_BOOTLOCK5_MASK: u32 = 0xffffffff
+const BOOTLOCK5_BOOTLOCK5_SHIFT: u32 = 0
+
+// Read to claim and check. Write to unclaim. The value returned on successful claim is 1 << n, and
+// on failed claim is zero.
+const BOOTLOCK6_OFFSET: u32 = 0x00000824
+const BOOTLOCK6_BOOTLOCK6_MASK: u32 = 0xffffffff
+const BOOTLOCK6_BOOTLOCK6_SHIFT: u32 = 0
+
+// Read to claim and check. Write to unclaim. The value returned on successful claim is 1 << n, and
+// on failed claim is zero.
+const BOOTLOCK7_OFFSET: u32 = 0x00000828
+const BOOTLOCK7_BOOTLOCK7_MASK: u32 = 0xffffffff
+const BOOTLOCK7_BOOTLOCK7_SHIFT: u32 = 0

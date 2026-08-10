@@ -1,0 +1,102 @@
+// The one hand-written file in this package, and the only one that may be edited.
+//
+// Everything beside it is generated from Raspberry Pi's `RP2350.svd` and is replaced wholesale when
+// the chip is regenerated. This is the guard on that regeneration: a handful of addresses and field
+// positions read out of the **datasheet** rather than out of the SVD, so that a generator change, a
+// newer SVD, or a filter left switched on has something independent to fail against.
+//
+// It is deliberately small. Pinning every one of 32,980 constants would only assert that the
+// generator agrees with itself, which is what the generator's own golden tests already say. What is
+// worth pinning is the handful a person would notice being wrong, checked against a second source.
+
+module sh.sysl.rp2350
+@tests
+
+import sh.sysl.rp2350.io_bank0
+import sh.sysl.rp2350.pads_bank0
+import sh.sysl.rp2350.sio
+import sh.sysl.rp2350.timer0
+import sh.sysl.rp2350.pio0
+import sh.sysl.rp2350.pio1
+import sh.sysl.rp2350.uart0
+import sh.sysl.rp2350.uart1
+
+// ## Base addresses, from the RP2350 datasheet's memory map
+
+@test("each peripheral sits at the base address the datasheet gives")
+peripherals_sit_where_the_datasheet_says()
+    assert_eq(io_bank0.BASE, 0x40028000)
+    assert_eq(pads_bank0.BASE, 0x40038000)
+    assert_eq(timer0.BASE, 0x400b0000)
+    assert_eq(uart0.BASE, 0x40070000)
+end peripherals_sit_where_the_datasheet_says
+
+// The single-cycle IO block is the one that is not in the peripheral region at all: it hangs off the
+// core's own bus at 0xd0000000, which is why GPIO through SIO is fast and GPIO through IO_BANK0 is
+// not.
+@test("SIO is on the core's own bus, not in the peripheral region")
+sio_is_on_the_cores_own_bus()
+    assert_eq(sio.BASE, 0xd0000000)
+end sio_is_on_the_cores_own_bus
+
+// ## The three PIOs, a megabyte apart
+//
+// This is the RP2350's difference from the RP2040, which has two. A generator that got the spacing
+// from the older chip would place PIO1 at 0x50300000's predecessor and every state machine would
+// address the wrong block.
+
+@test("the RP2350 has three PIOs, a megabyte apart")
+there_are_three_pios_a_megabyte_apart()
+    assert_eq(pio0.BASE, 0x50200000)
+    assert_eq(pio1.BASE, 0x50300000)
+end there_are_three_pios_a_megabyte_apart
+
+// ## A derived peripheral has its parent's registers at its own address
+//
+// UART1 is declared in the SVD as a UART0 elsewhere, so its register offsets must be identical and
+// its base must not be.
+
+@test("a derived peripheral has its parent's offsets at its own base")
+a_derived_peripheral_keeps_its_own_address()
+    assert_eq(uart0.UARTDR_OFFSET, uart1.UARTDR_OFFSET)
+    assert_eq(uart1.BASE, 0x40078000)
+end a_derived_peripheral_keeps_its_own_address
+
+// ## Field masks land on the bits the datasheet names
+
+@test("a field mask covers the bits the datasheet names")
+a_field_mask_covers_the_bits_it_should()
+    // IO_BANK0 GPIO0_CTRL.FUNCSEL is the low five bits -- it is what selects whether a pin is SIO,
+    // SPI, UART or PIO, and it is the field this package exists to make nameable.
+    assert_eq(io_bank0.GPIO0_CTRL_FUNCSEL_MASK, 0x0000001f)
+    assert_eq(io_bank0.GPIO0_CTRL_FUNCSEL_SHIFT, 0)
+end a_field_mask_covers_the_bits_it_should
+
+@test("a mask sits where its field does, not at the bottom of the register")
+a_shifted_field_has_a_shifted_mask()
+    // A mask sits where its field does, rather than at the bottom of the register.
+    assert_eq(io_bank0.GPIO0_CTRL_OUTOVER_SHIFT, 12)
+    assert_eq(io_bank0.GPIO0_CTRL_OUTOVER_MASK, 0x00003000)
+end a_shifted_field_has_a_shifted_mask
+
+// ## The vocabulary a field's values come with
+//
+// These are the SVD's `enumeratedValues`, and they are the reason this package is worth more than a
+// header of hex: the vendor names the values, checked against the chip.
+
+@test("a field carries the vendor's own names for its values")
+a_field_carries_the_vendors_own_names_for_its_values()
+    // Function 5 on GPIO0 is SIO. The vendor's own name for it carries the pin number, and the
+    // generator upper-cases it -- the SVD spells it `sio_0`.
+    assert_eq(io_bank0.GPIO0_CTRL_FUNCSEL_SIO_0, 5)
+    assert_eq(io_bank0.GPIO0_CTRL_FUNCSEL_NULL, 31)
+end a_field_carries_the_vendors_own_names_for_its_values
+
+// ## Registers are where the peripheral says, not where a reader assumes
+
+@test("a register offset runs from the peripheral's base")
+register_offsets_run_from_the_base()
+    assert_eq(timer0.TIMEHW_OFFSET, 0x00)
+    assert_eq(timer0.TIMELW_OFFSET, 0x04)
+    assert_eq(timer0.ALARM0_OFFSET, 0x10)
+    assert_eq(timer0.BASE + timer0.ALARM0_OFFSET, 0x400b0010)

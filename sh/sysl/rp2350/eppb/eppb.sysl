@@ -1,0 +1,27 @@
+// Cortex-M33 EPPB vendor register block for RP2350
+
+module sh.sysl.rp2350.eppb
+
+// The peripheral's base address. Every offset below is from here.
+const BASE: u32 = 0xe0080000
+
+// NMI mask for IRQs 0 through 31. This register is core-local, and is reset by a processor warm
+// reset.
+const NMI_MASK0_OFFSET: u32 = 0x00000000
+const NMI_MASK0_NMI_MASK0_MASK: u32 = 0xffffffff
+const NMI_MASK0_NMI_MASK0_SHIFT: u32 = 0
+
+// NMI mask for IRQs 32 though 51. This register is core-local, and is reset by a processor warm
+// reset.
+const NMI_MASK1_OFFSET: u32 = 0x00000004
+const NMI_MASK1_NMI_MASK1_MASK: u32 = 0x000fffff
+const NMI_MASK1_NMI_MASK1_SHIFT: u32 = 0
+
+// Nonstandard sleep control register
+const SLEEPCTRL_OFFSET: u32 = 0x00000008
+const SLEEPCTRL_WICENACK_MASK: u32 = 0x00000004
+const SLEEPCTRL_WICENACK_SHIFT: u32 = 2
+const SLEEPCTRL_WICENREQ_MASK: u32 = 0x00000002
+const SLEEPCTRL_WICENREQ_SHIFT: u32 = 1
+const SLEEPCTRL_LIGHT_SLEEP_MASK: u32 = 0x00000001
+const SLEEPCTRL_LIGHT_SLEEP_SHIFT: u32 = 0

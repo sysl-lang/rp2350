@@ -1,0 +1,138 @@
+// Control interface to HSTX. For FIFO write access and status, see the HSTX_FIFO register block.
+
+module sh.sysl.rp2350.hstx_ctrl
+
+// The peripheral's base address. Every offset below is from here.
+const BASE: u32 = 0x400c0000
+
+const CSR_OFFSET: u32 = 0x00000000
+const CSR_CLKDIV_MASK: u32 = 0xf0000000
+const CSR_CLKDIV_SHIFT: u32 = 28
+const CSR_CLKPHASE_MASK: u32 = 0x0f000000
+const CSR_CLKPHASE_SHIFT: u32 = 24
+const CSR_N_SHIFTS_MASK: u32 = 0x001f0000
+const CSR_N_SHIFTS_SHIFT: u32 = 16
+const CSR_SHIFT_MASK: u32 = 0x00001f00
+const CSR_SHIFT_SHIFT: u32 = 8
+const CSR_COUPLED_SEL_MASK: u32 = 0x00000060
+const CSR_COUPLED_SEL_SHIFT: u32 = 5
+const CSR_COUPLED_MODE_MASK: u32 = 0x00000010
+const CSR_COUPLED_MODE_SHIFT: u32 = 4
+const CSR_EXPAND_EN_MASK: u32 = 0x00000002
+const CSR_EXPAND_EN_SHIFT: u32 = 1
+const CSR_EN_MASK: u32 = 0x00000001
+const CSR_EN_SHIFT: u32 = 0
+
+// Data control register for output bit 0
+const BIT0_OFFSET: u32 = 0x00000004
+const BIT0_CLK_MASK: u32 = 0x00020000
+const BIT0_CLK_SHIFT: u32 = 17
+const BIT0_INV_MASK: u32 = 0x00010000
+const BIT0_INV_SHIFT: u32 = 16
+const BIT0_SEL_N_MASK: u32 = 0x00001f00
+const BIT0_SEL_N_SHIFT: u32 = 8
+const BIT0_SEL_P_MASK: u32 = 0x0000001f
+const BIT0_SEL_P_SHIFT: u32 = 0
+
+// Data control register for output bit 1
+const BIT1_OFFSET: u32 = 0x00000008
+const BIT1_CLK_MASK: u32 = 0x00020000
+const BIT1_CLK_SHIFT: u32 = 17
+const BIT1_INV_MASK: u32 = 0x00010000
+const BIT1_INV_SHIFT: u32 = 16
+const BIT1_SEL_N_MASK: u32 = 0x00001f00
+const BIT1_SEL_N_SHIFT: u32 = 8
+const BIT1_SEL_P_MASK: u32 = 0x0000001f
+const BIT1_SEL_P_SHIFT: u32 = 0
+
+// Data control register for output bit 2
+const BIT2_OFFSET: u32 = 0x0000000c
+const BIT2_CLK_MASK: u32 = 0x00020000
+const BIT2_CLK_SHIFT: u32 = 17
+const BIT2_INV_MASK: u32 = 0x00010000
+const BIT2_INV_SHIFT: u32 = 16
+const BIT2_SEL_N_MASK: u32 = 0x00001f00
+const BIT2_SEL_N_SHIFT: u32 = 8
+const BIT2_SEL_P_MASK: u32 = 0x0000001f
+const BIT2_SEL_P_SHIFT: u32 = 0
+
+// Data control register for output bit 3
+const BIT3_OFFSET: u32 = 0x00000010
+const BIT3_CLK_MASK: u32 = 0x00020000
+const BIT3_CLK_SHIFT: u32 = 17
+const BIT3_INV_MASK: u32 = 0x00010000
+const BIT3_INV_SHIFT: u32 = 16
+const BIT3_SEL_N_MASK: u32 = 0x00001f00
+const BIT3_SEL_N_SHIFT: u32 = 8
+const BIT3_SEL_P_MASK: u32 = 0x0000001f
+const BIT3_SEL_P_SHIFT: u32 = 0
+
+// Data control register for output bit 4
+const BIT4_OFFSET: u32 = 0x00000014
+const BIT4_CLK_MASK: u32 = 0x00020000
+const BIT4_CLK_SHIFT: u32 = 17
+const BIT4_INV_MASK: u32 = 0x00010000
+const BIT4_INV_SHIFT: u32 = 16
+const BIT4_SEL_N_MASK: u32 = 0x00001f00
+const BIT4_SEL_N_SHIFT: u32 = 8
+const BIT4_SEL_P_MASK: u32 = 0x0000001f
+const BIT4_SEL_P_SHIFT: u32 = 0
+
+// Data control register for output bit 5
+const BIT5_OFFSET: u32 = 0x00000018
+const BIT5_CLK_MASK: u32 = 0x00020000
+const BIT5_CLK_SHIFT: u32 = 17
+const BIT5_INV_MASK: u32 = 0x00010000
+const BIT5_INV_SHIFT: u32 = 16
+const BIT5_SEL_N_MASK: u32 = 0x00001f00
+const BIT5_SEL_N_SHIFT: u32 = 8
+const BIT5_SEL_P_MASK: u32 = 0x0000001f
+const BIT5_SEL_P_SHIFT: u32 = 0
+
+// Data control register for output bit 6
+const BIT6_OFFSET: u32 = 0x0000001c
+const BIT6_CLK_MASK: u32 = 0x00020000
+const BIT6_CLK_SHIFT: u32 = 17
+const BIT6_INV_MASK: u32 = 0x00010000
+const BIT6_INV_SHIFT: u32 = 16
+const BIT6_SEL_N_MASK: u32 = 0x00001f00
+const BIT6_SEL_N_SHIFT: u32 = 8
+const BIT6_SEL_P_MASK: u32 = 0x0000001f
+const BIT6_SEL_P_SHIFT: u32 = 0
+
+// Data control register for output bit 7
+const BIT7_OFFSET: u32 = 0x00000020
+const BIT7_CLK_MASK: u32 = 0x00020000
+const BIT7_CLK_SHIFT: u32 = 17
+const BIT7_INV_MASK: u32 = 0x00010000
+const BIT7_INV_SHIFT: u32 = 16
+const BIT7_SEL_N_MASK: u32 = 0x00001f00
+const BIT7_SEL_N_SHIFT: u32 = 8
+const BIT7_SEL_P_MASK: u32 = 0x0000001f
+const BIT7_SEL_P_SHIFT: u32 = 0
+
+// Configure the optional shifter inside the command expander
+const EXPAND_SHIFT_OFFSET: u32 = 0x00000024
+const EXPAND_SHIFT_ENC_N_SHIFTS_MASK: u32 = 0x1f000000
+const EXPAND_SHIFT_ENC_N_SHIFTS_SHIFT: u32 = 24
+const EXPAND_SHIFT_ENC_SHIFT_MASK: u32 = 0x001f0000
+const EXPAND_SHIFT_ENC_SHIFT_SHIFT: u32 = 16
+const EXPAND_SHIFT_RAW_N_SHIFTS_MASK: u32 = 0x00001f00
+const EXPAND_SHIFT_RAW_N_SHIFTS_SHIFT: u32 = 8
+const EXPAND_SHIFT_RAW_SHIFT_MASK: u32 = 0x0000001f
+const EXPAND_SHIFT_RAW_SHIFT_SHIFT: u32 = 0
+
+// Configure the optional TMDS encoder inside the command expander
+const EXPAND_TMDS_OFFSET: u32 = 0x00000028
+const EXPAND_TMDS_L2_NBITS_MASK: u32 = 0x00e00000
+const EXPAND_TMDS_L2_NBITS_SHIFT: u32 = 21
+const EXPAND_TMDS_L2_ROT_MASK: u32 = 0x001f0000
+const EXPAND_TMDS_L2_ROT_SHIFT: u32 = 16
+const EXPAND_TMDS_L1_NBITS_MASK: u32 = 0x0000e000
+const EXPAND_TMDS_L1_NBITS_SHIFT: u32 = 13
+const EXPAND_TMDS_L1_ROT_MASK: u32 = 0x00001f00
+const EXPAND_TMDS_L1_ROT_SHIFT: u32 = 8
+const EXPAND_TMDS_L0_NBITS_MASK: u32 = 0x000000e0
+const EXPAND_TMDS_L0_NBITS_SHIFT: u32 = 5
+const EXPAND_TMDS_L0_ROT_MASK: u32 = 0x0000001f
+const EXPAND_TMDS_L0_ROT_SHIFT: u32 = 0

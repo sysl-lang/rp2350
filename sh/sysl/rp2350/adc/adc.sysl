@@ -1,0 +1,91 @@
+// Control and data interface to SAR ADC
+
+module sh.sysl.rp2350.adc
+
+// The peripheral's base address. Every offset below is from here.
+const BASE: u32 = 0x400a0000
+
+// ADC Control and Status
+const CS_OFFSET: u32 = 0x00000000
+const CS_RROBIN_MASK: u32 = 0x01ff0000
+const CS_RROBIN_SHIFT: u32 = 16
+const CS_AINSEL_MASK: u32 = 0x0000f000
+const CS_AINSEL_SHIFT: u32 = 12
+const CS_ERR_STICKY_MASK: u32 = 0x00000400
+const CS_ERR_STICKY_SHIFT: u32 = 10
+const CS_ERR_MASK: u32 = 0x00000200
+const CS_ERR_SHIFT: u32 = 9
+const CS_READY_MASK: u32 = 0x00000100
+const CS_READY_SHIFT: u32 = 8
+const CS_START_MANY_MASK: u32 = 0x00000008
+const CS_START_MANY_SHIFT: u32 = 3
+const CS_START_ONCE_MASK: u32 = 0x00000004
+const CS_START_ONCE_SHIFT: u32 = 2
+const CS_TS_EN_MASK: u32 = 0x00000002
+const CS_TS_EN_SHIFT: u32 = 1
+const CS_EN_MASK: u32 = 0x00000001
+const CS_EN_SHIFT: u32 = 0
+
+// Result of most recent ADC conversion
+const RESULT_OFFSET: u32 = 0x00000004
+const RESULT_RESULT_MASK: u32 = 0x00000fff
+const RESULT_RESULT_SHIFT: u32 = 0
+
+// FIFO control and status
+const FCS_OFFSET: u32 = 0x00000008
+const FCS_THRESH_MASK: u32 = 0x0f000000
+const FCS_THRESH_SHIFT: u32 = 24
+const FCS_LEVEL_MASK: u32 = 0x000f0000
+const FCS_LEVEL_SHIFT: u32 = 16
+const FCS_OVER_MASK: u32 = 0x00000800
+const FCS_OVER_SHIFT: u32 = 11
+const FCS_UNDER_MASK: u32 = 0x00000400
+const FCS_UNDER_SHIFT: u32 = 10
+const FCS_FULL_MASK: u32 = 0x00000200
+const FCS_FULL_SHIFT: u32 = 9
+const FCS_EMPTY_MASK: u32 = 0x00000100
+const FCS_EMPTY_SHIFT: u32 = 8
+const FCS_DREQ_EN_MASK: u32 = 0x00000008
+const FCS_DREQ_EN_SHIFT: u32 = 3
+const FCS_ERR_MASK: u32 = 0x00000004
+const FCS_ERR_SHIFT: u32 = 2
+const FCS_SHIFT_MASK: u32 = 0x00000002
+const FCS_SHIFT_SHIFT: u32 = 1
+const FCS_EN_MASK: u32 = 0x00000001
+const FCS_EN_SHIFT: u32 = 0
+
+// Conversion result FIFO
+const FIFO_OFFSET: u32 = 0x0000000c
+const FIFO_ERR_MASK: u32 = 0x00008000
+const FIFO_ERR_SHIFT: u32 = 15
+const FIFO_VAL_MASK: u32 = 0x00000fff
+const FIFO_VAL_SHIFT: u32 = 0
+
+// Clock divider. If non-zero, CS_START_MANY will start conversions at regular intervals rather
+// than back-to-back. The divider is reset when either of these fields are written. Total period is
+// 1 + INT + FRAC / 256
+const DIV_OFFSET: u32 = 0x00000010
+const DIV_INT_MASK: u32 = 0x00ffff00
+const DIV_INT_SHIFT: u32 = 8
+const DIV_FRAC_MASK: u32 = 0x000000ff
+const DIV_FRAC_SHIFT: u32 = 0
+
+// Raw Interrupts
+const INTR_OFFSET: u32 = 0x00000014
+const INTR_FIFO_MASK: u32 = 0x00000001
+const INTR_FIFO_SHIFT: u32 = 0
+
+// Interrupt Enable
+const INTE_OFFSET: u32 = 0x00000018
+const INTE_FIFO_MASK: u32 = 0x00000001
+const INTE_FIFO_SHIFT: u32 = 0
+
+// Interrupt Force
+const INTF_OFFSET: u32 = 0x0000001c
+const INTF_FIFO_MASK: u32 = 0x00000001
+const INTF_FIFO_SHIFT: u32 = 0
+
+// Interrupt status after masking & forcing
+const INTS_OFFSET: u32 = 0x00000020
+const INTS_FIFO_MASK: u32 = 0x00000001
+const INTS_FIFO_SHIFT: u32 = 0

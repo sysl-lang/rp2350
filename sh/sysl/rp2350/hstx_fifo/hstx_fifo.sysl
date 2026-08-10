@@ -1,0 +1,22 @@
+// FIFO status and write access for HSTX
+
+module sh.sysl.rp2350.hstx_fifo
+
+// The peripheral's base address. Every offset below is from here.
+const BASE: u32 = 0x50600000
+
+// FIFO status
+const STAT_OFFSET: u32 = 0x00000000
+const STAT_WOF_MASK: u32 = 0x00000400
+const STAT_WOF_SHIFT: u32 = 10
+const STAT_EMPTY_MASK: u32 = 0x00000200
+const STAT_EMPTY_SHIFT: u32 = 9
+const STAT_FULL_MASK: u32 = 0x00000100
+const STAT_FULL_SHIFT: u32 = 8
+const STAT_LEVEL_MASK: u32 = 0x000000ff
+const STAT_LEVEL_SHIFT: u32 = 0
+
+// Write access to FIFO
+const FIFO_OFFSET: u32 = 0x00000004
+const FIFO_FIFO_MASK: u32 = 0xffffffff
+const FIFO_FIFO_SHIFT: u32 = 0

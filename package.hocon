@@ -1,0 +1,49 @@
+// The RP2350's register map — the chip Raspberry Pi puts on a Pico 2, as sysl constants.
+//
+// **Every line of sysl in this package is generated.** It comes from Raspberry Pi's own
+// `RP2350.svd`, the CMSIS description shipped in the pico-sdk, by way of
+// [sysl-lang/svd](https://github.com/sysl-lang/svd). Nothing here is hand-written and nothing here
+// should be hand-edited: a correction belongs in the generator or in a newer SVD, and anything typed
+// in by hand is lost the next time the chip is regenerated. `README.md` records the exact command.
+//
+// There is no `dependencies` block because this depends on nothing. It is constants.
+//
+// This is the block a *consumer* writes to reach this package, and resolution for it is built
+// (`design/packages.md` §§ 3-6): a `sysl build` fetches the coordinate, selects by MVS, checks what
+// arrived against `sysl.sum`, and compiles it as more modules.
+//
+//     dependencies {
+//       rp2350 { git = "github.com/sysl-lang/rp2350", version = "0.1.0" }
+//     }
+//
+// The coordinate is identity rather than a URL, so it carries no `https://`, and the version is the
+// tag `v0.1.0` on this repository.
+
+package {
+  name    = "rp2350"
+  version = "0.1.0"
+}
+
+// **There is no `requires` block, and here that is trivially true rather than hard won.**
+//
+// A capability clause is a claim about what a library *does*, and this one does nothing at all. It
+// declares constants: base addresses, register offsets, field masks and shifts, and the vocabulary
+// the vendor gives a field's values. No function, no storage, no C. It allocates nothing, calls
+// nothing and touches no operating system, so it is usable from a freestanding target with no heap —
+// which is the only kind of target that wants it.
+//
+// **It carries no `@link` directive either**, for the same reason: there is no implementation to
+// link. Compare `sh.sysl.pico2`, which also has none but for the opposite reason — its symbols come
+// from a link line CMake writes and sysl never sees.
+
+// ## What it costs, which is not what you would guess
+//
+// **Nothing in the binary.** Constants nobody names do not reach the executable: a program compiled
+// against this package is byte-identical to one compiled without it, verified against sysl 0.0.38.
+// So the map being complete costs a chip's flash nothing.
+//
+// **At compile time it is the whole package, not the module you import.** Measured 2026-08-10:
+// compiling against this as a *source root* adds about 2.7 s to every build, and as a prebuilt
+// `.syslib` artifact about 0.3 s — and both are flat whether a program imports one module or all 54.
+// One module per peripheral is therefore a readability decision, and a good one, but it does not make
+// an unused peripheral free.

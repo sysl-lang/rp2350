@@ -1,0 +1,1251 @@
+// SNPS OTP control IF (SBPI and RPi wrapper control)
+
+module sh.sysl.rp2350.otp
+
+// The peripheral's base address. Every offset below is from here.
+const BASE: u32 = 0x40120000
+
+// Software lock register for page 0. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK0_OFFSET: u32 = 0x00000000
+const SW_LOCK0_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK0_NSEC_SHIFT: u32 = 2
+const SW_LOCK0_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK0_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK0_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK0_SEC_MASK: u32 = 0x00000003
+const SW_LOCK0_SEC_SHIFT: u32 = 0
+const SW_LOCK0_SEC_READ_WRITE: u32 = 0
+const SW_LOCK0_SEC_READ_ONLY: u32 = 1
+const SW_LOCK0_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 1. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK1_OFFSET: u32 = 0x00000004
+const SW_LOCK1_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK1_NSEC_SHIFT: u32 = 2
+const SW_LOCK1_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK1_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK1_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK1_SEC_MASK: u32 = 0x00000003
+const SW_LOCK1_SEC_SHIFT: u32 = 0
+const SW_LOCK1_SEC_READ_WRITE: u32 = 0
+const SW_LOCK1_SEC_READ_ONLY: u32 = 1
+const SW_LOCK1_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 2. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK2_OFFSET: u32 = 0x00000008
+const SW_LOCK2_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK2_NSEC_SHIFT: u32 = 2
+const SW_LOCK2_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK2_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK2_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK2_SEC_MASK: u32 = 0x00000003
+const SW_LOCK2_SEC_SHIFT: u32 = 0
+const SW_LOCK2_SEC_READ_WRITE: u32 = 0
+const SW_LOCK2_SEC_READ_ONLY: u32 = 1
+const SW_LOCK2_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 3. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK3_OFFSET: u32 = 0x0000000c
+const SW_LOCK3_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK3_NSEC_SHIFT: u32 = 2
+const SW_LOCK3_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK3_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK3_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK3_SEC_MASK: u32 = 0x00000003
+const SW_LOCK3_SEC_SHIFT: u32 = 0
+const SW_LOCK3_SEC_READ_WRITE: u32 = 0
+const SW_LOCK3_SEC_READ_ONLY: u32 = 1
+const SW_LOCK3_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 4. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK4_OFFSET: u32 = 0x00000010
+const SW_LOCK4_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK4_NSEC_SHIFT: u32 = 2
+const SW_LOCK4_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK4_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK4_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK4_SEC_MASK: u32 = 0x00000003
+const SW_LOCK4_SEC_SHIFT: u32 = 0
+const SW_LOCK4_SEC_READ_WRITE: u32 = 0
+const SW_LOCK4_SEC_READ_ONLY: u32 = 1
+const SW_LOCK4_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 5. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK5_OFFSET: u32 = 0x00000014
+const SW_LOCK5_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK5_NSEC_SHIFT: u32 = 2
+const SW_LOCK5_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK5_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK5_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK5_SEC_MASK: u32 = 0x00000003
+const SW_LOCK5_SEC_SHIFT: u32 = 0
+const SW_LOCK5_SEC_READ_WRITE: u32 = 0
+const SW_LOCK5_SEC_READ_ONLY: u32 = 1
+const SW_LOCK5_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 6. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK6_OFFSET: u32 = 0x00000018
+const SW_LOCK6_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK6_NSEC_SHIFT: u32 = 2
+const SW_LOCK6_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK6_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK6_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK6_SEC_MASK: u32 = 0x00000003
+const SW_LOCK6_SEC_SHIFT: u32 = 0
+const SW_LOCK6_SEC_READ_WRITE: u32 = 0
+const SW_LOCK6_SEC_READ_ONLY: u32 = 1
+const SW_LOCK6_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 7. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK7_OFFSET: u32 = 0x0000001c
+const SW_LOCK7_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK7_NSEC_SHIFT: u32 = 2
+const SW_LOCK7_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK7_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK7_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK7_SEC_MASK: u32 = 0x00000003
+const SW_LOCK7_SEC_SHIFT: u32 = 0
+const SW_LOCK7_SEC_READ_WRITE: u32 = 0
+const SW_LOCK7_SEC_READ_ONLY: u32 = 1
+const SW_LOCK7_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 8. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK8_OFFSET: u32 = 0x00000020
+const SW_LOCK8_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK8_NSEC_SHIFT: u32 = 2
+const SW_LOCK8_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK8_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK8_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK8_SEC_MASK: u32 = 0x00000003
+const SW_LOCK8_SEC_SHIFT: u32 = 0
+const SW_LOCK8_SEC_READ_WRITE: u32 = 0
+const SW_LOCK8_SEC_READ_ONLY: u32 = 1
+const SW_LOCK8_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 9. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK9_OFFSET: u32 = 0x00000024
+const SW_LOCK9_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK9_NSEC_SHIFT: u32 = 2
+const SW_LOCK9_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK9_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK9_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK9_SEC_MASK: u32 = 0x00000003
+const SW_LOCK9_SEC_SHIFT: u32 = 0
+const SW_LOCK9_SEC_READ_WRITE: u32 = 0
+const SW_LOCK9_SEC_READ_ONLY: u32 = 1
+const SW_LOCK9_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 10. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK10_OFFSET: u32 = 0x00000028
+const SW_LOCK10_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK10_NSEC_SHIFT: u32 = 2
+const SW_LOCK10_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK10_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK10_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK10_SEC_MASK: u32 = 0x00000003
+const SW_LOCK10_SEC_SHIFT: u32 = 0
+const SW_LOCK10_SEC_READ_WRITE: u32 = 0
+const SW_LOCK10_SEC_READ_ONLY: u32 = 1
+const SW_LOCK10_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 11. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK11_OFFSET: u32 = 0x0000002c
+const SW_LOCK11_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK11_NSEC_SHIFT: u32 = 2
+const SW_LOCK11_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK11_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK11_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK11_SEC_MASK: u32 = 0x00000003
+const SW_LOCK11_SEC_SHIFT: u32 = 0
+const SW_LOCK11_SEC_READ_WRITE: u32 = 0
+const SW_LOCK11_SEC_READ_ONLY: u32 = 1
+const SW_LOCK11_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 12. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK12_OFFSET: u32 = 0x00000030
+const SW_LOCK12_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK12_NSEC_SHIFT: u32 = 2
+const SW_LOCK12_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK12_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK12_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK12_SEC_MASK: u32 = 0x00000003
+const SW_LOCK12_SEC_SHIFT: u32 = 0
+const SW_LOCK12_SEC_READ_WRITE: u32 = 0
+const SW_LOCK12_SEC_READ_ONLY: u32 = 1
+const SW_LOCK12_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 13. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK13_OFFSET: u32 = 0x00000034
+const SW_LOCK13_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK13_NSEC_SHIFT: u32 = 2
+const SW_LOCK13_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK13_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK13_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK13_SEC_MASK: u32 = 0x00000003
+const SW_LOCK13_SEC_SHIFT: u32 = 0
+const SW_LOCK13_SEC_READ_WRITE: u32 = 0
+const SW_LOCK13_SEC_READ_ONLY: u32 = 1
+const SW_LOCK13_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 14. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK14_OFFSET: u32 = 0x00000038
+const SW_LOCK14_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK14_NSEC_SHIFT: u32 = 2
+const SW_LOCK14_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK14_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK14_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK14_SEC_MASK: u32 = 0x00000003
+const SW_LOCK14_SEC_SHIFT: u32 = 0
+const SW_LOCK14_SEC_READ_WRITE: u32 = 0
+const SW_LOCK14_SEC_READ_ONLY: u32 = 1
+const SW_LOCK14_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 15. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK15_OFFSET: u32 = 0x0000003c
+const SW_LOCK15_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK15_NSEC_SHIFT: u32 = 2
+const SW_LOCK15_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK15_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK15_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK15_SEC_MASK: u32 = 0x00000003
+const SW_LOCK15_SEC_SHIFT: u32 = 0
+const SW_LOCK15_SEC_READ_WRITE: u32 = 0
+const SW_LOCK15_SEC_READ_ONLY: u32 = 1
+const SW_LOCK15_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 16. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK16_OFFSET: u32 = 0x00000040
+const SW_LOCK16_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK16_NSEC_SHIFT: u32 = 2
+const SW_LOCK16_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK16_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK16_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK16_SEC_MASK: u32 = 0x00000003
+const SW_LOCK16_SEC_SHIFT: u32 = 0
+const SW_LOCK16_SEC_READ_WRITE: u32 = 0
+const SW_LOCK16_SEC_READ_ONLY: u32 = 1
+const SW_LOCK16_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 17. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK17_OFFSET: u32 = 0x00000044
+const SW_LOCK17_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK17_NSEC_SHIFT: u32 = 2
+const SW_LOCK17_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK17_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK17_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK17_SEC_MASK: u32 = 0x00000003
+const SW_LOCK17_SEC_SHIFT: u32 = 0
+const SW_LOCK17_SEC_READ_WRITE: u32 = 0
+const SW_LOCK17_SEC_READ_ONLY: u32 = 1
+const SW_LOCK17_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 18. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK18_OFFSET: u32 = 0x00000048
+const SW_LOCK18_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK18_NSEC_SHIFT: u32 = 2
+const SW_LOCK18_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK18_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK18_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK18_SEC_MASK: u32 = 0x00000003
+const SW_LOCK18_SEC_SHIFT: u32 = 0
+const SW_LOCK18_SEC_READ_WRITE: u32 = 0
+const SW_LOCK18_SEC_READ_ONLY: u32 = 1
+const SW_LOCK18_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 19. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK19_OFFSET: u32 = 0x0000004c
+const SW_LOCK19_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK19_NSEC_SHIFT: u32 = 2
+const SW_LOCK19_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK19_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK19_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK19_SEC_MASK: u32 = 0x00000003
+const SW_LOCK19_SEC_SHIFT: u32 = 0
+const SW_LOCK19_SEC_READ_WRITE: u32 = 0
+const SW_LOCK19_SEC_READ_ONLY: u32 = 1
+const SW_LOCK19_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 20. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK20_OFFSET: u32 = 0x00000050
+const SW_LOCK20_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK20_NSEC_SHIFT: u32 = 2
+const SW_LOCK20_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK20_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK20_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK20_SEC_MASK: u32 = 0x00000003
+const SW_LOCK20_SEC_SHIFT: u32 = 0
+const SW_LOCK20_SEC_READ_WRITE: u32 = 0
+const SW_LOCK20_SEC_READ_ONLY: u32 = 1
+const SW_LOCK20_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 21. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK21_OFFSET: u32 = 0x00000054
+const SW_LOCK21_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK21_NSEC_SHIFT: u32 = 2
+const SW_LOCK21_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK21_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK21_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK21_SEC_MASK: u32 = 0x00000003
+const SW_LOCK21_SEC_SHIFT: u32 = 0
+const SW_LOCK21_SEC_READ_WRITE: u32 = 0
+const SW_LOCK21_SEC_READ_ONLY: u32 = 1
+const SW_LOCK21_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 22. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK22_OFFSET: u32 = 0x00000058
+const SW_LOCK22_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK22_NSEC_SHIFT: u32 = 2
+const SW_LOCK22_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK22_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK22_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK22_SEC_MASK: u32 = 0x00000003
+const SW_LOCK22_SEC_SHIFT: u32 = 0
+const SW_LOCK22_SEC_READ_WRITE: u32 = 0
+const SW_LOCK22_SEC_READ_ONLY: u32 = 1
+const SW_LOCK22_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 23. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK23_OFFSET: u32 = 0x0000005c
+const SW_LOCK23_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK23_NSEC_SHIFT: u32 = 2
+const SW_LOCK23_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK23_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK23_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK23_SEC_MASK: u32 = 0x00000003
+const SW_LOCK23_SEC_SHIFT: u32 = 0
+const SW_LOCK23_SEC_READ_WRITE: u32 = 0
+const SW_LOCK23_SEC_READ_ONLY: u32 = 1
+const SW_LOCK23_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 24. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK24_OFFSET: u32 = 0x00000060
+const SW_LOCK24_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK24_NSEC_SHIFT: u32 = 2
+const SW_LOCK24_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK24_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK24_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK24_SEC_MASK: u32 = 0x00000003
+const SW_LOCK24_SEC_SHIFT: u32 = 0
+const SW_LOCK24_SEC_READ_WRITE: u32 = 0
+const SW_LOCK24_SEC_READ_ONLY: u32 = 1
+const SW_LOCK24_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 25. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK25_OFFSET: u32 = 0x00000064
+const SW_LOCK25_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK25_NSEC_SHIFT: u32 = 2
+const SW_LOCK25_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK25_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK25_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK25_SEC_MASK: u32 = 0x00000003
+const SW_LOCK25_SEC_SHIFT: u32 = 0
+const SW_LOCK25_SEC_READ_WRITE: u32 = 0
+const SW_LOCK25_SEC_READ_ONLY: u32 = 1
+const SW_LOCK25_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 26. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK26_OFFSET: u32 = 0x00000068
+const SW_LOCK26_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK26_NSEC_SHIFT: u32 = 2
+const SW_LOCK26_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK26_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK26_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK26_SEC_MASK: u32 = 0x00000003
+const SW_LOCK26_SEC_SHIFT: u32 = 0
+const SW_LOCK26_SEC_READ_WRITE: u32 = 0
+const SW_LOCK26_SEC_READ_ONLY: u32 = 1
+const SW_LOCK26_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 27. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK27_OFFSET: u32 = 0x0000006c
+const SW_LOCK27_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK27_NSEC_SHIFT: u32 = 2
+const SW_LOCK27_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK27_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK27_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK27_SEC_MASK: u32 = 0x00000003
+const SW_LOCK27_SEC_SHIFT: u32 = 0
+const SW_LOCK27_SEC_READ_WRITE: u32 = 0
+const SW_LOCK27_SEC_READ_ONLY: u32 = 1
+const SW_LOCK27_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 28. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK28_OFFSET: u32 = 0x00000070
+const SW_LOCK28_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK28_NSEC_SHIFT: u32 = 2
+const SW_LOCK28_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK28_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK28_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK28_SEC_MASK: u32 = 0x00000003
+const SW_LOCK28_SEC_SHIFT: u32 = 0
+const SW_LOCK28_SEC_READ_WRITE: u32 = 0
+const SW_LOCK28_SEC_READ_ONLY: u32 = 1
+const SW_LOCK28_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 29. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK29_OFFSET: u32 = 0x00000074
+const SW_LOCK29_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK29_NSEC_SHIFT: u32 = 2
+const SW_LOCK29_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK29_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK29_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK29_SEC_MASK: u32 = 0x00000003
+const SW_LOCK29_SEC_SHIFT: u32 = 0
+const SW_LOCK29_SEC_READ_WRITE: u32 = 0
+const SW_LOCK29_SEC_READ_ONLY: u32 = 1
+const SW_LOCK29_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 30. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK30_OFFSET: u32 = 0x00000078
+const SW_LOCK30_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK30_NSEC_SHIFT: u32 = 2
+const SW_LOCK30_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK30_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK30_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK30_SEC_MASK: u32 = 0x00000003
+const SW_LOCK30_SEC_SHIFT: u32 = 0
+const SW_LOCK30_SEC_READ_WRITE: u32 = 0
+const SW_LOCK30_SEC_READ_ONLY: u32 = 1
+const SW_LOCK30_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 31. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK31_OFFSET: u32 = 0x0000007c
+const SW_LOCK31_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK31_NSEC_SHIFT: u32 = 2
+const SW_LOCK31_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK31_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK31_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK31_SEC_MASK: u32 = 0x00000003
+const SW_LOCK31_SEC_SHIFT: u32 = 0
+const SW_LOCK31_SEC_READ_WRITE: u32 = 0
+const SW_LOCK31_SEC_READ_ONLY: u32 = 1
+const SW_LOCK31_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 32. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK32_OFFSET: u32 = 0x00000080
+const SW_LOCK32_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK32_NSEC_SHIFT: u32 = 2
+const SW_LOCK32_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK32_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK32_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK32_SEC_MASK: u32 = 0x00000003
+const SW_LOCK32_SEC_SHIFT: u32 = 0
+const SW_LOCK32_SEC_READ_WRITE: u32 = 0
+const SW_LOCK32_SEC_READ_ONLY: u32 = 1
+const SW_LOCK32_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 33. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK33_OFFSET: u32 = 0x00000084
+const SW_LOCK33_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK33_NSEC_SHIFT: u32 = 2
+const SW_LOCK33_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK33_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK33_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK33_SEC_MASK: u32 = 0x00000003
+const SW_LOCK33_SEC_SHIFT: u32 = 0
+const SW_LOCK33_SEC_READ_WRITE: u32 = 0
+const SW_LOCK33_SEC_READ_ONLY: u32 = 1
+const SW_LOCK33_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 34. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK34_OFFSET: u32 = 0x00000088
+const SW_LOCK34_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK34_NSEC_SHIFT: u32 = 2
+const SW_LOCK34_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK34_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK34_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK34_SEC_MASK: u32 = 0x00000003
+const SW_LOCK34_SEC_SHIFT: u32 = 0
+const SW_LOCK34_SEC_READ_WRITE: u32 = 0
+const SW_LOCK34_SEC_READ_ONLY: u32 = 1
+const SW_LOCK34_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 35. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK35_OFFSET: u32 = 0x0000008c
+const SW_LOCK35_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK35_NSEC_SHIFT: u32 = 2
+const SW_LOCK35_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK35_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK35_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK35_SEC_MASK: u32 = 0x00000003
+const SW_LOCK35_SEC_SHIFT: u32 = 0
+const SW_LOCK35_SEC_READ_WRITE: u32 = 0
+const SW_LOCK35_SEC_READ_ONLY: u32 = 1
+const SW_LOCK35_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 36. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK36_OFFSET: u32 = 0x00000090
+const SW_LOCK36_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK36_NSEC_SHIFT: u32 = 2
+const SW_LOCK36_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK36_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK36_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK36_SEC_MASK: u32 = 0x00000003
+const SW_LOCK36_SEC_SHIFT: u32 = 0
+const SW_LOCK36_SEC_READ_WRITE: u32 = 0
+const SW_LOCK36_SEC_READ_ONLY: u32 = 1
+const SW_LOCK36_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 37. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK37_OFFSET: u32 = 0x00000094
+const SW_LOCK37_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK37_NSEC_SHIFT: u32 = 2
+const SW_LOCK37_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK37_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK37_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK37_SEC_MASK: u32 = 0x00000003
+const SW_LOCK37_SEC_SHIFT: u32 = 0
+const SW_LOCK37_SEC_READ_WRITE: u32 = 0
+const SW_LOCK37_SEC_READ_ONLY: u32 = 1
+const SW_LOCK37_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 38. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK38_OFFSET: u32 = 0x00000098
+const SW_LOCK38_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK38_NSEC_SHIFT: u32 = 2
+const SW_LOCK38_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK38_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK38_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK38_SEC_MASK: u32 = 0x00000003
+const SW_LOCK38_SEC_SHIFT: u32 = 0
+const SW_LOCK38_SEC_READ_WRITE: u32 = 0
+const SW_LOCK38_SEC_READ_ONLY: u32 = 1
+const SW_LOCK38_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 39. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK39_OFFSET: u32 = 0x0000009c
+const SW_LOCK39_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK39_NSEC_SHIFT: u32 = 2
+const SW_LOCK39_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK39_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK39_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK39_SEC_MASK: u32 = 0x00000003
+const SW_LOCK39_SEC_SHIFT: u32 = 0
+const SW_LOCK39_SEC_READ_WRITE: u32 = 0
+const SW_LOCK39_SEC_READ_ONLY: u32 = 1
+const SW_LOCK39_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 40. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK40_OFFSET: u32 = 0x000000a0
+const SW_LOCK40_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK40_NSEC_SHIFT: u32 = 2
+const SW_LOCK40_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK40_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK40_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK40_SEC_MASK: u32 = 0x00000003
+const SW_LOCK40_SEC_SHIFT: u32 = 0
+const SW_LOCK40_SEC_READ_WRITE: u32 = 0
+const SW_LOCK40_SEC_READ_ONLY: u32 = 1
+const SW_LOCK40_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 41. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK41_OFFSET: u32 = 0x000000a4
+const SW_LOCK41_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK41_NSEC_SHIFT: u32 = 2
+const SW_LOCK41_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK41_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK41_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK41_SEC_MASK: u32 = 0x00000003
+const SW_LOCK41_SEC_SHIFT: u32 = 0
+const SW_LOCK41_SEC_READ_WRITE: u32 = 0
+const SW_LOCK41_SEC_READ_ONLY: u32 = 1
+const SW_LOCK41_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 42. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK42_OFFSET: u32 = 0x000000a8
+const SW_LOCK42_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK42_NSEC_SHIFT: u32 = 2
+const SW_LOCK42_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK42_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK42_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK42_SEC_MASK: u32 = 0x00000003
+const SW_LOCK42_SEC_SHIFT: u32 = 0
+const SW_LOCK42_SEC_READ_WRITE: u32 = 0
+const SW_LOCK42_SEC_READ_ONLY: u32 = 1
+const SW_LOCK42_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 43. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK43_OFFSET: u32 = 0x000000ac
+const SW_LOCK43_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK43_NSEC_SHIFT: u32 = 2
+const SW_LOCK43_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK43_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK43_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK43_SEC_MASK: u32 = 0x00000003
+const SW_LOCK43_SEC_SHIFT: u32 = 0
+const SW_LOCK43_SEC_READ_WRITE: u32 = 0
+const SW_LOCK43_SEC_READ_ONLY: u32 = 1
+const SW_LOCK43_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 44. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK44_OFFSET: u32 = 0x000000b0
+const SW_LOCK44_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK44_NSEC_SHIFT: u32 = 2
+const SW_LOCK44_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK44_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK44_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK44_SEC_MASK: u32 = 0x00000003
+const SW_LOCK44_SEC_SHIFT: u32 = 0
+const SW_LOCK44_SEC_READ_WRITE: u32 = 0
+const SW_LOCK44_SEC_READ_ONLY: u32 = 1
+const SW_LOCK44_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 45. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK45_OFFSET: u32 = 0x000000b4
+const SW_LOCK45_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK45_NSEC_SHIFT: u32 = 2
+const SW_LOCK45_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK45_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK45_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK45_SEC_MASK: u32 = 0x00000003
+const SW_LOCK45_SEC_SHIFT: u32 = 0
+const SW_LOCK45_SEC_READ_WRITE: u32 = 0
+const SW_LOCK45_SEC_READ_ONLY: u32 = 1
+const SW_LOCK45_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 46. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK46_OFFSET: u32 = 0x000000b8
+const SW_LOCK46_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK46_NSEC_SHIFT: u32 = 2
+const SW_LOCK46_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK46_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK46_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK46_SEC_MASK: u32 = 0x00000003
+const SW_LOCK46_SEC_SHIFT: u32 = 0
+const SW_LOCK46_SEC_READ_WRITE: u32 = 0
+const SW_LOCK46_SEC_READ_ONLY: u32 = 1
+const SW_LOCK46_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 47. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK47_OFFSET: u32 = 0x000000bc
+const SW_LOCK47_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK47_NSEC_SHIFT: u32 = 2
+const SW_LOCK47_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK47_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK47_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK47_SEC_MASK: u32 = 0x00000003
+const SW_LOCK47_SEC_SHIFT: u32 = 0
+const SW_LOCK47_SEC_READ_WRITE: u32 = 0
+const SW_LOCK47_SEC_READ_ONLY: u32 = 1
+const SW_LOCK47_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 48. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK48_OFFSET: u32 = 0x000000c0
+const SW_LOCK48_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK48_NSEC_SHIFT: u32 = 2
+const SW_LOCK48_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK48_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK48_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK48_SEC_MASK: u32 = 0x00000003
+const SW_LOCK48_SEC_SHIFT: u32 = 0
+const SW_LOCK48_SEC_READ_WRITE: u32 = 0
+const SW_LOCK48_SEC_READ_ONLY: u32 = 1
+const SW_LOCK48_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 49. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK49_OFFSET: u32 = 0x000000c4
+const SW_LOCK49_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK49_NSEC_SHIFT: u32 = 2
+const SW_LOCK49_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK49_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK49_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK49_SEC_MASK: u32 = 0x00000003
+const SW_LOCK49_SEC_SHIFT: u32 = 0
+const SW_LOCK49_SEC_READ_WRITE: u32 = 0
+const SW_LOCK49_SEC_READ_ONLY: u32 = 1
+const SW_LOCK49_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 50. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK50_OFFSET: u32 = 0x000000c8
+const SW_LOCK50_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK50_NSEC_SHIFT: u32 = 2
+const SW_LOCK50_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK50_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK50_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK50_SEC_MASK: u32 = 0x00000003
+const SW_LOCK50_SEC_SHIFT: u32 = 0
+const SW_LOCK50_SEC_READ_WRITE: u32 = 0
+const SW_LOCK50_SEC_READ_ONLY: u32 = 1
+const SW_LOCK50_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 51. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK51_OFFSET: u32 = 0x000000cc
+const SW_LOCK51_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK51_NSEC_SHIFT: u32 = 2
+const SW_LOCK51_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK51_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK51_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK51_SEC_MASK: u32 = 0x00000003
+const SW_LOCK51_SEC_SHIFT: u32 = 0
+const SW_LOCK51_SEC_READ_WRITE: u32 = 0
+const SW_LOCK51_SEC_READ_ONLY: u32 = 1
+const SW_LOCK51_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 52. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK52_OFFSET: u32 = 0x000000d0
+const SW_LOCK52_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK52_NSEC_SHIFT: u32 = 2
+const SW_LOCK52_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK52_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK52_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK52_SEC_MASK: u32 = 0x00000003
+const SW_LOCK52_SEC_SHIFT: u32 = 0
+const SW_LOCK52_SEC_READ_WRITE: u32 = 0
+const SW_LOCK52_SEC_READ_ONLY: u32 = 1
+const SW_LOCK52_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 53. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK53_OFFSET: u32 = 0x000000d4
+const SW_LOCK53_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK53_NSEC_SHIFT: u32 = 2
+const SW_LOCK53_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK53_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK53_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK53_SEC_MASK: u32 = 0x00000003
+const SW_LOCK53_SEC_SHIFT: u32 = 0
+const SW_LOCK53_SEC_READ_WRITE: u32 = 0
+const SW_LOCK53_SEC_READ_ONLY: u32 = 1
+const SW_LOCK53_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 54. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK54_OFFSET: u32 = 0x000000d8
+const SW_LOCK54_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK54_NSEC_SHIFT: u32 = 2
+const SW_LOCK54_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK54_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK54_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK54_SEC_MASK: u32 = 0x00000003
+const SW_LOCK54_SEC_SHIFT: u32 = 0
+const SW_LOCK54_SEC_READ_WRITE: u32 = 0
+const SW_LOCK54_SEC_READ_ONLY: u32 = 1
+const SW_LOCK54_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 55. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK55_OFFSET: u32 = 0x000000dc
+const SW_LOCK55_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK55_NSEC_SHIFT: u32 = 2
+const SW_LOCK55_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK55_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK55_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK55_SEC_MASK: u32 = 0x00000003
+const SW_LOCK55_SEC_SHIFT: u32 = 0
+const SW_LOCK55_SEC_READ_WRITE: u32 = 0
+const SW_LOCK55_SEC_READ_ONLY: u32 = 1
+const SW_LOCK55_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 56. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK56_OFFSET: u32 = 0x000000e0
+const SW_LOCK56_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK56_NSEC_SHIFT: u32 = 2
+const SW_LOCK56_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK56_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK56_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK56_SEC_MASK: u32 = 0x00000003
+const SW_LOCK56_SEC_SHIFT: u32 = 0
+const SW_LOCK56_SEC_READ_WRITE: u32 = 0
+const SW_LOCK56_SEC_READ_ONLY: u32 = 1
+const SW_LOCK56_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 57. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK57_OFFSET: u32 = 0x000000e4
+const SW_LOCK57_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK57_NSEC_SHIFT: u32 = 2
+const SW_LOCK57_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK57_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK57_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK57_SEC_MASK: u32 = 0x00000003
+const SW_LOCK57_SEC_SHIFT: u32 = 0
+const SW_LOCK57_SEC_READ_WRITE: u32 = 0
+const SW_LOCK57_SEC_READ_ONLY: u32 = 1
+const SW_LOCK57_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 58. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK58_OFFSET: u32 = 0x000000e8
+const SW_LOCK58_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK58_NSEC_SHIFT: u32 = 2
+const SW_LOCK58_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK58_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK58_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK58_SEC_MASK: u32 = 0x00000003
+const SW_LOCK58_SEC_SHIFT: u32 = 0
+const SW_LOCK58_SEC_READ_WRITE: u32 = 0
+const SW_LOCK58_SEC_READ_ONLY: u32 = 1
+const SW_LOCK58_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 59. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK59_OFFSET: u32 = 0x000000ec
+const SW_LOCK59_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK59_NSEC_SHIFT: u32 = 2
+const SW_LOCK59_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK59_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK59_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK59_SEC_MASK: u32 = 0x00000003
+const SW_LOCK59_SEC_SHIFT: u32 = 0
+const SW_LOCK59_SEC_READ_WRITE: u32 = 0
+const SW_LOCK59_SEC_READ_ONLY: u32 = 1
+const SW_LOCK59_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 60. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK60_OFFSET: u32 = 0x000000f0
+const SW_LOCK60_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK60_NSEC_SHIFT: u32 = 2
+const SW_LOCK60_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK60_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK60_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK60_SEC_MASK: u32 = 0x00000003
+const SW_LOCK60_SEC_SHIFT: u32 = 0
+const SW_LOCK60_SEC_READ_WRITE: u32 = 0
+const SW_LOCK60_SEC_READ_ONLY: u32 = 1
+const SW_LOCK60_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 61. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK61_OFFSET: u32 = 0x000000f4
+const SW_LOCK61_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK61_NSEC_SHIFT: u32 = 2
+const SW_LOCK61_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK61_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK61_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK61_SEC_MASK: u32 = 0x00000003
+const SW_LOCK61_SEC_SHIFT: u32 = 0
+const SW_LOCK61_SEC_READ_WRITE: u32 = 0
+const SW_LOCK61_SEC_READ_ONLY: u32 = 1
+const SW_LOCK61_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 62. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK62_OFFSET: u32 = 0x000000f8
+const SW_LOCK62_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK62_NSEC_SHIFT: u32 = 2
+const SW_LOCK62_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK62_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK62_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK62_SEC_MASK: u32 = 0x00000003
+const SW_LOCK62_SEC_SHIFT: u32 = 0
+const SW_LOCK62_SEC_READ_WRITE: u32 = 0
+const SW_LOCK62_SEC_READ_ONLY: u32 = 1
+const SW_LOCK62_SEC_INACCESSIBLE: u32 = 3
+
+// Software lock register for page 63. Locks are initialised from the OTP lock pages at reset. This
+// register can be written to further advance the lock state of each page (until next reset), and
+// read to check the current lock state of a page.
+const SW_LOCK63_OFFSET: u32 = 0x000000fc
+const SW_LOCK63_NSEC_MASK: u32 = 0x0000000c
+const SW_LOCK63_NSEC_SHIFT: u32 = 2
+const SW_LOCK63_NSEC_READ_WRITE: u32 = 0
+const SW_LOCK63_NSEC_READ_ONLY: u32 = 1
+const SW_LOCK63_NSEC_INACCESSIBLE: u32 = 3
+const SW_LOCK63_SEC_MASK: u32 = 0x00000003
+const SW_LOCK63_SEC_SHIFT: u32 = 0
+const SW_LOCK63_SEC_READ_WRITE: u32 = 0
+const SW_LOCK63_SEC_READ_ONLY: u32 = 1
+const SW_LOCK63_SEC_INACCESSIBLE: u32 = 3
+
+// Dispatch instructions to the SBPI interface, used for programming the OTP fuses.
+const SBPI_INSTR_OFFSET: u32 = 0x00000100
+const SBPI_INSTR_EXEC_MASK: u32 = 0x40000000
+const SBPI_INSTR_EXEC_SHIFT: u32 = 30
+const SBPI_INSTR_IS_WR_MASK: u32 = 0x20000000
+const SBPI_INSTR_IS_WR_SHIFT: u32 = 29
+const SBPI_INSTR_HAS_PAYLOAD_MASK: u32 = 0x10000000
+const SBPI_INSTR_HAS_PAYLOAD_SHIFT: u32 = 28
+const SBPI_INSTR_PAYLOAD_SIZE_M1_MASK: u32 = 0x0f000000
+const SBPI_INSTR_PAYLOAD_SIZE_M1_SHIFT: u32 = 24
+const SBPI_INSTR_TARGET_MASK: u32 = 0x00ff0000
+const SBPI_INSTR_TARGET_SHIFT: u32 = 16
+const SBPI_INSTR_CMD_MASK: u32 = 0x0000ff00
+const SBPI_INSTR_CMD_SHIFT: u32 = 8
+const SBPI_INSTR_SHORT_WDATA_MASK: u32 = 0x000000ff
+const SBPI_INSTR_SHORT_WDATA_SHIFT: u32 = 0
+
+// SBPI write payload bytes 3..0
+const SBPI_WDATA_0_OFFSET: u32 = 0x00000104
+const SBPI_WDATA_0_SBPI_WDATA_0_MASK: u32 = 0xffffffff
+const SBPI_WDATA_0_SBPI_WDATA_0_SHIFT: u32 = 0
+
+// SBPI write payload bytes 7..4
+const SBPI_WDATA_1_OFFSET: u32 = 0x00000108
+const SBPI_WDATA_1_SBPI_WDATA_1_MASK: u32 = 0xffffffff
+const SBPI_WDATA_1_SBPI_WDATA_1_SHIFT: u32 = 0
+
+// SBPI write payload bytes 11..8
+const SBPI_WDATA_2_OFFSET: u32 = 0x0000010c
+const SBPI_WDATA_2_SBPI_WDATA_2_MASK: u32 = 0xffffffff
+const SBPI_WDATA_2_SBPI_WDATA_2_SHIFT: u32 = 0
+
+// SBPI write payload bytes 15..12
+const SBPI_WDATA_3_OFFSET: u32 = 0x00000110
+const SBPI_WDATA_3_SBPI_WDATA_3_MASK: u32 = 0xffffffff
+const SBPI_WDATA_3_SBPI_WDATA_3_SHIFT: u32 = 0
+
+// Read payload bytes 3..0. Once read, the data in the register will automatically clear to 0.
+const SBPI_RDATA_0_OFFSET: u32 = 0x00000114
+const SBPI_RDATA_0_SBPI_RDATA_0_MASK: u32 = 0xffffffff
+const SBPI_RDATA_0_SBPI_RDATA_0_SHIFT: u32 = 0
+
+// Read payload bytes 7..4. Once read, the data in the register will automatically clear to 0.
+const SBPI_RDATA_1_OFFSET: u32 = 0x00000118
+const SBPI_RDATA_1_SBPI_RDATA_1_MASK: u32 = 0xffffffff
+const SBPI_RDATA_1_SBPI_RDATA_1_SHIFT: u32 = 0
+
+// Read payload bytes 11..8. Once read, the data in the register will automatically clear to 0.
+const SBPI_RDATA_2_OFFSET: u32 = 0x0000011c
+const SBPI_RDATA_2_SBPI_RDATA_2_MASK: u32 = 0xffffffff
+const SBPI_RDATA_2_SBPI_RDATA_2_SHIFT: u32 = 0
+
+// Read payload bytes 15..12. Once read, the data in the register will automatically clear to 0.
+const SBPI_RDATA_3_OFFSET: u32 = 0x00000120
+const SBPI_RDATA_3_SBPI_RDATA_3_MASK: u32 = 0xffffffff
+const SBPI_RDATA_3_SBPI_RDATA_3_SHIFT: u32 = 0
+
+const SBPI_STATUS_OFFSET: u32 = 0x00000124
+const SBPI_STATUS_MISO_MASK: u32 = 0x00ff0000
+const SBPI_STATUS_MISO_SHIFT: u32 = 16
+const SBPI_STATUS_FLAG_MASK: u32 = 0x00001000
+const SBPI_STATUS_FLAG_SHIFT: u32 = 12
+const SBPI_STATUS_INSTR_MISS_MASK: u32 = 0x00000100
+const SBPI_STATUS_INSTR_MISS_SHIFT: u32 = 8
+const SBPI_STATUS_INSTR_DONE_MASK: u32 = 0x00000010
+const SBPI_STATUS_INSTR_DONE_SHIFT: u32 = 4
+const SBPI_STATUS_RDATA_VLD_MASK: u32 = 0x00000001
+const SBPI_STATUS_RDATA_VLD_SHIFT: u32 = 0
+
+// Controls for APB data read interface (USER interface)
+const USR_OFFSET: u32 = 0x00000128
+const USR_PD_MASK: u32 = 0x00000010
+const USR_PD_SHIFT: u32 = 4
+const USR_DCTRL_MASK: u32 = 0x00000001
+const USR_DCTRL_SHIFT: u32 = 0
+
+// Debug for OTP power-on state machine
+const DBG_OFFSET: u32 = 0x0000012c
+const DBG_CUSTOMER_RMA_FLAG_MASK: u32 = 0x00001000
+const DBG_CUSTOMER_RMA_FLAG_SHIFT: u32 = 12
+const DBG_PSM_STATE_MASK: u32 = 0x000000f0
+const DBG_PSM_STATE_SHIFT: u32 = 4
+const DBG_ROSC_UP_MASK: u32 = 0x00000008
+const DBG_ROSC_UP_SHIFT: u32 = 3
+const DBG_ROSC_UP_SEEN_MASK: u32 = 0x00000004
+const DBG_ROSC_UP_SEEN_SHIFT: u32 = 2
+const DBG_BOOT_DONE_MASK: u32 = 0x00000002
+const DBG_BOOT_DONE_SHIFT: u32 = 1
+const DBG_PSM_DONE_MASK: u32 = 0x00000001
+const DBG_PSM_DONE_SHIFT: u32 = 0
+
+// During BIST, count address locations that have at least one leaky bit
+const BIST_OFFSET: u32 = 0x00000134
+const BIST_CNT_FAIL_MASK: u32 = 0x40000000
+const BIST_CNT_FAIL_SHIFT: u32 = 30
+const BIST_CNT_CLR_MASK: u32 = 0x20000000
+const BIST_CNT_CLR_SHIFT: u32 = 29
+const BIST_CNT_ENA_MASK: u32 = 0x10000000
+const BIST_CNT_ENA_SHIFT: u32 = 28
+const BIST_CNT_MAX_MASK: u32 = 0x0fff0000
+const BIST_CNT_MAX_SHIFT: u32 = 16
+const BIST_CNT_MASK: u32 = 0x00001fff
+const BIST_CNT_SHIFT: u32 = 0
+
+// Word 0 (bits 31..0) of the key. Write only, read returns 0x0
+const CRT_KEY_W0_OFFSET: u32 = 0x00000138
+const CRT_KEY_W0_CRT_KEY_W0_MASK: u32 = 0xffffffff
+const CRT_KEY_W0_CRT_KEY_W0_SHIFT: u32 = 0
+
+// Word 1 (bits 63..32) of the key. Write only, read returns 0x0
+const CRT_KEY_W1_OFFSET: u32 = 0x0000013c
+const CRT_KEY_W1_CRT_KEY_W1_MASK: u32 = 0xffffffff
+const CRT_KEY_W1_CRT_KEY_W1_SHIFT: u32 = 0
+
+// Word 2 (bits 95..64) of the key. Write only, read returns 0x0
+const CRT_KEY_W2_OFFSET: u32 = 0x00000140
+const CRT_KEY_W2_CRT_KEY_W2_MASK: u32 = 0xffffffff
+const CRT_KEY_W2_CRT_KEY_W2_SHIFT: u32 = 0
+
+// Word 3 (bits 127..96) of the key. Write only, read returns 0x0
+const CRT_KEY_W3_OFFSET: u32 = 0x00000144
+const CRT_KEY_W3_CRT_KEY_W3_MASK: u32 = 0xffffffff
+const CRT_KEY_W3_CRT_KEY_W3_SHIFT: u32 = 0
+
+// Quickly check values of critical flags read during boot up
+const CRITICAL_OFFSET: u32 = 0x00000148
+const CRITICAL_RISCV_DISABLE_MASK: u32 = 0x00020000
+const CRITICAL_RISCV_DISABLE_SHIFT: u32 = 17
+const CRITICAL_ARM_DISABLE_MASK: u32 = 0x00010000
+const CRITICAL_ARM_DISABLE_SHIFT: u32 = 16
+const CRITICAL_GLITCH_DETECTOR_SENS_MASK: u32 = 0x00000060
+const CRITICAL_GLITCH_DETECTOR_SENS_SHIFT: u32 = 5
+const CRITICAL_GLITCH_DETECTOR_ENABLE_MASK: u32 = 0x00000010
+const CRITICAL_GLITCH_DETECTOR_ENABLE_SHIFT: u32 = 4
+const CRITICAL_DEFAULT_ARCHSEL_MASK: u32 = 0x00000008
+const CRITICAL_DEFAULT_ARCHSEL_SHIFT: u32 = 3
+const CRITICAL_DEBUG_DISABLE_MASK: u32 = 0x00000004
+const CRITICAL_DEBUG_DISABLE_SHIFT: u32 = 2
+const CRITICAL_SECURE_DEBUG_DISABLE_MASK: u32 = 0x00000002
+const CRITICAL_SECURE_DEBUG_DISABLE_SHIFT: u32 = 1
+const CRITICAL_SECURE_BOOT_ENABLE_MASK: u32 = 0x00000001
+const CRITICAL_SECURE_BOOT_ENABLE_SHIFT: u32 = 0
+
+// Which keys were valid (enrolled) at boot time
+const KEY_VALID_OFFSET: u32 = 0x0000014c
+const KEY_VALID_KEY_VALID_MASK: u32 = 0x000000ff
+const KEY_VALID_KEY_VALID_SHIFT: u32 = 0
+
+// Enable a debug feature that has been disabled. Debug features are disabled if one of the
+// relevant critical boot flags is set in OTP (DEBUG_DISABLE or SECURE_DEBUG_DISABLE), OR if a
+// debug key is marked valid in OTP, and the matching key value has not been supplied over SWD.
+// Specifically: - The DEBUG_DISABLE flag disables all debug features. This can be fully overridden
+// by setting all bits of this register. - The SECURE_DEBUG_DISABLE flag disables secure processor
+// debug. This can be fully overridden by setting the PROC0_SECURE and PROC1_SECURE bits of this
+// register. - If a single debug key has been registered, and no matching key value has been
+// supplied over SWD, then all debug features are disabled. This can be fully overridden by setting
+// all bits of this register. - If both debug keys have been registered, and the Non-secure key's
+// value (key 6) has been supplied over SWD, secure processor debug is disabled. This can be fully
+// overridden by setting the PROC0_SECURE and PROC1_SECURE bits of this register. - If both debug
+// keys have been registered, and the Secure key's value (key 5) has been supplied over SWD, then
+// no debug features are disabled by the key mechanism. However, note that in this case debug
+// features may still be disabled by the critical boot flags.
+const DEBUGEN_OFFSET: u32 = 0x00000150
+const DEBUGEN_MISC_MASK: u32 = 0x00000100
+const DEBUGEN_MISC_SHIFT: u32 = 8
+const DEBUGEN_PROC1_SECURE_MASK: u32 = 0x00000008
+const DEBUGEN_PROC1_SECURE_SHIFT: u32 = 3
+const DEBUGEN_PROC1_MASK: u32 = 0x00000004
+const DEBUGEN_PROC1_SHIFT: u32 = 2
+const DEBUGEN_PROC0_SECURE_MASK: u32 = 0x00000002
+const DEBUGEN_PROC0_SECURE_SHIFT: u32 = 1
+const DEBUGEN_PROC0_MASK: u32 = 0x00000001
+const DEBUGEN_PROC0_SHIFT: u32 = 0
+
+// Write 1s to lock corresponding bits in DEBUGEN. This register is reset by the processor cold
+// reset.
+const DEBUGEN_LOCK_OFFSET: u32 = 0x00000154
+const DEBUGEN_LOCK_MISC_MASK: u32 = 0x00000100
+const DEBUGEN_LOCK_MISC_SHIFT: u32 = 8
+const DEBUGEN_LOCK_PROC1_SECURE_MASK: u32 = 0x00000008
+const DEBUGEN_LOCK_PROC1_SECURE_SHIFT: u32 = 3
+const DEBUGEN_LOCK_PROC1_MASK: u32 = 0x00000004
+const DEBUGEN_LOCK_PROC1_SHIFT: u32 = 2
+const DEBUGEN_LOCK_PROC0_SECURE_MASK: u32 = 0x00000002
+const DEBUGEN_LOCK_PROC0_SECURE_SHIFT: u32 = 1
+const DEBUGEN_LOCK_PROC0_MASK: u32 = 0x00000001
+const DEBUGEN_LOCK_PROC0_SHIFT: u32 = 0
+
+// Architecture select (Arm/RISC-V). The default and allowable values of this register are
+// constrained by the critical boot flags. This register is reset by the earliest reset in the
+// switched core power domain (before a processor cold reset). Cores sample their architecture
+// select signal on a warm reset. The source of the warm reset could be the system power-up state
+// machine, the watchdog timer, Arm SYSRESETREQ or from RISC-V hartresetreq. Note that when an Arm
+// core is deselected, its cold reset domain is also held in reset, since in particular the
+// SYSRESETREQ bit becomes inaccessible once the core is deselected. Note also the RISC-V cores do
+// not have a cold reset domain, since their corresponding controls are located in the Debug
+// Module.
+const ARCHSEL_OFFSET: u32 = 0x00000158
+const ARCHSEL_CORE1_MASK: u32 = 0x00000002
+const ARCHSEL_CORE1_SHIFT: u32 = 1
+const ARCHSEL_CORE1_ARM: u32 = 0
+const ARCHSEL_CORE1_RISCV: u32 = 1
+const ARCHSEL_CORE0_MASK: u32 = 0x00000001
+const ARCHSEL_CORE0_SHIFT: u32 = 0
+const ARCHSEL_CORE0_ARM: u32 = 0
+const ARCHSEL_CORE0_RISCV: u32 = 1
+
+// Get the current architecture select state of each core. Cores sample the current value of the
+// ARCHSEL register when their warm reset is released, at which point the corresponding bit in this
+// register will also update.
+const ARCHSEL_STATUS_OFFSET: u32 = 0x0000015c
+const ARCHSEL_STATUS_CORE1_MASK: u32 = 0x00000002
+const ARCHSEL_STATUS_CORE1_SHIFT: u32 = 1
+const ARCHSEL_STATUS_CORE1_ARM: u32 = 0
+const ARCHSEL_STATUS_CORE1_RISCV: u32 = 1
+const ARCHSEL_STATUS_CORE0_MASK: u32 = 0x00000001
+const ARCHSEL_STATUS_CORE0_SHIFT: u32 = 0
+const ARCHSEL_STATUS_CORE0_ARM: u32 = 0
+const ARCHSEL_STATUS_CORE0_RISCV: u32 = 1
+
+// Tell the bootrom to ignore scratch register boot vectors (both power manager and watchdog) on
+// the next power up. If an early boot stage has soft-locked some OTP pages in order to protect
+// their contents from later stages, there is a risk that Secure code running at a later stage can
+// unlock the pages by performing a watchdog reset that resets the OTP. This register can be used
+// to ensure that the bootloader runs as normal on the next power up, preventing Secure code at a
+// later stage from accessing OTP in its unlocked state. Should be used in conjunction with the
+// power manager BOOTDIS register.
+const BOOTDIS_OFFSET: u32 = 0x00000160
+const BOOTDIS_NEXT_MASK: u32 = 0x00000002
+const BOOTDIS_NEXT_SHIFT: u32 = 1
+const BOOTDIS_NOW_MASK: u32 = 0x00000001
+const BOOTDIS_NOW_SHIFT: u32 = 0
+
+// Raw Interrupts
+const INTR_OFFSET: u32 = 0x00000164
+const INTR_APB_RD_NSEC_FAIL_MASK: u32 = 0x00000010
+const INTR_APB_RD_NSEC_FAIL_SHIFT: u32 = 4
+const INTR_APB_RD_SEC_FAIL_MASK: u32 = 0x00000008
+const INTR_APB_RD_SEC_FAIL_SHIFT: u32 = 3
+const INTR_APB_DCTRL_FAIL_MASK: u32 = 0x00000004
+const INTR_APB_DCTRL_FAIL_SHIFT: u32 = 2
+const INTR_SBPI_WR_FAIL_MASK: u32 = 0x00000002
+const INTR_SBPI_WR_FAIL_SHIFT: u32 = 1
+const INTR_SBPI_FLAG_N_MASK: u32 = 0x00000001
+const INTR_SBPI_FLAG_N_SHIFT: u32 = 0
+
+// Interrupt Enable
+const INTE_OFFSET: u32 = 0x00000168
+const INTE_APB_RD_NSEC_FAIL_MASK: u32 = 0x00000010
+const INTE_APB_RD_NSEC_FAIL_SHIFT: u32 = 4
+const INTE_APB_RD_SEC_FAIL_MASK: u32 = 0x00000008
+const INTE_APB_RD_SEC_FAIL_SHIFT: u32 = 3
+const INTE_APB_DCTRL_FAIL_MASK: u32 = 0x00000004
+const INTE_APB_DCTRL_FAIL_SHIFT: u32 = 2
+const INTE_SBPI_WR_FAIL_MASK: u32 = 0x00000002
+const INTE_SBPI_WR_FAIL_SHIFT: u32 = 1
+const INTE_SBPI_FLAG_N_MASK: u32 = 0x00000001
+const INTE_SBPI_FLAG_N_SHIFT: u32 = 0
+
+// Interrupt Force
+const INTF_OFFSET: u32 = 0x0000016c
+const INTF_APB_RD_NSEC_FAIL_MASK: u32 = 0x00000010
+const INTF_APB_RD_NSEC_FAIL_SHIFT: u32 = 4
+const INTF_APB_RD_SEC_FAIL_MASK: u32 = 0x00000008
+const INTF_APB_RD_SEC_FAIL_SHIFT: u32 = 3
+const INTF_APB_DCTRL_FAIL_MASK: u32 = 0x00000004
+const INTF_APB_DCTRL_FAIL_SHIFT: u32 = 2
+const INTF_SBPI_WR_FAIL_MASK: u32 = 0x00000002
+const INTF_SBPI_WR_FAIL_SHIFT: u32 = 1
+const INTF_SBPI_FLAG_N_MASK: u32 = 0x00000001
+const INTF_SBPI_FLAG_N_SHIFT: u32 = 0
+
+// Interrupt status after masking & forcing
+const INTS_OFFSET: u32 = 0x00000170
+const INTS_APB_RD_NSEC_FAIL_MASK: u32 = 0x00000010
+const INTS_APB_RD_NSEC_FAIL_SHIFT: u32 = 4
+const INTS_APB_RD_SEC_FAIL_MASK: u32 = 0x00000008
+const INTS_APB_RD_SEC_FAIL_SHIFT: u32 = 3
+const INTS_APB_DCTRL_FAIL_MASK: u32 = 0x00000004
+const INTS_APB_DCTRL_FAIL_SHIFT: u32 = 2
+const INTS_SBPI_WR_FAIL_MASK: u32 = 0x00000002
+const INTS_SBPI_WR_FAIL_SHIFT: u32 = 1
+const INTS_SBPI_FLAG_N_MASK: u32 = 0x00000001
+const INTS_SBPI_FLAG_N_SHIFT: u32 = 0

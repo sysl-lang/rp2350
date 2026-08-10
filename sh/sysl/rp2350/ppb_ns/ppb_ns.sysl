@@ -1,0 +1,2577 @@
+module sh.sysl.rp2350.ppb_ns
+
+// The peripheral's base address. Every offset below is from here.
+const BASE: u32 = 0xe0020000
+
+// Provides the interface for generating Instrumentation packets
+const ITM_STIM0_OFFSET: u32 = 0x00000000
+const ITM_STIM0_STIMULUS_MASK: u32 = 0xffffffff
+const ITM_STIM0_STIMULUS_SHIFT: u32 = 0
+
+// Provides the interface for generating Instrumentation packets
+const ITM_STIM1_OFFSET: u32 = 0x00000004
+const ITM_STIM1_STIMULUS_MASK: u32 = 0xffffffff
+const ITM_STIM1_STIMULUS_SHIFT: u32 = 0
+
+// Provides the interface for generating Instrumentation packets
+const ITM_STIM2_OFFSET: u32 = 0x00000008
+const ITM_STIM2_STIMULUS_MASK: u32 = 0xffffffff
+const ITM_STIM2_STIMULUS_SHIFT: u32 = 0
+
+// Provides the interface for generating Instrumentation packets
+const ITM_STIM3_OFFSET: u32 = 0x0000000c
+const ITM_STIM3_STIMULUS_MASK: u32 = 0xffffffff
+const ITM_STIM3_STIMULUS_SHIFT: u32 = 0
+
+// Provides the interface for generating Instrumentation packets
+const ITM_STIM4_OFFSET: u32 = 0x00000010
+const ITM_STIM4_STIMULUS_MASK: u32 = 0xffffffff
+const ITM_STIM4_STIMULUS_SHIFT: u32 = 0
+
+// Provides the interface for generating Instrumentation packets
+const ITM_STIM5_OFFSET: u32 = 0x00000014
+const ITM_STIM5_STIMULUS_MASK: u32 = 0xffffffff
+const ITM_STIM5_STIMULUS_SHIFT: u32 = 0
+
+// Provides the interface for generating Instrumentation packets
+const ITM_STIM6_OFFSET: u32 = 0x00000018
+const ITM_STIM6_STIMULUS_MASK: u32 = 0xffffffff
+const ITM_STIM6_STIMULUS_SHIFT: u32 = 0
+
+// Provides the interface for generating Instrumentation packets
+const ITM_STIM7_OFFSET: u32 = 0x0000001c
+const ITM_STIM7_STIMULUS_MASK: u32 = 0xffffffff
+const ITM_STIM7_STIMULUS_SHIFT: u32 = 0
+
+// Provides the interface for generating Instrumentation packets
+const ITM_STIM8_OFFSET: u32 = 0x00000020
+const ITM_STIM8_STIMULUS_MASK: u32 = 0xffffffff
+const ITM_STIM8_STIMULUS_SHIFT: u32 = 0
+
+// Provides the interface for generating Instrumentation packets
+const ITM_STIM9_OFFSET: u32 = 0x00000024
+const ITM_STIM9_STIMULUS_MASK: u32 = 0xffffffff
+const ITM_STIM9_STIMULUS_SHIFT: u32 = 0
+
+// Provides the interface for generating Instrumentation packets
+const ITM_STIM10_OFFSET: u32 = 0x00000028
+const ITM_STIM10_STIMULUS_MASK: u32 = 0xffffffff
+const ITM_STIM10_STIMULUS_SHIFT: u32 = 0
+
+// Provides the interface for generating Instrumentation packets
+const ITM_STIM11_OFFSET: u32 = 0x0000002c
+const ITM_STIM11_STIMULUS_MASK: u32 = 0xffffffff
+const ITM_STIM11_STIMULUS_SHIFT: u32 = 0
+
+// Provides the interface for generating Instrumentation packets
+const ITM_STIM12_OFFSET: u32 = 0x00000030
+const ITM_STIM12_STIMULUS_MASK: u32 = 0xffffffff
+const ITM_STIM12_STIMULUS_SHIFT: u32 = 0
+
+// Provides the interface for generating Instrumentation packets
+const ITM_STIM13_OFFSET: u32 = 0x00000034
+const ITM_STIM13_STIMULUS_MASK: u32 = 0xffffffff
+const ITM_STIM13_STIMULUS_SHIFT: u32 = 0
+
+// Provides the interface for generating Instrumentation packets
+const ITM_STIM14_OFFSET: u32 = 0x00000038
+const ITM_STIM14_STIMULUS_MASK: u32 = 0xffffffff
+const ITM_STIM14_STIMULUS_SHIFT: u32 = 0
+
+// Provides the interface for generating Instrumentation packets
+const ITM_STIM15_OFFSET: u32 = 0x0000003c
+const ITM_STIM15_STIMULUS_MASK: u32 = 0xffffffff
+const ITM_STIM15_STIMULUS_SHIFT: u32 = 0
+
+// Provides the interface for generating Instrumentation packets
+const ITM_STIM16_OFFSET: u32 = 0x00000040
+const ITM_STIM16_STIMULUS_MASK: u32 = 0xffffffff
+const ITM_STIM16_STIMULUS_SHIFT: u32 = 0
+
+// Provides the interface for generating Instrumentation packets
+const ITM_STIM17_OFFSET: u32 = 0x00000044
+const ITM_STIM17_STIMULUS_MASK: u32 = 0xffffffff
+const ITM_STIM17_STIMULUS_SHIFT: u32 = 0
+
+// Provides the interface for generating Instrumentation packets
+const ITM_STIM18_OFFSET: u32 = 0x00000048
+const ITM_STIM18_STIMULUS_MASK: u32 = 0xffffffff
+const ITM_STIM18_STIMULUS_SHIFT: u32 = 0
+
+// Provides the interface for generating Instrumentation packets
+const ITM_STIM19_OFFSET: u32 = 0x0000004c
+const ITM_STIM19_STIMULUS_MASK: u32 = 0xffffffff
+const ITM_STIM19_STIMULUS_SHIFT: u32 = 0
+
+// Provides the interface for generating Instrumentation packets
+const ITM_STIM20_OFFSET: u32 = 0x00000050
+const ITM_STIM20_STIMULUS_MASK: u32 = 0xffffffff
+const ITM_STIM20_STIMULUS_SHIFT: u32 = 0
+
+// Provides the interface for generating Instrumentation packets
+const ITM_STIM21_OFFSET: u32 = 0x00000054
+const ITM_STIM21_STIMULUS_MASK: u32 = 0xffffffff
+const ITM_STIM21_STIMULUS_SHIFT: u32 = 0
+
+// Provides the interface for generating Instrumentation packets
+const ITM_STIM22_OFFSET: u32 = 0x00000058
+const ITM_STIM22_STIMULUS_MASK: u32 = 0xffffffff
+const ITM_STIM22_STIMULUS_SHIFT: u32 = 0
+
+// Provides the interface for generating Instrumentation packets
+const ITM_STIM23_OFFSET: u32 = 0x0000005c
+const ITM_STIM23_STIMULUS_MASK: u32 = 0xffffffff
+const ITM_STIM23_STIMULUS_SHIFT: u32 = 0
+
+// Provides the interface for generating Instrumentation packets
+const ITM_STIM24_OFFSET: u32 = 0x00000060
+const ITM_STIM24_STIMULUS_MASK: u32 = 0xffffffff
+const ITM_STIM24_STIMULUS_SHIFT: u32 = 0
+
+// Provides the interface for generating Instrumentation packets
+const ITM_STIM25_OFFSET: u32 = 0x00000064
+const ITM_STIM25_STIMULUS_MASK: u32 = 0xffffffff
+const ITM_STIM25_STIMULUS_SHIFT: u32 = 0
+
+// Provides the interface for generating Instrumentation packets
+const ITM_STIM26_OFFSET: u32 = 0x00000068
+const ITM_STIM26_STIMULUS_MASK: u32 = 0xffffffff
+const ITM_STIM26_STIMULUS_SHIFT: u32 = 0
+
+// Provides the interface for generating Instrumentation packets
+const ITM_STIM27_OFFSET: u32 = 0x0000006c
+const ITM_STIM27_STIMULUS_MASK: u32 = 0xffffffff
+const ITM_STIM27_STIMULUS_SHIFT: u32 = 0
+
+// Provides the interface for generating Instrumentation packets
+const ITM_STIM28_OFFSET: u32 = 0x00000070
+const ITM_STIM28_STIMULUS_MASK: u32 = 0xffffffff
+const ITM_STIM28_STIMULUS_SHIFT: u32 = 0
+
+// Provides the interface for generating Instrumentation packets
+const ITM_STIM29_OFFSET: u32 = 0x00000074
+const ITM_STIM29_STIMULUS_MASK: u32 = 0xffffffff
+const ITM_STIM29_STIMULUS_SHIFT: u32 = 0
+
+// Provides the interface for generating Instrumentation packets
+const ITM_STIM30_OFFSET: u32 = 0x00000078
+const ITM_STIM30_STIMULUS_MASK: u32 = 0xffffffff
+const ITM_STIM30_STIMULUS_SHIFT: u32 = 0
+
+// Provides the interface for generating Instrumentation packets
+const ITM_STIM31_OFFSET: u32 = 0x0000007c
+const ITM_STIM31_STIMULUS_MASK: u32 = 0xffffffff
+const ITM_STIM31_STIMULUS_SHIFT: u32 = 0
+
+// Provide an individual enable bit for each ITM_STIM register
+const ITM_TER0_OFFSET: u32 = 0x00000e00
+const ITM_TER0_STIMENA_MASK: u32 = 0xffffffff
+const ITM_TER0_STIMENA_SHIFT: u32 = 0
+
+// Controls which stimulus ports can be accessed by unprivileged code
+const ITM_TPR_OFFSET: u32 = 0x00000e40
+const ITM_TPR_PRIVMASK_MASK: u32 = 0x0000000f
+const ITM_TPR_PRIVMASK_SHIFT: u32 = 0
+
+// Configures and controls transfers through the ITM interface
+const ITM_TCR_OFFSET: u32 = 0x00000e80
+const ITM_TCR_BUSY_MASK: u32 = 0x00800000
+const ITM_TCR_BUSY_SHIFT: u32 = 23
+const ITM_TCR_TRACEBUSID_MASK: u32 = 0x007f0000
+const ITM_TCR_TRACEBUSID_SHIFT: u32 = 16
+const ITM_TCR_GTSFREQ_MASK: u32 = 0x00000c00
+const ITM_TCR_GTSFREQ_SHIFT: u32 = 10
+const ITM_TCR_TSPRESCALE_MASK: u32 = 0x00000300
+const ITM_TCR_TSPRESCALE_SHIFT: u32 = 8
+const ITM_TCR_STALLENA_MASK: u32 = 0x00000020
+const ITM_TCR_STALLENA_SHIFT: u32 = 5
+const ITM_TCR_SWOENA_MASK: u32 = 0x00000010
+const ITM_TCR_SWOENA_SHIFT: u32 = 4
+const ITM_TCR_TXENA_MASK: u32 = 0x00000008
+const ITM_TCR_TXENA_SHIFT: u32 = 3
+const ITM_TCR_SYNCENA_MASK: u32 = 0x00000004
+const ITM_TCR_SYNCENA_SHIFT: u32 = 2
+const ITM_TCR_TSENA_MASK: u32 = 0x00000002
+const ITM_TCR_TSENA_SHIFT: u32 = 1
+const ITM_TCR_ITMENA_MASK: u32 = 0x00000001
+const ITM_TCR_ITMENA_SHIFT: u32 = 0
+
+// Integration Mode: Read ATB Ready
+const INT_ATREADY_OFFSET: u32 = 0x00000ef0
+const INT_ATREADY_AFVALID_MASK: u32 = 0x00000002
+const INT_ATREADY_AFVALID_SHIFT: u32 = 1
+const INT_ATREADY_ATREADY_MASK: u32 = 0x00000001
+const INT_ATREADY_ATREADY_SHIFT: u32 = 0
+
+// Integration Mode: Write ATB Valid
+const INT_ATVALID_OFFSET: u32 = 0x00000ef8
+const INT_ATVALID_AFREADY_MASK: u32 = 0x00000002
+const INT_ATVALID_AFREADY_SHIFT: u32 = 1
+const INT_ATVALID_ATREADY_MASK: u32 = 0x00000001
+const INT_ATVALID_ATREADY_SHIFT: u32 = 0
+
+// Integration Mode Control Register
+const ITM_ITCTRL_OFFSET: u32 = 0x00000f00
+const ITM_ITCTRL_IME_MASK: u32 = 0x00000001
+const ITM_ITCTRL_IME_SHIFT: u32 = 0
+
+// Provides CoreSight discovery information for the ITM
+const ITM_DEVARCH_OFFSET: u32 = 0x00000fbc
+const ITM_DEVARCH_ARCHITECT_MASK: u32 = 0xffe00000
+const ITM_DEVARCH_ARCHITECT_SHIFT: u32 = 21
+const ITM_DEVARCH_PRESENT_MASK: u32 = 0x00100000
+const ITM_DEVARCH_PRESENT_SHIFT: u32 = 20
+const ITM_DEVARCH_REVISION_MASK: u32 = 0x000f0000
+const ITM_DEVARCH_REVISION_SHIFT: u32 = 16
+const ITM_DEVARCH_ARCHVER_MASK: u32 = 0x0000f000
+const ITM_DEVARCH_ARCHVER_SHIFT: u32 = 12
+const ITM_DEVARCH_ARCHPART_MASK: u32 = 0x00000fff
+const ITM_DEVARCH_ARCHPART_SHIFT: u32 = 0
+
+// Provides CoreSight discovery information for the ITM
+const ITM_DEVTYPE_OFFSET: u32 = 0x00000fcc
+const ITM_DEVTYPE_SUB_MASK: u32 = 0x000000f0
+const ITM_DEVTYPE_SUB_SHIFT: u32 = 4
+const ITM_DEVTYPE_MAJOR_MASK: u32 = 0x0000000f
+const ITM_DEVTYPE_MAJOR_SHIFT: u32 = 0
+
+// Provides CoreSight discovery information for the ITM
+const ITM_PIDR4_OFFSET: u32 = 0x00000fd0
+const ITM_PIDR4_SIZE_MASK: u32 = 0x000000f0
+const ITM_PIDR4_SIZE_SHIFT: u32 = 4
+const ITM_PIDR4_DES_2_MASK: u32 = 0x0000000f
+const ITM_PIDR4_DES_2_SHIFT: u32 = 0
+
+// Provides CoreSight discovery information for the ITM
+const ITM_PIDR5_OFFSET: u32 = 0x00000fd4
+
+// Provides CoreSight discovery information for the ITM
+const ITM_PIDR6_OFFSET: u32 = 0x00000fd8
+
+// Provides CoreSight discovery information for the ITM
+const ITM_PIDR7_OFFSET: u32 = 0x00000fdc
+
+// Provides CoreSight discovery information for the ITM
+const ITM_PIDR0_OFFSET: u32 = 0x00000fe0
+const ITM_PIDR0_PART_0_MASK: u32 = 0x000000ff
+const ITM_PIDR0_PART_0_SHIFT: u32 = 0
+
+// Provides CoreSight discovery information for the ITM
+const ITM_PIDR1_OFFSET: u32 = 0x00000fe4
+const ITM_PIDR1_DES_0_MASK: u32 = 0x000000f0
+const ITM_PIDR1_DES_0_SHIFT: u32 = 4
+const ITM_PIDR1_PART_1_MASK: u32 = 0x0000000f
+const ITM_PIDR1_PART_1_SHIFT: u32 = 0
+
+// Provides CoreSight discovery information for the ITM
+const ITM_PIDR2_OFFSET: u32 = 0x00000fe8
+const ITM_PIDR2_REVISION_MASK: u32 = 0x000000f0
+const ITM_PIDR2_REVISION_SHIFT: u32 = 4
+const ITM_PIDR2_JEDEC_MASK: u32 = 0x00000008
+const ITM_PIDR2_JEDEC_SHIFT: u32 = 3
+const ITM_PIDR2_DES_1_MASK: u32 = 0x00000007
+const ITM_PIDR2_DES_1_SHIFT: u32 = 0
+
+// Provides CoreSight discovery information for the ITM
+const ITM_PIDR3_OFFSET: u32 = 0x00000fec
+const ITM_PIDR3_REVAND_MASK: u32 = 0x000000f0
+const ITM_PIDR3_REVAND_SHIFT: u32 = 4
+const ITM_PIDR3_CMOD_MASK: u32 = 0x0000000f
+const ITM_PIDR3_CMOD_SHIFT: u32 = 0
+
+// Provides CoreSight discovery information for the ITM
+const ITM_CIDR0_OFFSET: u32 = 0x00000ff0
+const ITM_CIDR0_PRMBL_0_MASK: u32 = 0x000000ff
+const ITM_CIDR0_PRMBL_0_SHIFT: u32 = 0
+
+// Provides CoreSight discovery information for the ITM
+const ITM_CIDR1_OFFSET: u32 = 0x00000ff4
+const ITM_CIDR1_CLASS_MASK: u32 = 0x000000f0
+const ITM_CIDR1_CLASS_SHIFT: u32 = 4
+const ITM_CIDR1_PRMBL_1_MASK: u32 = 0x0000000f
+const ITM_CIDR1_PRMBL_1_SHIFT: u32 = 0
+
+// Provides CoreSight discovery information for the ITM
+const ITM_CIDR2_OFFSET: u32 = 0x00000ff8
+const ITM_CIDR2_PRMBL_2_MASK: u32 = 0x000000ff
+const ITM_CIDR2_PRMBL_2_SHIFT: u32 = 0
+
+// Provides CoreSight discovery information for the ITM
+const ITM_CIDR3_OFFSET: u32 = 0x00000ffc
+const ITM_CIDR3_PRMBL_3_MASK: u32 = 0x000000ff
+const ITM_CIDR3_PRMBL_3_SHIFT: u32 = 0
+
+// Provides configuration and status information for the DWT unit, and used to control features of
+// the unit
+const DWT_CTRL_OFFSET: u32 = 0x00001000
+const DWT_CTRL_NUMCOMP_MASK: u32 = 0xf0000000
+const DWT_CTRL_NUMCOMP_SHIFT: u32 = 28
+const DWT_CTRL_NOTRCPKT_MASK: u32 = 0x08000000
+const DWT_CTRL_NOTRCPKT_SHIFT: u32 = 27
+const DWT_CTRL_NOEXTTRIG_MASK: u32 = 0x04000000
+const DWT_CTRL_NOEXTTRIG_SHIFT: u32 = 26
+const DWT_CTRL_NOCYCCNT_MASK: u32 = 0x02000000
+const DWT_CTRL_NOCYCCNT_SHIFT: u32 = 25
+const DWT_CTRL_NOPRFCNT_MASK: u32 = 0x01000000
+const DWT_CTRL_NOPRFCNT_SHIFT: u32 = 24
+const DWT_CTRL_CYCDISS_MASK: u32 = 0x00800000
+const DWT_CTRL_CYCDISS_SHIFT: u32 = 23
+const DWT_CTRL_CYCEVTENA_MASK: u32 = 0x00400000
+const DWT_CTRL_CYCEVTENA_SHIFT: u32 = 22
+const DWT_CTRL_FOLDEVTENA_MASK: u32 = 0x00200000
+const DWT_CTRL_FOLDEVTENA_SHIFT: u32 = 21
+const DWT_CTRL_LSUEVTENA_MASK: u32 = 0x00100000
+const DWT_CTRL_LSUEVTENA_SHIFT: u32 = 20
+const DWT_CTRL_SLEEPEVTENA_MASK: u32 = 0x00080000
+const DWT_CTRL_SLEEPEVTENA_SHIFT: u32 = 19
+const DWT_CTRL_EXCEVTENA_MASK: u32 = 0x00040000
+const DWT_CTRL_EXCEVTENA_SHIFT: u32 = 18
+const DWT_CTRL_CPIEVTENA_MASK: u32 = 0x00020000
+const DWT_CTRL_CPIEVTENA_SHIFT: u32 = 17
+const DWT_CTRL_EXTTRCENA_MASK: u32 = 0x00010000
+const DWT_CTRL_EXTTRCENA_SHIFT: u32 = 16
+const DWT_CTRL_PCSAMPLENA_MASK: u32 = 0x00001000
+const DWT_CTRL_PCSAMPLENA_SHIFT: u32 = 12
+const DWT_CTRL_SYNCTAP_MASK: u32 = 0x00000c00
+const DWT_CTRL_SYNCTAP_SHIFT: u32 = 10
+const DWT_CTRL_CYCTAP_MASK: u32 = 0x00000200
+const DWT_CTRL_CYCTAP_SHIFT: u32 = 9
+const DWT_CTRL_POSTINIT_MASK: u32 = 0x000001e0
+const DWT_CTRL_POSTINIT_SHIFT: u32 = 5
+const DWT_CTRL_POSTPRESET_MASK: u32 = 0x0000001e
+const DWT_CTRL_POSTPRESET_SHIFT: u32 = 1
+const DWT_CTRL_CYCCNTENA_MASK: u32 = 0x00000001
+const DWT_CTRL_CYCCNTENA_SHIFT: u32 = 0
+
+// Shows or sets the value of the processor cycle counter, CYCCNT
+const DWT_CYCCNT_OFFSET: u32 = 0x00001004
+const DWT_CYCCNT_CYCCNT_MASK: u32 = 0xffffffff
+const DWT_CYCCNT_CYCCNT_SHIFT: u32 = 0
+
+// Counts the total cycles spent in exception processing
+const DWT_EXCCNT_OFFSET: u32 = 0x0000100c
+const DWT_EXCCNT_EXCCNT_MASK: u32 = 0x000000ff
+const DWT_EXCCNT_EXCCNT_SHIFT: u32 = 0
+
+// Increments on the additional cycles required to execute all load or store instructions
+const DWT_LSUCNT_OFFSET: u32 = 0x00001014
+const DWT_LSUCNT_LSUCNT_MASK: u32 = 0x000000ff
+const DWT_LSUCNT_LSUCNT_SHIFT: u32 = 0
+
+// Increments on the additional cycles required to execute all load or store instructions
+const DWT_FOLDCNT_OFFSET: u32 = 0x00001018
+const DWT_FOLDCNT_FOLDCNT_MASK: u32 = 0x000000ff
+const DWT_FOLDCNT_FOLDCNT_SHIFT: u32 = 0
+
+// Provides a reference value for use by watchpoint comparator 0
+const DWT_COMP0_OFFSET: u32 = 0x00001020
+const DWT_COMP0_DWT_COMP0_MASK: u32 = 0xffffffff
+const DWT_COMP0_DWT_COMP0_SHIFT: u32 = 0
+
+// Controls the operation of watchpoint comparator 0
+const DWT_FUNCTION0_OFFSET: u32 = 0x00001028
+const DWT_FUNCTION0_ID_MASK: u32 = 0xf8000000
+const DWT_FUNCTION0_ID_SHIFT: u32 = 27
+const DWT_FUNCTION0_MATCHED_MASK: u32 = 0x01000000
+const DWT_FUNCTION0_MATCHED_SHIFT: u32 = 24
+const DWT_FUNCTION0_DATAVSIZE_MASK: u32 = 0x00000c00
+const DWT_FUNCTION0_DATAVSIZE_SHIFT: u32 = 10
+const DWT_FUNCTION0_ACTION_MASK: u32 = 0x00000030
+const DWT_FUNCTION0_ACTION_SHIFT: u32 = 4
+const DWT_FUNCTION0_MATCH_MASK: u32 = 0x0000000f
+const DWT_FUNCTION0_MATCH_SHIFT: u32 = 0
+
+// Provides a reference value for use by watchpoint comparator 1
+const DWT_COMP1_OFFSET: u32 = 0x00001030
+const DWT_COMP1_DWT_COMP1_MASK: u32 = 0xffffffff
+const DWT_COMP1_DWT_COMP1_SHIFT: u32 = 0
+
+// Controls the operation of watchpoint comparator 1
+const DWT_FUNCTION1_OFFSET: u32 = 0x00001038
+const DWT_FUNCTION1_ID_MASK: u32 = 0xf8000000
+const DWT_FUNCTION1_ID_SHIFT: u32 = 27
+const DWT_FUNCTION1_MATCHED_MASK: u32 = 0x01000000
+const DWT_FUNCTION1_MATCHED_SHIFT: u32 = 24
+const DWT_FUNCTION1_DATAVSIZE_MASK: u32 = 0x00000c00
+const DWT_FUNCTION1_DATAVSIZE_SHIFT: u32 = 10
+const DWT_FUNCTION1_ACTION_MASK: u32 = 0x00000030
+const DWT_FUNCTION1_ACTION_SHIFT: u32 = 4
+const DWT_FUNCTION1_MATCH_MASK: u32 = 0x0000000f
+const DWT_FUNCTION1_MATCH_SHIFT: u32 = 0
+
+// Provides a reference value for use by watchpoint comparator 2
+const DWT_COMP2_OFFSET: u32 = 0x00001040
+const DWT_COMP2_DWT_COMP2_MASK: u32 = 0xffffffff
+const DWT_COMP2_DWT_COMP2_SHIFT: u32 = 0
+
+// Controls the operation of watchpoint comparator 2
+const DWT_FUNCTION2_OFFSET: u32 = 0x00001048
+const DWT_FUNCTION2_ID_MASK: u32 = 0xf8000000
+const DWT_FUNCTION2_ID_SHIFT: u32 = 27
+const DWT_FUNCTION2_MATCHED_MASK: u32 = 0x01000000
+const DWT_FUNCTION2_MATCHED_SHIFT: u32 = 24
+const DWT_FUNCTION2_DATAVSIZE_MASK: u32 = 0x00000c00
+const DWT_FUNCTION2_DATAVSIZE_SHIFT: u32 = 10
+const DWT_FUNCTION2_ACTION_MASK: u32 = 0x00000030
+const DWT_FUNCTION2_ACTION_SHIFT: u32 = 4
+const DWT_FUNCTION2_MATCH_MASK: u32 = 0x0000000f
+const DWT_FUNCTION2_MATCH_SHIFT: u32 = 0
+
+// Provides a reference value for use by watchpoint comparator 3
+const DWT_COMP3_OFFSET: u32 = 0x00001050
+const DWT_COMP3_DWT_COMP3_MASK: u32 = 0xffffffff
+const DWT_COMP3_DWT_COMP3_SHIFT: u32 = 0
+
+// Controls the operation of watchpoint comparator 3
+const DWT_FUNCTION3_OFFSET: u32 = 0x00001058
+const DWT_FUNCTION3_ID_MASK: u32 = 0xf8000000
+const DWT_FUNCTION3_ID_SHIFT: u32 = 27
+const DWT_FUNCTION3_MATCHED_MASK: u32 = 0x01000000
+const DWT_FUNCTION3_MATCHED_SHIFT: u32 = 24
+const DWT_FUNCTION3_DATAVSIZE_MASK: u32 = 0x00000c00
+const DWT_FUNCTION3_DATAVSIZE_SHIFT: u32 = 10
+const DWT_FUNCTION3_ACTION_MASK: u32 = 0x00000030
+const DWT_FUNCTION3_ACTION_SHIFT: u32 = 4
+const DWT_FUNCTION3_MATCH_MASK: u32 = 0x0000000f
+const DWT_FUNCTION3_MATCH_SHIFT: u32 = 0
+
+// Provides CoreSight discovery information for the DWT
+const DWT_DEVARCH_OFFSET: u32 = 0x00001fbc
+const DWT_DEVARCH_ARCHITECT_MASK: u32 = 0xffe00000
+const DWT_DEVARCH_ARCHITECT_SHIFT: u32 = 21
+const DWT_DEVARCH_PRESENT_MASK: u32 = 0x00100000
+const DWT_DEVARCH_PRESENT_SHIFT: u32 = 20
+const DWT_DEVARCH_REVISION_MASK: u32 = 0x000f0000
+const DWT_DEVARCH_REVISION_SHIFT: u32 = 16
+const DWT_DEVARCH_ARCHVER_MASK: u32 = 0x0000f000
+const DWT_DEVARCH_ARCHVER_SHIFT: u32 = 12
+const DWT_DEVARCH_ARCHPART_MASK: u32 = 0x00000fff
+const DWT_DEVARCH_ARCHPART_SHIFT: u32 = 0
+
+// Provides CoreSight discovery information for the DWT
+const DWT_DEVTYPE_OFFSET: u32 = 0x00001fcc
+const DWT_DEVTYPE_SUB_MASK: u32 = 0x000000f0
+const DWT_DEVTYPE_SUB_SHIFT: u32 = 4
+const DWT_DEVTYPE_MAJOR_MASK: u32 = 0x0000000f
+const DWT_DEVTYPE_MAJOR_SHIFT: u32 = 0
+
+// Provides CoreSight discovery information for the DWT
+const DWT_PIDR4_OFFSET: u32 = 0x00001fd0
+const DWT_PIDR4_SIZE_MASK: u32 = 0x000000f0
+const DWT_PIDR4_SIZE_SHIFT: u32 = 4
+const DWT_PIDR4_DES_2_MASK: u32 = 0x0000000f
+const DWT_PIDR4_DES_2_SHIFT: u32 = 0
+
+// Provides CoreSight discovery information for the DWT
+const DWT_PIDR5_OFFSET: u32 = 0x00001fd4
+
+// Provides CoreSight discovery information for the DWT
+const DWT_PIDR6_OFFSET: u32 = 0x00001fd8
+
+// Provides CoreSight discovery information for the DWT
+const DWT_PIDR7_OFFSET: u32 = 0x00001fdc
+
+// Provides CoreSight discovery information for the DWT
+const DWT_PIDR0_OFFSET: u32 = 0x00001fe0
+const DWT_PIDR0_PART_0_MASK: u32 = 0x000000ff
+const DWT_PIDR0_PART_0_SHIFT: u32 = 0
+
+// Provides CoreSight discovery information for the DWT
+const DWT_PIDR1_OFFSET: u32 = 0x00001fe4
+const DWT_PIDR1_DES_0_MASK: u32 = 0x000000f0
+const DWT_PIDR1_DES_0_SHIFT: u32 = 4
+const DWT_PIDR1_PART_1_MASK: u32 = 0x0000000f
+const DWT_PIDR1_PART_1_SHIFT: u32 = 0
+
+// Provides CoreSight discovery information for the DWT
+const DWT_PIDR2_OFFSET: u32 = 0x00001fe8
+const DWT_PIDR2_REVISION_MASK: u32 = 0x000000f0
+const DWT_PIDR2_REVISION_SHIFT: u32 = 4
+const DWT_PIDR2_JEDEC_MASK: u32 = 0x00000008
+const DWT_PIDR2_JEDEC_SHIFT: u32 = 3
+const DWT_PIDR2_DES_1_MASK: u32 = 0x00000007
+const DWT_PIDR2_DES_1_SHIFT: u32 = 0
+
+// Provides CoreSight discovery information for the DWT
+const DWT_PIDR3_OFFSET: u32 = 0x00001fec
+const DWT_PIDR3_REVAND_MASK: u32 = 0x000000f0
+const DWT_PIDR3_REVAND_SHIFT: u32 = 4
+const DWT_PIDR3_CMOD_MASK: u32 = 0x0000000f
+const DWT_PIDR3_CMOD_SHIFT: u32 = 0
+
+// Provides CoreSight discovery information for the DWT
+const DWT_CIDR0_OFFSET: u32 = 0x00001ff0
+const DWT_CIDR0_PRMBL_0_MASK: u32 = 0x000000ff
+const DWT_CIDR0_PRMBL_0_SHIFT: u32 = 0
+
+// Provides CoreSight discovery information for the DWT
+const DWT_CIDR1_OFFSET: u32 = 0x00001ff4
+const DWT_CIDR1_CLASS_MASK: u32 = 0x000000f0
+const DWT_CIDR1_CLASS_SHIFT: u32 = 4
+const DWT_CIDR1_PRMBL_1_MASK: u32 = 0x0000000f
+const DWT_CIDR1_PRMBL_1_SHIFT: u32 = 0
+
+// Provides CoreSight discovery information for the DWT
+const DWT_CIDR2_OFFSET: u32 = 0x00001ff8
+const DWT_CIDR2_PRMBL_2_MASK: u32 = 0x000000ff
+const DWT_CIDR2_PRMBL_2_SHIFT: u32 = 0
+
+// Provides CoreSight discovery information for the DWT
+const DWT_CIDR3_OFFSET: u32 = 0x00001ffc
+const DWT_CIDR3_PRMBL_3_MASK: u32 = 0x000000ff
+const DWT_CIDR3_PRMBL_3_SHIFT: u32 = 0
+
+// Provides FPB implementation information, and the global enable for the FPB unit
+const FP_CTRL_OFFSET: u32 = 0x00002000
+const FP_CTRL_REV_MASK: u32 = 0xf0000000
+const FP_CTRL_REV_SHIFT: u32 = 28
+const FP_CTRL_NUM_CODE_14_12__MASK: u32 = 0x00007000
+const FP_CTRL_NUM_CODE_14_12__SHIFT: u32 = 12
+const FP_CTRL_NUM_LIT_MASK: u32 = 0x00000f00
+const FP_CTRL_NUM_LIT_SHIFT: u32 = 8
+const FP_CTRL_NUM_CODE_7_4__MASK: u32 = 0x000000f0
+const FP_CTRL_NUM_CODE_7_4__SHIFT: u32 = 4
+const FP_CTRL_KEY_MASK: u32 = 0x00000002
+const FP_CTRL_KEY_SHIFT: u32 = 1
+const FP_CTRL_ENABLE_MASK: u32 = 0x00000001
+const FP_CTRL_ENABLE_SHIFT: u32 = 0
+
+// Indicates whether the implementation supports Flash Patch remap and, if it does, holds the
+// target address for remap
+const FP_REMAP_OFFSET: u32 = 0x00002004
+const FP_REMAP_RMPSPT_MASK: u32 = 0x20000000
+const FP_REMAP_RMPSPT_SHIFT: u32 = 29
+const FP_REMAP_REMAP_MASK: u32 = 0x1fffffe0
+const FP_REMAP_REMAP_SHIFT: u32 = 5
+
+// Holds an address for comparison. The effect of the match depends on the configuration of the FPB
+// and whether the comparator is an instruction address comparator or a literal address comparator
+const FP_COMP0_OFFSET: u32 = 0x00002008
+const FP_COMP0_BE_MASK: u32 = 0x00000001
+const FP_COMP0_BE_SHIFT: u32 = 0
+
+// Holds an address for comparison. The effect of the match depends on the configuration of the FPB
+// and whether the comparator is an instruction address comparator or a literal address comparator
+const FP_COMP1_OFFSET: u32 = 0x0000200c
+const FP_COMP1_BE_MASK: u32 = 0x00000001
+const FP_COMP1_BE_SHIFT: u32 = 0
+
+// Holds an address for comparison. The effect of the match depends on the configuration of the FPB
+// and whether the comparator is an instruction address comparator or a literal address comparator
+const FP_COMP2_OFFSET: u32 = 0x00002010
+const FP_COMP2_BE_MASK: u32 = 0x00000001
+const FP_COMP2_BE_SHIFT: u32 = 0
+
+// Holds an address for comparison. The effect of the match depends on the configuration of the FPB
+// and whether the comparator is an instruction address comparator or a literal address comparator
+const FP_COMP3_OFFSET: u32 = 0x00002014
+const FP_COMP3_BE_MASK: u32 = 0x00000001
+const FP_COMP3_BE_SHIFT: u32 = 0
+
+// Holds an address for comparison. The effect of the match depends on the configuration of the FPB
+// and whether the comparator is an instruction address comparator or a literal address comparator
+const FP_COMP4_OFFSET: u32 = 0x00002018
+const FP_COMP4_BE_MASK: u32 = 0x00000001
+const FP_COMP4_BE_SHIFT: u32 = 0
+
+// Holds an address for comparison. The effect of the match depends on the configuration of the FPB
+// and whether the comparator is an instruction address comparator or a literal address comparator
+const FP_COMP5_OFFSET: u32 = 0x0000201c
+const FP_COMP5_BE_MASK: u32 = 0x00000001
+const FP_COMP5_BE_SHIFT: u32 = 0
+
+// Holds an address for comparison. The effect of the match depends on the configuration of the FPB
+// and whether the comparator is an instruction address comparator or a literal address comparator
+const FP_COMP6_OFFSET: u32 = 0x00002020
+const FP_COMP6_BE_MASK: u32 = 0x00000001
+const FP_COMP6_BE_SHIFT: u32 = 0
+
+// Holds an address for comparison. The effect of the match depends on the configuration of the FPB
+// and whether the comparator is an instruction address comparator or a literal address comparator
+const FP_COMP7_OFFSET: u32 = 0x00002024
+const FP_COMP7_BE_MASK: u32 = 0x00000001
+const FP_COMP7_BE_SHIFT: u32 = 0
+
+// Provides CoreSight discovery information for the FPB
+const FP_DEVARCH_OFFSET: u32 = 0x00002fbc
+const FP_DEVARCH_ARCHITECT_MASK: u32 = 0xffe00000
+const FP_DEVARCH_ARCHITECT_SHIFT: u32 = 21
+const FP_DEVARCH_PRESENT_MASK: u32 = 0x00100000
+const FP_DEVARCH_PRESENT_SHIFT: u32 = 20
+const FP_DEVARCH_REVISION_MASK: u32 = 0x000f0000
+const FP_DEVARCH_REVISION_SHIFT: u32 = 16
+const FP_DEVARCH_ARCHVER_MASK: u32 = 0x0000f000
+const FP_DEVARCH_ARCHVER_SHIFT: u32 = 12
+const FP_DEVARCH_ARCHPART_MASK: u32 = 0x00000fff
+const FP_DEVARCH_ARCHPART_SHIFT: u32 = 0
+
+// Provides CoreSight discovery information for the FPB
+const FP_DEVTYPE_OFFSET: u32 = 0x00002fcc
+const FP_DEVTYPE_SUB_MASK: u32 = 0x000000f0
+const FP_DEVTYPE_SUB_SHIFT: u32 = 4
+const FP_DEVTYPE_MAJOR_MASK: u32 = 0x0000000f
+const FP_DEVTYPE_MAJOR_SHIFT: u32 = 0
+
+// Provides CoreSight discovery information for the FP
+const FP_PIDR4_OFFSET: u32 = 0x00002fd0
+const FP_PIDR4_SIZE_MASK: u32 = 0x000000f0
+const FP_PIDR4_SIZE_SHIFT: u32 = 4
+const FP_PIDR4_DES_2_MASK: u32 = 0x0000000f
+const FP_PIDR4_DES_2_SHIFT: u32 = 0
+
+// Provides CoreSight discovery information for the FP
+const FP_PIDR5_OFFSET: u32 = 0x00002fd4
+
+// Provides CoreSight discovery information for the FP
+const FP_PIDR6_OFFSET: u32 = 0x00002fd8
+
+// Provides CoreSight discovery information for the FP
+const FP_PIDR7_OFFSET: u32 = 0x00002fdc
+
+// Provides CoreSight discovery information for the FP
+const FP_PIDR0_OFFSET: u32 = 0x00002fe0
+const FP_PIDR0_PART_0_MASK: u32 = 0x000000ff
+const FP_PIDR0_PART_0_SHIFT: u32 = 0
+
+// Provides CoreSight discovery information for the FP
+const FP_PIDR1_OFFSET: u32 = 0x00002fe4
+const FP_PIDR1_DES_0_MASK: u32 = 0x000000f0
+const FP_PIDR1_DES_0_SHIFT: u32 = 4
+const FP_PIDR1_PART_1_MASK: u32 = 0x0000000f
+const FP_PIDR1_PART_1_SHIFT: u32 = 0
+
+// Provides CoreSight discovery information for the FP
+const FP_PIDR2_OFFSET: u32 = 0x00002fe8
+const FP_PIDR2_REVISION_MASK: u32 = 0x000000f0
+const FP_PIDR2_REVISION_SHIFT: u32 = 4
+const FP_PIDR2_JEDEC_MASK: u32 = 0x00000008
+const FP_PIDR2_JEDEC_SHIFT: u32 = 3
+const FP_PIDR2_DES_1_MASK: u32 = 0x00000007
+const FP_PIDR2_DES_1_SHIFT: u32 = 0
+
+// Provides CoreSight discovery information for the FP
+const FP_PIDR3_OFFSET: u32 = 0x00002fec
+const FP_PIDR3_REVAND_MASK: u32 = 0x000000f0
+const FP_PIDR3_REVAND_SHIFT: u32 = 4
+const FP_PIDR3_CMOD_MASK: u32 = 0x0000000f
+const FP_PIDR3_CMOD_SHIFT: u32 = 0
+
+// Provides CoreSight discovery information for the FP
+const FP_CIDR0_OFFSET: u32 = 0x00002ff0
+const FP_CIDR0_PRMBL_0_MASK: u32 = 0x000000ff
+const FP_CIDR0_PRMBL_0_SHIFT: u32 = 0
+
+// Provides CoreSight discovery information for the FP
+const FP_CIDR1_OFFSET: u32 = 0x00002ff4
+const FP_CIDR1_CLASS_MASK: u32 = 0x000000f0
+const FP_CIDR1_CLASS_SHIFT: u32 = 4
+const FP_CIDR1_PRMBL_1_MASK: u32 = 0x0000000f
+const FP_CIDR1_PRMBL_1_SHIFT: u32 = 0
+
+// Provides CoreSight discovery information for the FP
+const FP_CIDR2_OFFSET: u32 = 0x00002ff8
+const FP_CIDR2_PRMBL_2_MASK: u32 = 0x000000ff
+const FP_CIDR2_PRMBL_2_SHIFT: u32 = 0
+
+// Provides CoreSight discovery information for the FP
+const FP_CIDR3_OFFSET: u32 = 0x00002ffc
+const FP_CIDR3_PRMBL_3_MASK: u32 = 0x000000ff
+const FP_CIDR3_PRMBL_3_SHIFT: u32 = 0
+
+// Provides information about the interrupt controller
+const ICTR_OFFSET: u32 = 0x0000e004
+const ICTR_INTLINESNUM_MASK: u32 = 0x0000000f
+const ICTR_INTLINESNUM_SHIFT: u32 = 0
+
+// Provides IMPLEMENTATION DEFINED configuration and control options
+const ACTLR_OFFSET: u32 = 0x0000e008
+const ACTLR_EXTEXCLALL_MASK: u32 = 0x20000000
+const ACTLR_EXTEXCLALL_SHIFT: u32 = 29
+const ACTLR_DISITMATBFLUSH_MASK: u32 = 0x00001000
+const ACTLR_DISITMATBFLUSH_SHIFT: u32 = 12
+const ACTLR_FPEXCODIS_MASK: u32 = 0x00000400
+const ACTLR_FPEXCODIS_SHIFT: u32 = 10
+const ACTLR_DISOOFP_MASK: u32 = 0x00000200
+const ACTLR_DISOOFP_SHIFT: u32 = 9
+const ACTLR_DISFOLD_MASK: u32 = 0x00000004
+const ACTLR_DISFOLD_SHIFT: u32 = 2
+const ACTLR_DISMCYCINT_MASK: u32 = 0x00000001
+const ACTLR_DISMCYCINT_SHIFT: u32 = 0
+
+// Use the SysTick Control and Status Register to enable the SysTick features.
+const SYST_CSR_OFFSET: u32 = 0x0000e010
+const SYST_CSR_COUNTFLAG_MASK: u32 = 0x00010000
+const SYST_CSR_COUNTFLAG_SHIFT: u32 = 16
+const SYST_CSR_CLKSOURCE_MASK: u32 = 0x00000004
+const SYST_CSR_CLKSOURCE_SHIFT: u32 = 2
+const SYST_CSR_TICKINT_MASK: u32 = 0x00000002
+const SYST_CSR_TICKINT_SHIFT: u32 = 1
+const SYST_CSR_ENABLE_MASK: u32 = 0x00000001
+const SYST_CSR_ENABLE_SHIFT: u32 = 0
+
+// Use the SysTick Reload Value Register to specify the start value to load into the current value
+// register when the counter reaches 0. It can be any value between 0 and 0x00FFFFFF. A start value
+// of 0 is possible, but has no effect because the SysTick interrupt and COUNTFLAG are activated
+// when counting from 1 to 0. The reset value of this register is UNKNOWN. To generate a multi-shot
+// timer with a period of N processor clock cycles, use a RELOAD value of N-1. For example, if the
+// SysTick interrupt is required every 100 clock pulses, set RELOAD to 99.
+const SYST_RVR_OFFSET: u32 = 0x0000e014
+const SYST_RVR_RELOAD_MASK: u32 = 0x00ffffff
+const SYST_RVR_RELOAD_SHIFT: u32 = 0
+
+// Use the SysTick Current Value Register to find the current value in the register. The reset
+// value of this register is UNKNOWN.
+const SYST_CVR_OFFSET: u32 = 0x0000e018
+const SYST_CVR_CURRENT_MASK: u32 = 0x00ffffff
+const SYST_CVR_CURRENT_SHIFT: u32 = 0
+
+// Use the SysTick Calibration Value Register to enable software to scale to any required speed
+// using divide and multiply.
+const SYST_CALIB_OFFSET: u32 = 0x0000e01c
+const SYST_CALIB_NOREF_MASK: u32 = 0x80000000
+const SYST_CALIB_NOREF_SHIFT: u32 = 31
+const SYST_CALIB_SKEW_MASK: u32 = 0x40000000
+const SYST_CALIB_SKEW_SHIFT: u32 = 30
+const SYST_CALIB_TENMS_MASK: u32 = 0x00ffffff
+const SYST_CALIB_TENMS_SHIFT: u32 = 0
+
+// Enables or reads the enabled state of each group of 32 interrupts
+const NVIC_ISER0_OFFSET: u32 = 0x0000e100
+const NVIC_ISER0_SETENA_MASK: u32 = 0xffffffff
+const NVIC_ISER0_SETENA_SHIFT: u32 = 0
+
+// Enables or reads the enabled state of each group of 32 interrupts
+const NVIC_ISER1_OFFSET: u32 = 0x0000e104
+const NVIC_ISER1_SETENA_MASK: u32 = 0xffffffff
+const NVIC_ISER1_SETENA_SHIFT: u32 = 0
+
+// Clears or reads the enabled state of each group of 32 interrupts
+const NVIC_ICER0_OFFSET: u32 = 0x0000e180
+const NVIC_ICER0_CLRENA_MASK: u32 = 0xffffffff
+const NVIC_ICER0_CLRENA_SHIFT: u32 = 0
+
+// Clears or reads the enabled state of each group of 32 interrupts
+const NVIC_ICER1_OFFSET: u32 = 0x0000e184
+const NVIC_ICER1_CLRENA_MASK: u32 = 0xffffffff
+const NVIC_ICER1_CLRENA_SHIFT: u32 = 0
+
+// Enables or reads the pending state of each group of 32 interrupts
+const NVIC_ISPR0_OFFSET: u32 = 0x0000e200
+const NVIC_ISPR0_SETPEND_MASK: u32 = 0xffffffff
+const NVIC_ISPR0_SETPEND_SHIFT: u32 = 0
+
+// Enables or reads the pending state of each group of 32 interrupts
+const NVIC_ISPR1_OFFSET: u32 = 0x0000e204
+const NVIC_ISPR1_SETPEND_MASK: u32 = 0xffffffff
+const NVIC_ISPR1_SETPEND_SHIFT: u32 = 0
+
+// Clears or reads the pending state of each group of 32 interrupts
+const NVIC_ICPR0_OFFSET: u32 = 0x0000e280
+const NVIC_ICPR0_CLRPEND_MASK: u32 = 0xffffffff
+const NVIC_ICPR0_CLRPEND_SHIFT: u32 = 0
+
+// Clears or reads the pending state of each group of 32 interrupts
+const NVIC_ICPR1_OFFSET: u32 = 0x0000e284
+const NVIC_ICPR1_CLRPEND_MASK: u32 = 0xffffffff
+const NVIC_ICPR1_CLRPEND_SHIFT: u32 = 0
+
+// For each group of 32 interrupts, shows the active state of each interrupt
+const NVIC_IABR0_OFFSET: u32 = 0x0000e300
+const NVIC_IABR0_ACTIVE_MASK: u32 = 0xffffffff
+const NVIC_IABR0_ACTIVE_SHIFT: u32 = 0
+
+// For each group of 32 interrupts, shows the active state of each interrupt
+const NVIC_IABR1_OFFSET: u32 = 0x0000e304
+const NVIC_IABR1_ACTIVE_MASK: u32 = 0xffffffff
+const NVIC_IABR1_ACTIVE_SHIFT: u32 = 0
+
+// For each group of 32 interrupts, determines whether each interrupt targets Non-secure or Secure
+// state
+const NVIC_ITNS0_OFFSET: u32 = 0x0000e380
+const NVIC_ITNS0_ITNS_MASK: u32 = 0xffffffff
+const NVIC_ITNS0_ITNS_SHIFT: u32 = 0
+
+// For each group of 32 interrupts, determines whether each interrupt targets Non-secure or Secure
+// state
+const NVIC_ITNS1_OFFSET: u32 = 0x0000e384
+const NVIC_ITNS1_ITNS_MASK: u32 = 0xffffffff
+const NVIC_ITNS1_ITNS_SHIFT: u32 = 0
+
+// Sets or reads interrupt priorities
+const NVIC_IPR0_OFFSET: u32 = 0x0000e400
+const NVIC_IPR0_PRI_N3_MASK: u32 = 0xf0000000
+const NVIC_IPR0_PRI_N3_SHIFT: u32 = 28
+const NVIC_IPR0_PRI_N2_MASK: u32 = 0x00f00000
+const NVIC_IPR0_PRI_N2_SHIFT: u32 = 20
+const NVIC_IPR0_PRI_N1_MASK: u32 = 0x0000f000
+const NVIC_IPR0_PRI_N1_SHIFT: u32 = 12
+const NVIC_IPR0_PRI_N0_MASK: u32 = 0x000000f0
+const NVIC_IPR0_PRI_N0_SHIFT: u32 = 4
+
+// Sets or reads interrupt priorities
+const NVIC_IPR1_OFFSET: u32 = 0x0000e404
+const NVIC_IPR1_PRI_N3_MASK: u32 = 0xf0000000
+const NVIC_IPR1_PRI_N3_SHIFT: u32 = 28
+const NVIC_IPR1_PRI_N2_MASK: u32 = 0x00f00000
+const NVIC_IPR1_PRI_N2_SHIFT: u32 = 20
+const NVIC_IPR1_PRI_N1_MASK: u32 = 0x0000f000
+const NVIC_IPR1_PRI_N1_SHIFT: u32 = 12
+const NVIC_IPR1_PRI_N0_MASK: u32 = 0x000000f0
+const NVIC_IPR1_PRI_N0_SHIFT: u32 = 4
+
+// Sets or reads interrupt priorities
+const NVIC_IPR2_OFFSET: u32 = 0x0000e408
+const NVIC_IPR2_PRI_N3_MASK: u32 = 0xf0000000
+const NVIC_IPR2_PRI_N3_SHIFT: u32 = 28
+const NVIC_IPR2_PRI_N2_MASK: u32 = 0x00f00000
+const NVIC_IPR2_PRI_N2_SHIFT: u32 = 20
+const NVIC_IPR2_PRI_N1_MASK: u32 = 0x0000f000
+const NVIC_IPR2_PRI_N1_SHIFT: u32 = 12
+const NVIC_IPR2_PRI_N0_MASK: u32 = 0x000000f0
+const NVIC_IPR2_PRI_N0_SHIFT: u32 = 4
+
+// Sets or reads interrupt priorities
+const NVIC_IPR3_OFFSET: u32 = 0x0000e40c
+const NVIC_IPR3_PRI_N3_MASK: u32 = 0xf0000000
+const NVIC_IPR3_PRI_N3_SHIFT: u32 = 28
+const NVIC_IPR3_PRI_N2_MASK: u32 = 0x00f00000
+const NVIC_IPR3_PRI_N2_SHIFT: u32 = 20
+const NVIC_IPR3_PRI_N1_MASK: u32 = 0x0000f000
+const NVIC_IPR3_PRI_N1_SHIFT: u32 = 12
+const NVIC_IPR3_PRI_N0_MASK: u32 = 0x000000f0
+const NVIC_IPR3_PRI_N0_SHIFT: u32 = 4
+
+// Sets or reads interrupt priorities
+const NVIC_IPR4_OFFSET: u32 = 0x0000e410
+const NVIC_IPR4_PRI_N3_MASK: u32 = 0xf0000000
+const NVIC_IPR4_PRI_N3_SHIFT: u32 = 28
+const NVIC_IPR4_PRI_N2_MASK: u32 = 0x00f00000
+const NVIC_IPR4_PRI_N2_SHIFT: u32 = 20
+const NVIC_IPR4_PRI_N1_MASK: u32 = 0x0000f000
+const NVIC_IPR4_PRI_N1_SHIFT: u32 = 12
+const NVIC_IPR4_PRI_N0_MASK: u32 = 0x000000f0
+const NVIC_IPR4_PRI_N0_SHIFT: u32 = 4
+
+// Sets or reads interrupt priorities
+const NVIC_IPR5_OFFSET: u32 = 0x0000e414
+const NVIC_IPR5_PRI_N3_MASK: u32 = 0xf0000000
+const NVIC_IPR5_PRI_N3_SHIFT: u32 = 28
+const NVIC_IPR5_PRI_N2_MASK: u32 = 0x00f00000
+const NVIC_IPR5_PRI_N2_SHIFT: u32 = 20
+const NVIC_IPR5_PRI_N1_MASK: u32 = 0x0000f000
+const NVIC_IPR5_PRI_N1_SHIFT: u32 = 12
+const NVIC_IPR5_PRI_N0_MASK: u32 = 0x000000f0
+const NVIC_IPR5_PRI_N0_SHIFT: u32 = 4
+
+// Sets or reads interrupt priorities
+const NVIC_IPR6_OFFSET: u32 = 0x0000e418
+const NVIC_IPR6_PRI_N3_MASK: u32 = 0xf0000000
+const NVIC_IPR6_PRI_N3_SHIFT: u32 = 28
+const NVIC_IPR6_PRI_N2_MASK: u32 = 0x00f00000
+const NVIC_IPR6_PRI_N2_SHIFT: u32 = 20
+const NVIC_IPR6_PRI_N1_MASK: u32 = 0x0000f000
+const NVIC_IPR6_PRI_N1_SHIFT: u32 = 12
+const NVIC_IPR6_PRI_N0_MASK: u32 = 0x000000f0
+const NVIC_IPR6_PRI_N0_SHIFT: u32 = 4
+
+// Sets or reads interrupt priorities
+const NVIC_IPR7_OFFSET: u32 = 0x0000e41c
+const NVIC_IPR7_PRI_N3_MASK: u32 = 0xf0000000
+const NVIC_IPR7_PRI_N3_SHIFT: u32 = 28
+const NVIC_IPR7_PRI_N2_MASK: u32 = 0x00f00000
+const NVIC_IPR7_PRI_N2_SHIFT: u32 = 20
+const NVIC_IPR7_PRI_N1_MASK: u32 = 0x0000f000
+const NVIC_IPR7_PRI_N1_SHIFT: u32 = 12
+const NVIC_IPR7_PRI_N0_MASK: u32 = 0x000000f0
+const NVIC_IPR7_PRI_N0_SHIFT: u32 = 4
+
+// Sets or reads interrupt priorities
+const NVIC_IPR8_OFFSET: u32 = 0x0000e420
+const NVIC_IPR8_PRI_N3_MASK: u32 = 0xf0000000
+const NVIC_IPR8_PRI_N3_SHIFT: u32 = 28
+const NVIC_IPR8_PRI_N2_MASK: u32 = 0x00f00000
+const NVIC_IPR8_PRI_N2_SHIFT: u32 = 20
+const NVIC_IPR8_PRI_N1_MASK: u32 = 0x0000f000
+const NVIC_IPR8_PRI_N1_SHIFT: u32 = 12
+const NVIC_IPR8_PRI_N0_MASK: u32 = 0x000000f0
+const NVIC_IPR8_PRI_N0_SHIFT: u32 = 4
+
+// Sets or reads interrupt priorities
+const NVIC_IPR9_OFFSET: u32 = 0x0000e424
+const NVIC_IPR9_PRI_N3_MASK: u32 = 0xf0000000
+const NVIC_IPR9_PRI_N3_SHIFT: u32 = 28
+const NVIC_IPR9_PRI_N2_MASK: u32 = 0x00f00000
+const NVIC_IPR9_PRI_N2_SHIFT: u32 = 20
+const NVIC_IPR9_PRI_N1_MASK: u32 = 0x0000f000
+const NVIC_IPR9_PRI_N1_SHIFT: u32 = 12
+const NVIC_IPR9_PRI_N0_MASK: u32 = 0x000000f0
+const NVIC_IPR9_PRI_N0_SHIFT: u32 = 4
+
+// Sets or reads interrupt priorities
+const NVIC_IPR10_OFFSET: u32 = 0x0000e428
+const NVIC_IPR10_PRI_N3_MASK: u32 = 0xf0000000
+const NVIC_IPR10_PRI_N3_SHIFT: u32 = 28
+const NVIC_IPR10_PRI_N2_MASK: u32 = 0x00f00000
+const NVIC_IPR10_PRI_N2_SHIFT: u32 = 20
+const NVIC_IPR10_PRI_N1_MASK: u32 = 0x0000f000
+const NVIC_IPR10_PRI_N1_SHIFT: u32 = 12
+const NVIC_IPR10_PRI_N0_MASK: u32 = 0x000000f0
+const NVIC_IPR10_PRI_N0_SHIFT: u32 = 4
+
+// Sets or reads interrupt priorities
+const NVIC_IPR11_OFFSET: u32 = 0x0000e42c
+const NVIC_IPR11_PRI_N3_MASK: u32 = 0xf0000000
+const NVIC_IPR11_PRI_N3_SHIFT: u32 = 28
+const NVIC_IPR11_PRI_N2_MASK: u32 = 0x00f00000
+const NVIC_IPR11_PRI_N2_SHIFT: u32 = 20
+const NVIC_IPR11_PRI_N1_MASK: u32 = 0x0000f000
+const NVIC_IPR11_PRI_N1_SHIFT: u32 = 12
+const NVIC_IPR11_PRI_N0_MASK: u32 = 0x000000f0
+const NVIC_IPR11_PRI_N0_SHIFT: u32 = 4
+
+// Sets or reads interrupt priorities
+const NVIC_IPR12_OFFSET: u32 = 0x0000e430
+const NVIC_IPR12_PRI_N3_MASK: u32 = 0xf0000000
+const NVIC_IPR12_PRI_N3_SHIFT: u32 = 28
+const NVIC_IPR12_PRI_N2_MASK: u32 = 0x00f00000
+const NVIC_IPR12_PRI_N2_SHIFT: u32 = 20
+const NVIC_IPR12_PRI_N1_MASK: u32 = 0x0000f000
+const NVIC_IPR12_PRI_N1_SHIFT: u32 = 12
+const NVIC_IPR12_PRI_N0_MASK: u32 = 0x000000f0
+const NVIC_IPR12_PRI_N0_SHIFT: u32 = 4
+
+// Sets or reads interrupt priorities
+const NVIC_IPR13_OFFSET: u32 = 0x0000e434
+const NVIC_IPR13_PRI_N3_MASK: u32 = 0xf0000000
+const NVIC_IPR13_PRI_N3_SHIFT: u32 = 28
+const NVIC_IPR13_PRI_N2_MASK: u32 = 0x00f00000
+const NVIC_IPR13_PRI_N2_SHIFT: u32 = 20
+const NVIC_IPR13_PRI_N1_MASK: u32 = 0x0000f000
+const NVIC_IPR13_PRI_N1_SHIFT: u32 = 12
+const NVIC_IPR13_PRI_N0_MASK: u32 = 0x000000f0
+const NVIC_IPR13_PRI_N0_SHIFT: u32 = 4
+
+// Sets or reads interrupt priorities
+const NVIC_IPR14_OFFSET: u32 = 0x0000e438
+const NVIC_IPR14_PRI_N3_MASK: u32 = 0xf0000000
+const NVIC_IPR14_PRI_N3_SHIFT: u32 = 28
+const NVIC_IPR14_PRI_N2_MASK: u32 = 0x00f00000
+const NVIC_IPR14_PRI_N2_SHIFT: u32 = 20
+const NVIC_IPR14_PRI_N1_MASK: u32 = 0x0000f000
+const NVIC_IPR14_PRI_N1_SHIFT: u32 = 12
+const NVIC_IPR14_PRI_N0_MASK: u32 = 0x000000f0
+const NVIC_IPR14_PRI_N0_SHIFT: u32 = 4
+
+// Sets or reads interrupt priorities
+const NVIC_IPR15_OFFSET: u32 = 0x0000e43c
+const NVIC_IPR15_PRI_N3_MASK: u32 = 0xf0000000
+const NVIC_IPR15_PRI_N3_SHIFT: u32 = 28
+const NVIC_IPR15_PRI_N2_MASK: u32 = 0x00f00000
+const NVIC_IPR15_PRI_N2_SHIFT: u32 = 20
+const NVIC_IPR15_PRI_N1_MASK: u32 = 0x0000f000
+const NVIC_IPR15_PRI_N1_SHIFT: u32 = 12
+const NVIC_IPR15_PRI_N0_MASK: u32 = 0x000000f0
+const NVIC_IPR15_PRI_N0_SHIFT: u32 = 4
+
+// Provides identification information for the PE, including an implementer code for the device and
+// a device ID number
+const CPUID_OFFSET: u32 = 0x0000ed00
+const CPUID_IMPLEMENTER_MASK: u32 = 0xff000000
+const CPUID_IMPLEMENTER_SHIFT: u32 = 24
+const CPUID_VARIANT_MASK: u32 = 0x00f00000
+const CPUID_VARIANT_SHIFT: u32 = 20
+const CPUID_ARCHITECTURE_MASK: u32 = 0x000f0000
+const CPUID_ARCHITECTURE_SHIFT: u32 = 16
+const CPUID_PARTNO_MASK: u32 = 0x0000fff0
+const CPUID_PARTNO_SHIFT: u32 = 4
+const CPUID_REVISION_MASK: u32 = 0x0000000f
+const CPUID_REVISION_SHIFT: u32 = 0
+
+// Controls and provides status information for NMI, PendSV, SysTick and interrupts
+const ICSR_OFFSET: u32 = 0x0000ed04
+const ICSR_PENDNMISET_MASK: u32 = 0x80000000
+const ICSR_PENDNMISET_SHIFT: u32 = 31
+const ICSR_PENDNMICLR_MASK: u32 = 0x40000000
+const ICSR_PENDNMICLR_SHIFT: u32 = 30
+const ICSR_PENDSVSET_MASK: u32 = 0x10000000
+const ICSR_PENDSVSET_SHIFT: u32 = 28
+const ICSR_PENDSVCLR_MASK: u32 = 0x08000000
+const ICSR_PENDSVCLR_SHIFT: u32 = 27
+const ICSR_PENDSTSET_MASK: u32 = 0x04000000
+const ICSR_PENDSTSET_SHIFT: u32 = 26
+const ICSR_PENDSTCLR_MASK: u32 = 0x02000000
+const ICSR_PENDSTCLR_SHIFT: u32 = 25
+const ICSR_STTNS_MASK: u32 = 0x01000000
+const ICSR_STTNS_SHIFT: u32 = 24
+const ICSR_ISRPREEMPT_MASK: u32 = 0x00800000
+const ICSR_ISRPREEMPT_SHIFT: u32 = 23
+const ICSR_ISRPENDING_MASK: u32 = 0x00400000
+const ICSR_ISRPENDING_SHIFT: u32 = 22
+const ICSR_VECTPENDING_MASK: u32 = 0x001ff000
+const ICSR_VECTPENDING_SHIFT: u32 = 12
+const ICSR_RETTOBASE_MASK: u32 = 0x00000800
+const ICSR_RETTOBASE_SHIFT: u32 = 11
+const ICSR_VECTACTIVE_MASK: u32 = 0x000001ff
+const ICSR_VECTACTIVE_SHIFT: u32 = 0
+
+// The VTOR indicates the offset of the vector table base address from memory address 0x00000000.
+const VTOR_OFFSET: u32 = 0x0000ed08
+const VTOR_TBLOFF_MASK: u32 = 0xffffff80
+const VTOR_TBLOFF_SHIFT: u32 = 7
+
+// Use the Application Interrupt and Reset Control Register to: determine data endianness, clear
+// all active state information from debug halt mode, request a system reset.
+const AIRCR_OFFSET: u32 = 0x0000ed0c
+const AIRCR_VECTKEY_MASK: u32 = 0xffff0000
+const AIRCR_VECTKEY_SHIFT: u32 = 16
+const AIRCR_ENDIANESS_MASK: u32 = 0x00008000
+const AIRCR_ENDIANESS_SHIFT: u32 = 15
+const AIRCR_PRIS_MASK: u32 = 0x00004000
+const AIRCR_PRIS_SHIFT: u32 = 14
+const AIRCR_BFHFNMINS_MASK: u32 = 0x00002000
+const AIRCR_BFHFNMINS_SHIFT: u32 = 13
+const AIRCR_PRIGROUP_MASK: u32 = 0x00000700
+const AIRCR_PRIGROUP_SHIFT: u32 = 8
+const AIRCR_SYSRESETREQS_MASK: u32 = 0x00000008
+const AIRCR_SYSRESETREQS_SHIFT: u32 = 3
+const AIRCR_SYSRESETREQ_MASK: u32 = 0x00000004
+const AIRCR_SYSRESETREQ_SHIFT: u32 = 2
+const AIRCR_VECTCLRACTIVE_MASK: u32 = 0x00000002
+const AIRCR_VECTCLRACTIVE_SHIFT: u32 = 1
+
+// System Control Register. Use the System Control Register for power-management functions: signal
+// to the system when the processor can enter a low power state, control how the processor enters
+// and exits low power states.
+const SCR_OFFSET: u32 = 0x0000ed10
+const SCR_SEVONPEND_MASK: u32 = 0x00000010
+const SCR_SEVONPEND_SHIFT: u32 = 4
+const SCR_SLEEPDEEPS_MASK: u32 = 0x00000008
+const SCR_SLEEPDEEPS_SHIFT: u32 = 3
+const SCR_SLEEPDEEP_MASK: u32 = 0x00000004
+const SCR_SLEEPDEEP_SHIFT: u32 = 2
+const SCR_SLEEPONEXIT_MASK: u32 = 0x00000002
+const SCR_SLEEPONEXIT_SHIFT: u32 = 1
+
+// Sets or returns configuration and control data
+const CCR_OFFSET: u32 = 0x0000ed14
+const CCR_BP_MASK: u32 = 0x00040000
+const CCR_BP_SHIFT: u32 = 18
+const CCR_IC_MASK: u32 = 0x00020000
+const CCR_IC_SHIFT: u32 = 17
+const CCR_DC_MASK: u32 = 0x00010000
+const CCR_DC_SHIFT: u32 = 16
+const CCR_STKOFHFNMIGN_MASK: u32 = 0x00000400
+const CCR_STKOFHFNMIGN_SHIFT: u32 = 10
+const CCR_RES1_MASK: u32 = 0x00000200
+const CCR_RES1_SHIFT: u32 = 9
+const CCR_BFHFNMIGN_MASK: u32 = 0x00000100
+const CCR_BFHFNMIGN_SHIFT: u32 = 8
+const CCR_DIV_0_TRP_MASK: u32 = 0x00000010
+const CCR_DIV_0_TRP_SHIFT: u32 = 4
+const CCR_UNALIGN_TRP_MASK: u32 = 0x00000008
+const CCR_UNALIGN_TRP_SHIFT: u32 = 3
+const CCR_USERSETMPEND_MASK: u32 = 0x00000002
+const CCR_USERSETMPEND_SHIFT: u32 = 1
+const CCR_RES1_1_MASK: u32 = 0x00000001
+const CCR_RES1_1_SHIFT: u32 = 0
+
+// Sets or returns priority for system handlers 4 - 7
+const SHPR1_OFFSET: u32 = 0x0000ed18
+const SHPR1_PRI_7_3_MASK: u32 = 0xe0000000
+const SHPR1_PRI_7_3_SHIFT: u32 = 29
+const SHPR1_PRI_6_3_MASK: u32 = 0x00e00000
+const SHPR1_PRI_6_3_SHIFT: u32 = 21
+const SHPR1_PRI_5_3_MASK: u32 = 0x0000e000
+const SHPR1_PRI_5_3_SHIFT: u32 = 13
+const SHPR1_PRI_4_3_MASK: u32 = 0x000000e0
+const SHPR1_PRI_4_3_SHIFT: u32 = 5
+
+// Sets or returns priority for system handlers 8 - 11
+const SHPR2_OFFSET: u32 = 0x0000ed1c
+const SHPR2_PRI_11_3_MASK: u32 = 0xe0000000
+const SHPR2_PRI_11_3_SHIFT: u32 = 29
+const SHPR2_PRI_10_MASK: u32 = 0x00ff0000
+const SHPR2_PRI_10_SHIFT: u32 = 16
+const SHPR2_PRI_9_MASK: u32 = 0x0000ff00
+const SHPR2_PRI_9_SHIFT: u32 = 8
+const SHPR2_PRI_8_MASK: u32 = 0x000000ff
+const SHPR2_PRI_8_SHIFT: u32 = 0
+
+// Sets or returns priority for system handlers 12 - 15
+const SHPR3_OFFSET: u32 = 0x0000ed20
+const SHPR3_PRI_15_3_MASK: u32 = 0xe0000000
+const SHPR3_PRI_15_3_SHIFT: u32 = 29
+const SHPR3_PRI_14_3_MASK: u32 = 0x00e00000
+const SHPR3_PRI_14_3_SHIFT: u32 = 21
+const SHPR3_PRI_13_MASK: u32 = 0x0000ff00
+const SHPR3_PRI_13_SHIFT: u32 = 8
+const SHPR3_PRI_12_3_MASK: u32 = 0x000000e0
+const SHPR3_PRI_12_3_SHIFT: u32 = 5
+
+// Provides access to the active and pending status of system exceptions
+const SHCSR_OFFSET: u32 = 0x0000ed24
+const SHCSR_HARDFAULTPENDED_MASK: u32 = 0x00200000
+const SHCSR_HARDFAULTPENDED_SHIFT: u32 = 21
+const SHCSR_SECUREFAULTPENDED_MASK: u32 = 0x00100000
+const SHCSR_SECUREFAULTPENDED_SHIFT: u32 = 20
+const SHCSR_SECUREFAULTENA_MASK: u32 = 0x00080000
+const SHCSR_SECUREFAULTENA_SHIFT: u32 = 19
+const SHCSR_USGFAULTENA_MASK: u32 = 0x00040000
+const SHCSR_USGFAULTENA_SHIFT: u32 = 18
+const SHCSR_BUSFAULTENA_MASK: u32 = 0x00020000
+const SHCSR_BUSFAULTENA_SHIFT: u32 = 17
+const SHCSR_MEMFAULTENA_MASK: u32 = 0x00010000
+const SHCSR_MEMFAULTENA_SHIFT: u32 = 16
+const SHCSR_SVCALLPENDED_MASK: u32 = 0x00008000
+const SHCSR_SVCALLPENDED_SHIFT: u32 = 15
+const SHCSR_BUSFAULTPENDED_MASK: u32 = 0x00004000
+const SHCSR_BUSFAULTPENDED_SHIFT: u32 = 14
+const SHCSR_MEMFAULTPENDED_MASK: u32 = 0x00002000
+const SHCSR_MEMFAULTPENDED_SHIFT: u32 = 13
+const SHCSR_USGFAULTPENDED_MASK: u32 = 0x00001000
+const SHCSR_USGFAULTPENDED_SHIFT: u32 = 12
+const SHCSR_SYSTICKACT_MASK: u32 = 0x00000800
+const SHCSR_SYSTICKACT_SHIFT: u32 = 11
+const SHCSR_PENDSVACT_MASK: u32 = 0x00000400
+const SHCSR_PENDSVACT_SHIFT: u32 = 10
+const SHCSR_MONITORACT_MASK: u32 = 0x00000100
+const SHCSR_MONITORACT_SHIFT: u32 = 8
+const SHCSR_SVCALLACT_MASK: u32 = 0x00000080
+const SHCSR_SVCALLACT_SHIFT: u32 = 7
+const SHCSR_NMIACT_MASK: u32 = 0x00000020
+const SHCSR_NMIACT_SHIFT: u32 = 5
+const SHCSR_SECUREFAULTACT_MASK: u32 = 0x00000010
+const SHCSR_SECUREFAULTACT_SHIFT: u32 = 4
+const SHCSR_USGFAULTACT_MASK: u32 = 0x00000008
+const SHCSR_USGFAULTACT_SHIFT: u32 = 3
+const SHCSR_HARDFAULTACT_MASK: u32 = 0x00000004
+const SHCSR_HARDFAULTACT_SHIFT: u32 = 2
+const SHCSR_BUSFAULTACT_MASK: u32 = 0x00000002
+const SHCSR_BUSFAULTACT_SHIFT: u32 = 1
+const SHCSR_MEMFAULTACT_MASK: u32 = 0x00000001
+const SHCSR_MEMFAULTACT_SHIFT: u32 = 0
+
+// Contains the three Configurable Fault Status Registers. 31:16 UFSR: Provides information on
+// UsageFault exceptions 15:8 BFSR: Provides information on BusFault exceptions 7:0 MMFSR: Provides
+// information on MemManage exceptions
+const CFSR_OFFSET: u32 = 0x0000ed28
+const CFSR_UFSR_DIVBYZERO_MASK: u32 = 0x02000000
+const CFSR_UFSR_DIVBYZERO_SHIFT: u32 = 25
+const CFSR_UFSR_UNALIGNED_MASK: u32 = 0x01000000
+const CFSR_UFSR_UNALIGNED_SHIFT: u32 = 24
+const CFSR_UFSR_STKOF_MASK: u32 = 0x00100000
+const CFSR_UFSR_STKOF_SHIFT: u32 = 20
+const CFSR_UFSR_NOCP_MASK: u32 = 0x00080000
+const CFSR_UFSR_NOCP_SHIFT: u32 = 19
+const CFSR_UFSR_INVPC_MASK: u32 = 0x00040000
+const CFSR_UFSR_INVPC_SHIFT: u32 = 18
+const CFSR_UFSR_INVSTATE_MASK: u32 = 0x00020000
+const CFSR_UFSR_INVSTATE_SHIFT: u32 = 17
+const CFSR_UFSR_UNDEFINSTR_MASK: u32 = 0x00010000
+const CFSR_UFSR_UNDEFINSTR_SHIFT: u32 = 16
+const CFSR_BFSR_BFARVALID_MASK: u32 = 0x00008000
+const CFSR_BFSR_BFARVALID_SHIFT: u32 = 15
+const CFSR_BFSR_LSPERR_MASK: u32 = 0x00002000
+const CFSR_BFSR_LSPERR_SHIFT: u32 = 13
+const CFSR_BFSR_STKERR_MASK: u32 = 0x00001000
+const CFSR_BFSR_STKERR_SHIFT: u32 = 12
+const CFSR_BFSR_UNSTKERR_MASK: u32 = 0x00000800
+const CFSR_BFSR_UNSTKERR_SHIFT: u32 = 11
+const CFSR_BFSR_IMPRECISERR_MASK: u32 = 0x00000400
+const CFSR_BFSR_IMPRECISERR_SHIFT: u32 = 10
+const CFSR_BFSR_PRECISERR_MASK: u32 = 0x00000200
+const CFSR_BFSR_PRECISERR_SHIFT: u32 = 9
+const CFSR_BFSR_IBUSERR_MASK: u32 = 0x00000100
+const CFSR_BFSR_IBUSERR_SHIFT: u32 = 8
+const CFSR_MMFSR_MASK: u32 = 0x000000ff
+const CFSR_MMFSR_SHIFT: u32 = 0
+
+// Shows the cause of any HardFaults
+const HFSR_OFFSET: u32 = 0x0000ed2c
+const HFSR_DEBUGEVT_MASK: u32 = 0x80000000
+const HFSR_DEBUGEVT_SHIFT: u32 = 31
+const HFSR_FORCED_MASK: u32 = 0x40000000
+const HFSR_FORCED_SHIFT: u32 = 30
+const HFSR_VECTTBL_MASK: u32 = 0x00000002
+const HFSR_VECTTBL_SHIFT: u32 = 1
+
+// Shows which debug event occurred
+const DFSR_OFFSET: u32 = 0x0000ed30
+const DFSR_EXTERNAL_MASK: u32 = 0x00000010
+const DFSR_EXTERNAL_SHIFT: u32 = 4
+const DFSR_VCATCH_MASK: u32 = 0x00000008
+const DFSR_VCATCH_SHIFT: u32 = 3
+const DFSR_DWTTRAP_MASK: u32 = 0x00000004
+const DFSR_DWTTRAP_SHIFT: u32 = 2
+const DFSR_BKPT_MASK: u32 = 0x00000002
+const DFSR_BKPT_SHIFT: u32 = 1
+const DFSR_HALTED_MASK: u32 = 0x00000001
+const DFSR_HALTED_SHIFT: u32 = 0
+
+// Shows the address of the memory location that caused an MPU fault
+const MMFAR_OFFSET: u32 = 0x0000ed34
+const MMFAR_ADDRESS_MASK: u32 = 0xffffffff
+const MMFAR_ADDRESS_SHIFT: u32 = 0
+
+// Shows the address associated with a precise data access BusFault
+const BFAR_OFFSET: u32 = 0x0000ed38
+const BFAR_ADDRESS_MASK: u32 = 0xffffffff
+const BFAR_ADDRESS_SHIFT: u32 = 0
+
+// Gives top-level information about the instruction set supported by the PE
+const ID_PFR0_OFFSET: u32 = 0x0000ed40
+const ID_PFR0_STATE1_MASK: u32 = 0x000000f0
+const ID_PFR0_STATE1_SHIFT: u32 = 4
+const ID_PFR0_STATE0_MASK: u32 = 0x0000000f
+const ID_PFR0_STATE0_SHIFT: u32 = 0
+
+// Gives information about the programmers' model and Extensions support
+const ID_PFR1_OFFSET: u32 = 0x0000ed44
+const ID_PFR1_MPROGMOD_MASK: u32 = 0x00000f00
+const ID_PFR1_MPROGMOD_SHIFT: u32 = 8
+const ID_PFR1_SECURITY_MASK: u32 = 0x000000f0
+const ID_PFR1_SECURITY_SHIFT: u32 = 4
+
+// Provides top level information about the debug system
+const ID_DFR0_OFFSET: u32 = 0x0000ed48
+const ID_DFR0_MPROFDBG_MASK: u32 = 0x00f00000
+const ID_DFR0_MPROFDBG_SHIFT: u32 = 20
+
+// Provides information about the IMPLEMENTATION DEFINED features of the PE
+const ID_AFR0_OFFSET: u32 = 0x0000ed4c
+const ID_AFR0_IMPDEF3_MASK: u32 = 0x0000f000
+const ID_AFR0_IMPDEF3_SHIFT: u32 = 12
+const ID_AFR0_IMPDEF2_MASK: u32 = 0x00000f00
+const ID_AFR0_IMPDEF2_SHIFT: u32 = 8
+const ID_AFR0_IMPDEF1_MASK: u32 = 0x000000f0
+const ID_AFR0_IMPDEF1_SHIFT: u32 = 4
+const ID_AFR0_IMPDEF0_MASK: u32 = 0x0000000f
+const ID_AFR0_IMPDEF0_SHIFT: u32 = 0
+
+// Provides information about the implemented memory model and memory management support
+const ID_MMFR0_OFFSET: u32 = 0x0000ed50
+const ID_MMFR0_AUXREG_MASK: u32 = 0x00f00000
+const ID_MMFR0_AUXREG_SHIFT: u32 = 20
+const ID_MMFR0_TCM_MASK: u32 = 0x000f0000
+const ID_MMFR0_TCM_SHIFT: u32 = 16
+const ID_MMFR0_SHARELVL_MASK: u32 = 0x0000f000
+const ID_MMFR0_SHARELVL_SHIFT: u32 = 12
+const ID_MMFR0_OUTERSHR_MASK: u32 = 0x00000f00
+const ID_MMFR0_OUTERSHR_SHIFT: u32 = 8
+const ID_MMFR0_PMSA_MASK: u32 = 0x000000f0
+const ID_MMFR0_PMSA_SHIFT: u32 = 4
+
+// Provides information about the implemented memory model and memory management support
+const ID_MMFR1_OFFSET: u32 = 0x0000ed54
+
+// Provides information about the implemented memory model and memory management support
+const ID_MMFR2_OFFSET: u32 = 0x0000ed58
+const ID_MMFR2_WFISTALL_MASK: u32 = 0x0f000000
+const ID_MMFR2_WFISTALL_SHIFT: u32 = 24
+
+// Provides information about the implemented memory model and memory management support
+const ID_MMFR3_OFFSET: u32 = 0x0000ed5c
+const ID_MMFR3_BPMAINT_MASK: u32 = 0x00000f00
+const ID_MMFR3_BPMAINT_SHIFT: u32 = 8
+const ID_MMFR3_CMAINTSW_MASK: u32 = 0x000000f0
+const ID_MMFR3_CMAINTSW_SHIFT: u32 = 4
+const ID_MMFR3_CMAINTVA_MASK: u32 = 0x0000000f
+const ID_MMFR3_CMAINTVA_SHIFT: u32 = 0
+
+// Provides information about the instruction set implemented by the PE
+const ID_ISAR0_OFFSET: u32 = 0x0000ed60
+const ID_ISAR0_DIVIDE_MASK: u32 = 0x0f000000
+const ID_ISAR0_DIVIDE_SHIFT: u32 = 24
+const ID_ISAR0_DEBUG_MASK: u32 = 0x00f00000
+const ID_ISAR0_DEBUG_SHIFT: u32 = 20
+const ID_ISAR0_COPROC_MASK: u32 = 0x000f0000
+const ID_ISAR0_COPROC_SHIFT: u32 = 16
+const ID_ISAR0_CMPBRANCH_MASK: u32 = 0x0000f000
+const ID_ISAR0_CMPBRANCH_SHIFT: u32 = 12
+const ID_ISAR0_BITFIELD_MASK: u32 = 0x00000f00
+const ID_ISAR0_BITFIELD_SHIFT: u32 = 8
+const ID_ISAR0_BITCOUNT_MASK: u32 = 0x000000f0
+const ID_ISAR0_BITCOUNT_SHIFT: u32 = 4
+
+// Provides information about the instruction set implemented by the PE
+const ID_ISAR1_OFFSET: u32 = 0x0000ed64
+const ID_ISAR1_INTERWORK_MASK: u32 = 0x0f000000
+const ID_ISAR1_INTERWORK_SHIFT: u32 = 24
+const ID_ISAR1_IMMEDIATE_MASK: u32 = 0x00f00000
+const ID_ISAR1_IMMEDIATE_SHIFT: u32 = 20
+const ID_ISAR1_IFTHEN_MASK: u32 = 0x000f0000
+const ID_ISAR1_IFTHEN_SHIFT: u32 = 16
+const ID_ISAR1_EXTEND_MASK: u32 = 0x0000f000
+const ID_ISAR1_EXTEND_SHIFT: u32 = 12
+
+// Provides information about the instruction set implemented by the PE
+const ID_ISAR2_OFFSET: u32 = 0x0000ed68
+const ID_ISAR2_REVERSAL_MASK: u32 = 0xf0000000
+const ID_ISAR2_REVERSAL_SHIFT: u32 = 28
+const ID_ISAR2_MULTU_MASK: u32 = 0x00f00000
+const ID_ISAR2_MULTU_SHIFT: u32 = 20
+const ID_ISAR2_MULTS_MASK: u32 = 0x000f0000
+const ID_ISAR2_MULTS_SHIFT: u32 = 16
+const ID_ISAR2_MULT_MASK: u32 = 0x0000f000
+const ID_ISAR2_MULT_SHIFT: u32 = 12
+const ID_ISAR2_MULTIACCESSINT_MASK: u32 = 0x00000f00
+const ID_ISAR2_MULTIACCESSINT_SHIFT: u32 = 8
+const ID_ISAR2_MEMHINT_MASK: u32 = 0x000000f0
+const ID_ISAR2_MEMHINT_SHIFT: u32 = 4
+const ID_ISAR2_LOADSTORE_MASK: u32 = 0x0000000f
+const ID_ISAR2_LOADSTORE_SHIFT: u32 = 0
+
+// Provides information about the instruction set implemented by the PE
+const ID_ISAR3_OFFSET: u32 = 0x0000ed6c
+const ID_ISAR3_TRUENOP_MASK: u32 = 0x0f000000
+const ID_ISAR3_TRUENOP_SHIFT: u32 = 24
+const ID_ISAR3_T32COPY_MASK: u32 = 0x00f00000
+const ID_ISAR3_T32COPY_SHIFT: u32 = 20
+const ID_ISAR3_TABBRANCH_MASK: u32 = 0x000f0000
+const ID_ISAR3_TABBRANCH_SHIFT: u32 = 16
+const ID_ISAR3_SYNCHPRIM_MASK: u32 = 0x0000f000
+const ID_ISAR3_SYNCHPRIM_SHIFT: u32 = 12
+const ID_ISAR3_SVC_MASK: u32 = 0x00000f00
+const ID_ISAR3_SVC_SHIFT: u32 = 8
+const ID_ISAR3_SIMD_MASK: u32 = 0x000000f0
+const ID_ISAR3_SIMD_SHIFT: u32 = 4
+const ID_ISAR3_SATURATE_MASK: u32 = 0x0000000f
+const ID_ISAR3_SATURATE_SHIFT: u32 = 0
+
+// Provides information about the instruction set implemented by the PE
+const ID_ISAR4_OFFSET: u32 = 0x0000ed70
+const ID_ISAR4_PSR_M_MASK: u32 = 0x0f000000
+const ID_ISAR4_PSR_M_SHIFT: u32 = 24
+const ID_ISAR4_SYNCPRIM_FRAC_MASK: u32 = 0x00f00000
+const ID_ISAR4_SYNCPRIM_FRAC_SHIFT: u32 = 20
+const ID_ISAR4_BARRIER_MASK: u32 = 0x000f0000
+const ID_ISAR4_BARRIER_SHIFT: u32 = 16
+const ID_ISAR4_WRITEBACK_MASK: u32 = 0x00000f00
+const ID_ISAR4_WRITEBACK_SHIFT: u32 = 8
+const ID_ISAR4_WITHSHIFTS_MASK: u32 = 0x000000f0
+const ID_ISAR4_WITHSHIFTS_SHIFT: u32 = 4
+const ID_ISAR4_UNPRIV_MASK: u32 = 0x0000000f
+const ID_ISAR4_UNPRIV_SHIFT: u32 = 0
+
+// Provides information about the instruction set implemented by the PE
+const ID_ISAR5_OFFSET: u32 = 0x0000ed74
+
+// Provides information about the architecture of the caches. CTR is RES0 if CLIDR is zero.
+const CTR_OFFSET: u32 = 0x0000ed7c
+const CTR_RES1_MASK: u32 = 0x80000000
+const CTR_RES1_SHIFT: u32 = 31
+const CTR_CWG_MASK: u32 = 0x0f000000
+const CTR_CWG_SHIFT: u32 = 24
+const CTR_ERG_MASK: u32 = 0x00f00000
+const CTR_ERG_SHIFT: u32 = 20
+const CTR_DMINLINE_MASK: u32 = 0x000f0000
+const CTR_DMINLINE_SHIFT: u32 = 16
+const CTR_RES1_1_MASK: u32 = 0x0000c000
+const CTR_RES1_1_SHIFT: u32 = 14
+const CTR_IMINLINE_MASK: u32 = 0x0000000f
+const CTR_IMINLINE_SHIFT: u32 = 0
+
+// Specifies the access privileges for coprocessors and the FP Extension
+const CPACR_OFFSET: u32 = 0x0000ed88
+const CPACR_CP11_MASK: u32 = 0x00c00000
+const CPACR_CP11_SHIFT: u32 = 22
+const CPACR_CP10_MASK: u32 = 0x00300000
+const CPACR_CP10_SHIFT: u32 = 20
+const CPACR_CP7_MASK: u32 = 0x0000c000
+const CPACR_CP7_SHIFT: u32 = 14
+const CPACR_CP6_MASK: u32 = 0x00003000
+const CPACR_CP6_SHIFT: u32 = 12
+const CPACR_CP5_MASK: u32 = 0x00000c00
+const CPACR_CP5_SHIFT: u32 = 10
+const CPACR_CP4_MASK: u32 = 0x00000300
+const CPACR_CP4_SHIFT: u32 = 8
+const CPACR_CP3_MASK: u32 = 0x000000c0
+const CPACR_CP3_SHIFT: u32 = 6
+const CPACR_CP2_MASK: u32 = 0x00000030
+const CPACR_CP2_SHIFT: u32 = 4
+const CPACR_CP1_MASK: u32 = 0x0000000c
+const CPACR_CP1_SHIFT: u32 = 2
+const CPACR_CP0_MASK: u32 = 0x00000003
+const CPACR_CP0_SHIFT: u32 = 0
+
+// Defines the Non-secure access permissions for both the FP Extension and coprocessors CP0 to CP7
+const NSACR_OFFSET: u32 = 0x0000ed8c
+const NSACR_CP11_MASK: u32 = 0x00000800
+const NSACR_CP11_SHIFT: u32 = 11
+const NSACR_CP10_MASK: u32 = 0x00000400
+const NSACR_CP10_SHIFT: u32 = 10
+const NSACR_CP7_MASK: u32 = 0x00000080
+const NSACR_CP7_SHIFT: u32 = 7
+const NSACR_CP6_MASK: u32 = 0x00000040
+const NSACR_CP6_SHIFT: u32 = 6
+const NSACR_CP5_MASK: u32 = 0x00000020
+const NSACR_CP5_SHIFT: u32 = 5
+const NSACR_CP4_MASK: u32 = 0x00000010
+const NSACR_CP4_SHIFT: u32 = 4
+const NSACR_CP3_MASK: u32 = 0x00000008
+const NSACR_CP3_SHIFT: u32 = 3
+const NSACR_CP2_MASK: u32 = 0x00000004
+const NSACR_CP2_SHIFT: u32 = 2
+const NSACR_CP1_MASK: u32 = 0x00000002
+const NSACR_CP1_SHIFT: u32 = 1
+const NSACR_CP0_MASK: u32 = 0x00000001
+const NSACR_CP0_SHIFT: u32 = 0
+
+// The MPU Type Register indicates how many regions the MPU `FTSSS supports
+const MPU_TYPE_OFFSET: u32 = 0x0000ed90
+const MPU_TYPE_DREGION_MASK: u32 = 0x0000ff00
+const MPU_TYPE_DREGION_SHIFT: u32 = 8
+const MPU_TYPE_SEPARATE_MASK: u32 = 0x00000001
+const MPU_TYPE_SEPARATE_SHIFT: u32 = 0
+
+// Enables the MPU and, when the MPU is enabled, controls whether the default memory map is enabled
+// as a background region for privileged accesses, and whether the MPU is enabled for HardFaults,
+// NMIs, and exception handlers when FAULTMASK is set to 1
+const MPU_CTRL_OFFSET: u32 = 0x0000ed94
+const MPU_CTRL_PRIVDEFENA_MASK: u32 = 0x00000004
+const MPU_CTRL_PRIVDEFENA_SHIFT: u32 = 2
+const MPU_CTRL_HFNMIENA_MASK: u32 = 0x00000002
+const MPU_CTRL_HFNMIENA_SHIFT: u32 = 1
+const MPU_CTRL_ENABLE_MASK: u32 = 0x00000001
+const MPU_CTRL_ENABLE_SHIFT: u32 = 0
+
+// Selects the region currently accessed by MPU_RBAR and MPU_RLAR
+const MPU_RNR_OFFSET: u32 = 0x0000ed98
+const MPU_RNR_REGION_MASK: u32 = 0x00000007
+const MPU_RNR_REGION_SHIFT: u32 = 0
+
+// Provides indirect read and write access to the base address of the currently selected MPU region
+// `FTSSS
+const MPU_RBAR_OFFSET: u32 = 0x0000ed9c
+const MPU_RBAR_BASE_MASK: u32 = 0xffffffe0
+const MPU_RBAR_BASE_SHIFT: u32 = 5
+const MPU_RBAR_SH_MASK: u32 = 0x00000018
+const MPU_RBAR_SH_SHIFT: u32 = 3
+const MPU_RBAR_AP_MASK: u32 = 0x00000006
+const MPU_RBAR_AP_SHIFT: u32 = 1
+const MPU_RBAR_XN_MASK: u32 = 0x00000001
+const MPU_RBAR_XN_SHIFT: u32 = 0
+
+// Provides indirect read and write access to the limit address of the currently selected MPU
+// region `FTSSS
+const MPU_RLAR_OFFSET: u32 = 0x0000eda0
+const MPU_RLAR_LIMIT_MASK: u32 = 0xffffffe0
+const MPU_RLAR_LIMIT_SHIFT: u32 = 5
+const MPU_RLAR_ATTRINDX_MASK: u32 = 0x0000000e
+const MPU_RLAR_ATTRINDX_SHIFT: u32 = 1
+const MPU_RLAR_EN_MASK: u32 = 0x00000001
+const MPU_RLAR_EN_SHIFT: u32 = 0
+
+// Provides indirect read and write access to the base address of the MPU region selected by
+// MPU_RNR[7:2]:(1[1:0]) `FTSSS
+const MPU_RBAR_A1_OFFSET: u32 = 0x0000eda4
+const MPU_RBAR_A1_BASE_MASK: u32 = 0xffffffe0
+const MPU_RBAR_A1_BASE_SHIFT: u32 = 5
+const MPU_RBAR_A1_SH_MASK: u32 = 0x00000018
+const MPU_RBAR_A1_SH_SHIFT: u32 = 3
+const MPU_RBAR_A1_AP_MASK: u32 = 0x00000006
+const MPU_RBAR_A1_AP_SHIFT: u32 = 1
+const MPU_RBAR_A1_XN_MASK: u32 = 0x00000001
+const MPU_RBAR_A1_XN_SHIFT: u32 = 0
+
+// Provides indirect read and write access to the limit address of the currently selected MPU
+// region selected by MPU_RNR[7:2]:(1[1:0]) `FTSSS
+const MPU_RLAR_A1_OFFSET: u32 = 0x0000eda8
+const MPU_RLAR_A1_LIMIT_MASK: u32 = 0xffffffe0
+const MPU_RLAR_A1_LIMIT_SHIFT: u32 = 5
+const MPU_RLAR_A1_ATTRINDX_MASK: u32 = 0x0000000e
+const MPU_RLAR_A1_ATTRINDX_SHIFT: u32 = 1
+const MPU_RLAR_A1_EN_MASK: u32 = 0x00000001
+const MPU_RLAR_A1_EN_SHIFT: u32 = 0
+
+// Provides indirect read and write access to the base address of the MPU region selected by
+// MPU_RNR[7:2]:(2[1:0]) `FTSSS
+const MPU_RBAR_A2_OFFSET: u32 = 0x0000edac
+const MPU_RBAR_A2_BASE_MASK: u32 = 0xffffffe0
+const MPU_RBAR_A2_BASE_SHIFT: u32 = 5
+const MPU_RBAR_A2_SH_MASK: u32 = 0x00000018
+const MPU_RBAR_A2_SH_SHIFT: u32 = 3
+const MPU_RBAR_A2_AP_MASK: u32 = 0x00000006
+const MPU_RBAR_A2_AP_SHIFT: u32 = 1
+const MPU_RBAR_A2_XN_MASK: u32 = 0x00000001
+const MPU_RBAR_A2_XN_SHIFT: u32 = 0
+
+// Provides indirect read and write access to the limit address of the currently selected MPU
+// region selected by MPU_RNR[7:2]:(2[1:0]) `FTSSS
+const MPU_RLAR_A2_OFFSET: u32 = 0x0000edb0
+const MPU_RLAR_A2_LIMIT_MASK: u32 = 0xffffffe0
+const MPU_RLAR_A2_LIMIT_SHIFT: u32 = 5
+const MPU_RLAR_A2_ATTRINDX_MASK: u32 = 0x0000000e
+const MPU_RLAR_A2_ATTRINDX_SHIFT: u32 = 1
+const MPU_RLAR_A2_EN_MASK: u32 = 0x00000001
+const MPU_RLAR_A2_EN_SHIFT: u32 = 0
+
+// Provides indirect read and write access to the base address of the MPU region selected by
+// MPU_RNR[7:2]:(3[1:0]) `FTSSS
+const MPU_RBAR_A3_OFFSET: u32 = 0x0000edb4
+const MPU_RBAR_A3_BASE_MASK: u32 = 0xffffffe0
+const MPU_RBAR_A3_BASE_SHIFT: u32 = 5
+const MPU_RBAR_A3_SH_MASK: u32 = 0x00000018
+const MPU_RBAR_A3_SH_SHIFT: u32 = 3
+const MPU_RBAR_A3_AP_MASK: u32 = 0x00000006
+const MPU_RBAR_A3_AP_SHIFT: u32 = 1
+const MPU_RBAR_A3_XN_MASK: u32 = 0x00000001
+const MPU_RBAR_A3_XN_SHIFT: u32 = 0
+
+// Provides indirect read and write access to the limit address of the currently selected MPU
+// region selected by MPU_RNR[7:2]:(3[1:0]) `FTSSS
+const MPU_RLAR_A3_OFFSET: u32 = 0x0000edb8
+const MPU_RLAR_A3_LIMIT_MASK: u32 = 0xffffffe0
+const MPU_RLAR_A3_LIMIT_SHIFT: u32 = 5
+const MPU_RLAR_A3_ATTRINDX_MASK: u32 = 0x0000000e
+const MPU_RLAR_A3_ATTRINDX_SHIFT: u32 = 1
+const MPU_RLAR_A3_EN_MASK: u32 = 0x00000001
+const MPU_RLAR_A3_EN_SHIFT: u32 = 0
+
+// Along with MPU_MAIR1, provides the memory attribute encodings corresponding to the AttrIndex
+// values
+const MPU_MAIR0_OFFSET: u32 = 0x0000edc0
+const MPU_MAIR0_ATTR3_MASK: u32 = 0xff000000
+const MPU_MAIR0_ATTR3_SHIFT: u32 = 24
+const MPU_MAIR0_ATTR2_MASK: u32 = 0x00ff0000
+const MPU_MAIR0_ATTR2_SHIFT: u32 = 16
+const MPU_MAIR0_ATTR1_MASK: u32 = 0x0000ff00
+const MPU_MAIR0_ATTR1_SHIFT: u32 = 8
+const MPU_MAIR0_ATTR0_MASK: u32 = 0x000000ff
+const MPU_MAIR0_ATTR0_SHIFT: u32 = 0
+
+// Along with MPU_MAIR0, provides the memory attribute encodings corresponding to the AttrIndex
+// values
+const MPU_MAIR1_OFFSET: u32 = 0x0000edc4
+const MPU_MAIR1_ATTR7_MASK: u32 = 0xff000000
+const MPU_MAIR1_ATTR7_SHIFT: u32 = 24
+const MPU_MAIR1_ATTR6_MASK: u32 = 0x00ff0000
+const MPU_MAIR1_ATTR6_SHIFT: u32 = 16
+const MPU_MAIR1_ATTR5_MASK: u32 = 0x0000ff00
+const MPU_MAIR1_ATTR5_SHIFT: u32 = 8
+const MPU_MAIR1_ATTR4_MASK: u32 = 0x000000ff
+const MPU_MAIR1_ATTR4_SHIFT: u32 = 0
+
+// Allows enabling of the Security Attribution Unit
+const SAU_CTRL_OFFSET: u32 = 0x0000edd0
+const SAU_CTRL_ALLNS_MASK: u32 = 0x00000002
+const SAU_CTRL_ALLNS_SHIFT: u32 = 1
+const SAU_CTRL_ENABLE_MASK: u32 = 0x00000001
+const SAU_CTRL_ENABLE_SHIFT: u32 = 0
+
+// Indicates the number of regions implemented by the Security Attribution Unit
+const SAU_TYPE_OFFSET: u32 = 0x0000edd4
+const SAU_TYPE_SREGION_MASK: u32 = 0x000000ff
+const SAU_TYPE_SREGION_SHIFT: u32 = 0
+
+// Selects the region currently accessed by SAU_RBAR and SAU_RLAR
+const SAU_RNR_OFFSET: u32 = 0x0000edd8
+const SAU_RNR_REGION_MASK: u32 = 0x000000ff
+const SAU_RNR_REGION_SHIFT: u32 = 0
+
+// Provides indirect read and write access to the base address of the currently selected SAU region
+const SAU_RBAR_OFFSET: u32 = 0x0000eddc
+const SAU_RBAR_BADDR_MASK: u32 = 0xffffffe0
+const SAU_RBAR_BADDR_SHIFT: u32 = 5
+
+// Provides indirect read and write access to the limit address of the currently selected SAU
+// region
+const SAU_RLAR_OFFSET: u32 = 0x0000ede0
+const SAU_RLAR_LADDR_MASK: u32 = 0xffffffe0
+const SAU_RLAR_LADDR_SHIFT: u32 = 5
+const SAU_RLAR_NSC_MASK: u32 = 0x00000002
+const SAU_RLAR_NSC_SHIFT: u32 = 1
+const SAU_RLAR_ENABLE_MASK: u32 = 0x00000001
+const SAU_RLAR_ENABLE_SHIFT: u32 = 0
+
+// Provides information about any security related faults
+const SFSR_OFFSET: u32 = 0x0000ede4
+const SFSR_LSERR_MASK: u32 = 0x00000080
+const SFSR_LSERR_SHIFT: u32 = 7
+const SFSR_SFARVALID_MASK: u32 = 0x00000040
+const SFSR_SFARVALID_SHIFT: u32 = 6
+const SFSR_LSPERR_MASK: u32 = 0x00000020
+const SFSR_LSPERR_SHIFT: u32 = 5
+const SFSR_INVTRAN_MASK: u32 = 0x00000010
+const SFSR_INVTRAN_SHIFT: u32 = 4
+const SFSR_AUVIOL_MASK: u32 = 0x00000008
+const SFSR_AUVIOL_SHIFT: u32 = 3
+const SFSR_INVER_MASK: u32 = 0x00000004
+const SFSR_INVER_SHIFT: u32 = 2
+const SFSR_INVIS_MASK: u32 = 0x00000002
+const SFSR_INVIS_SHIFT: u32 = 1
+const SFSR_INVEP_MASK: u32 = 0x00000001
+const SFSR_INVEP_SHIFT: u32 = 0
+
+// Shows the address of the memory location that caused a Security violation
+const SFAR_OFFSET: u32 = 0x0000ede8
+const SFAR_ADDRESS_MASK: u32 = 0xffffffff
+const SFAR_ADDRESS_SHIFT: u32 = 0
+
+// Controls halting debug
+const DHCSR_OFFSET: u32 = 0x0000edf0
+const DHCSR_S_RESTART_ST_MASK: u32 = 0x04000000
+const DHCSR_S_RESTART_ST_SHIFT: u32 = 26
+const DHCSR_S_RESET_ST_MASK: u32 = 0x02000000
+const DHCSR_S_RESET_ST_SHIFT: u32 = 25
+const DHCSR_S_RETIRE_ST_MASK: u32 = 0x01000000
+const DHCSR_S_RETIRE_ST_SHIFT: u32 = 24
+const DHCSR_S_SDE_MASK: u32 = 0x00100000
+const DHCSR_S_SDE_SHIFT: u32 = 20
+const DHCSR_S_LOCKUP_MASK: u32 = 0x00080000
+const DHCSR_S_LOCKUP_SHIFT: u32 = 19
+const DHCSR_S_SLEEP_MASK: u32 = 0x00040000
+const DHCSR_S_SLEEP_SHIFT: u32 = 18
+const DHCSR_S_HALT_MASK: u32 = 0x00020000
+const DHCSR_S_HALT_SHIFT: u32 = 17
+const DHCSR_S_REGRDY_MASK: u32 = 0x00010000
+const DHCSR_S_REGRDY_SHIFT: u32 = 16
+const DHCSR_C_SNAPSTALL_MASK: u32 = 0x00000020
+const DHCSR_C_SNAPSTALL_SHIFT: u32 = 5
+const DHCSR_C_MASKINTS_MASK: u32 = 0x00000008
+const DHCSR_C_MASKINTS_SHIFT: u32 = 3
+const DHCSR_C_STEP_MASK: u32 = 0x00000004
+const DHCSR_C_STEP_SHIFT: u32 = 2
+const DHCSR_C_HALT_MASK: u32 = 0x00000002
+const DHCSR_C_HALT_SHIFT: u32 = 1
+const DHCSR_C_DEBUGEN_MASK: u32 = 0x00000001
+const DHCSR_C_DEBUGEN_SHIFT: u32 = 0
+
+// With the DCRDR, provides debug access to the general-purpose registers, special-purpose
+// registers, and the FP extension registers. A write to the DCRSR specifies the register to
+// transfer, whether the transfer is a read or write, and starts the transfer
+const DCRSR_OFFSET: u32 = 0x0000edf4
+const DCRSR_REGWNR_MASK: u32 = 0x00010000
+const DCRSR_REGWNR_SHIFT: u32 = 16
+const DCRSR_REGSEL_MASK: u32 = 0x0000007f
+const DCRSR_REGSEL_SHIFT: u32 = 0
+
+// With the DCRSR, provides debug access to the general-purpose registers, special-purpose
+// registers, and the FP Extension registers. If the Main Extension is implemented, it can also be
+// used for message passing between an external debugger and a debug agent running on the PE
+const DCRDR_OFFSET: u32 = 0x0000edf8
+const DCRDR_DBGTMP_MASK: u32 = 0xffffffff
+const DCRDR_DBGTMP_SHIFT: u32 = 0
+
+// Manages vector catch behavior and DebugMonitor handling when debugging
+const DEMCR_OFFSET: u32 = 0x0000edfc
+const DEMCR_TRCENA_MASK: u32 = 0x01000000
+const DEMCR_TRCENA_SHIFT: u32 = 24
+const DEMCR_SDME_MASK: u32 = 0x00100000
+const DEMCR_SDME_SHIFT: u32 = 20
+const DEMCR_MON_REQ_MASK: u32 = 0x00080000
+const DEMCR_MON_REQ_SHIFT: u32 = 19
+const DEMCR_MON_STEP_MASK: u32 = 0x00040000
+const DEMCR_MON_STEP_SHIFT: u32 = 18
+const DEMCR_MON_PEND_MASK: u32 = 0x00020000
+const DEMCR_MON_PEND_SHIFT: u32 = 17
+const DEMCR_MON_EN_MASK: u32 = 0x00010000
+const DEMCR_MON_EN_SHIFT: u32 = 16
+const DEMCR_VC_SFERR_MASK: u32 = 0x00000800
+const DEMCR_VC_SFERR_SHIFT: u32 = 11
+const DEMCR_VC_HARDERR_MASK: u32 = 0x00000400
+const DEMCR_VC_HARDERR_SHIFT: u32 = 10
+const DEMCR_VC_INTERR_MASK: u32 = 0x00000200
+const DEMCR_VC_INTERR_SHIFT: u32 = 9
+const DEMCR_VC_BUSERR_MASK: u32 = 0x00000100
+const DEMCR_VC_BUSERR_SHIFT: u32 = 8
+const DEMCR_VC_STATERR_MASK: u32 = 0x00000080
+const DEMCR_VC_STATERR_SHIFT: u32 = 7
+const DEMCR_VC_CHKERR_MASK: u32 = 0x00000040
+const DEMCR_VC_CHKERR_SHIFT: u32 = 6
+const DEMCR_VC_NOCPERR_MASK: u32 = 0x00000020
+const DEMCR_VC_NOCPERR_SHIFT: u32 = 5
+const DEMCR_VC_MMERR_MASK: u32 = 0x00000010
+const DEMCR_VC_MMERR_SHIFT: u32 = 4
+const DEMCR_VC_CORERESET_MASK: u32 = 0x00000001
+const DEMCR_VC_CORERESET_SHIFT: u32 = 0
+
+// Provides control and status information for Secure debug
+const DSCSR_OFFSET: u32 = 0x0000ee08
+const DSCSR_CDSKEY_MASK: u32 = 0x00020000
+const DSCSR_CDSKEY_SHIFT: u32 = 17
+const DSCSR_CDS_MASK: u32 = 0x00010000
+const DSCSR_CDS_SHIFT: u32 = 16
+const DSCSR_SBRSEL_MASK: u32 = 0x00000002
+const DSCSR_SBRSEL_SHIFT: u32 = 1
+const DSCSR_SBRSELEN_MASK: u32 = 0x00000001
+const DSCSR_SBRSELEN_SHIFT: u32 = 0
+
+// Provides a mechanism for software to generate an interrupt
+const STIR_OFFSET: u32 = 0x0000ef00
+const STIR_INTID_MASK: u32 = 0x000001ff
+const STIR_INTID_SHIFT: u32 = 0
+
+// Holds control data for the Floating-point extension
+const FPCCR_OFFSET: u32 = 0x0000ef34
+const FPCCR_ASPEN_MASK: u32 = 0x80000000
+const FPCCR_ASPEN_SHIFT: u32 = 31
+const FPCCR_LSPEN_MASK: u32 = 0x40000000
+const FPCCR_LSPEN_SHIFT: u32 = 30
+const FPCCR_LSPENS_MASK: u32 = 0x20000000
+const FPCCR_LSPENS_SHIFT: u32 = 29
+const FPCCR_CLRONRET_MASK: u32 = 0x10000000
+const FPCCR_CLRONRET_SHIFT: u32 = 28
+const FPCCR_CLRONRETS_MASK: u32 = 0x08000000
+const FPCCR_CLRONRETS_SHIFT: u32 = 27
+const FPCCR_TS_MASK: u32 = 0x04000000
+const FPCCR_TS_SHIFT: u32 = 26
+const FPCCR_UFRDY_MASK: u32 = 0x00000400
+const FPCCR_UFRDY_SHIFT: u32 = 10
+const FPCCR_SPLIMVIOL_MASK: u32 = 0x00000200
+const FPCCR_SPLIMVIOL_SHIFT: u32 = 9
+const FPCCR_MONRDY_MASK: u32 = 0x00000100
+const FPCCR_MONRDY_SHIFT: u32 = 8
+const FPCCR_SFRDY_MASK: u32 = 0x00000080
+const FPCCR_SFRDY_SHIFT: u32 = 7
+const FPCCR_BFRDY_MASK: u32 = 0x00000040
+const FPCCR_BFRDY_SHIFT: u32 = 6
+const FPCCR_MMRDY_MASK: u32 = 0x00000020
+const FPCCR_MMRDY_SHIFT: u32 = 5
+const FPCCR_HFRDY_MASK: u32 = 0x00000010
+const FPCCR_HFRDY_SHIFT: u32 = 4
+const FPCCR_THREAD_MASK: u32 = 0x00000008
+const FPCCR_THREAD_SHIFT: u32 = 3
+const FPCCR_S_MASK: u32 = 0x00000004
+const FPCCR_S_SHIFT: u32 = 2
+const FPCCR_USER_MASK: u32 = 0x00000002
+const FPCCR_USER_SHIFT: u32 = 1
+const FPCCR_LSPACT_MASK: u32 = 0x00000001
+const FPCCR_LSPACT_SHIFT: u32 = 0
+
+// Holds the location of the unpopulated floating-point register space allocated on an exception
+// stack frame
+const FPCAR_OFFSET: u32 = 0x0000ef38
+const FPCAR_ADDRESS_MASK: u32 = 0xfffffff8
+const FPCAR_ADDRESS_SHIFT: u32 = 3
+
+// Holds the default values for the floating-point status control data that the PE assigns to the
+// FPSCR when it creates a new floating-point context
+const FPDSCR_OFFSET: u32 = 0x0000ef3c
+const FPDSCR_AHP_MASK: u32 = 0x04000000
+const FPDSCR_AHP_SHIFT: u32 = 26
+const FPDSCR_DN_MASK: u32 = 0x02000000
+const FPDSCR_DN_SHIFT: u32 = 25
+const FPDSCR_FZ_MASK: u32 = 0x01000000
+const FPDSCR_FZ_SHIFT: u32 = 24
+const FPDSCR_RMODE_MASK: u32 = 0x00c00000
+const FPDSCR_RMODE_SHIFT: u32 = 22
+
+// Describes the features provided by the Floating-point Extension
+const MVFR0_OFFSET: u32 = 0x0000ef40
+const MVFR0_FPROUND_MASK: u32 = 0xf0000000
+const MVFR0_FPROUND_SHIFT: u32 = 28
+const MVFR0_FPSQRT_MASK: u32 = 0x00f00000
+const MVFR0_FPSQRT_SHIFT: u32 = 20
+const MVFR0_FPDIVIDE_MASK: u32 = 0x000f0000
+const MVFR0_FPDIVIDE_SHIFT: u32 = 16
+const MVFR0_FPDP_MASK: u32 = 0x00000f00
+const MVFR0_FPDP_SHIFT: u32 = 8
+const MVFR0_FPSP_MASK: u32 = 0x000000f0
+const MVFR0_FPSP_SHIFT: u32 = 4
+const MVFR0_SIMDREG_MASK: u32 = 0x0000000f
+const MVFR0_SIMDREG_SHIFT: u32 = 0
+
+// Describes the features provided by the Floating-point Extension
+const MVFR1_OFFSET: u32 = 0x0000ef44
+const MVFR1_FMAC_MASK: u32 = 0xf0000000
+const MVFR1_FMAC_SHIFT: u32 = 28
+const MVFR1_FPHP_MASK: u32 = 0x0f000000
+const MVFR1_FPHP_SHIFT: u32 = 24
+const MVFR1_FPDNAN_MASK: u32 = 0x000000f0
+const MVFR1_FPDNAN_SHIFT: u32 = 4
+const MVFR1_FPFTZ_MASK: u32 = 0x0000000f
+const MVFR1_FPFTZ_SHIFT: u32 = 0
+
+// Describes the features provided by the Floating-point Extension
+const MVFR2_OFFSET: u32 = 0x0000ef48
+const MVFR2_FPMISC_MASK: u32 = 0x000000f0
+const MVFR2_FPMISC_SHIFT: u32 = 4
+
+// Provides CoreSight discovery information for the SCS
+const DDEVARCH_OFFSET: u32 = 0x0000efbc
+const DDEVARCH_ARCHITECT_MASK: u32 = 0xffe00000
+const DDEVARCH_ARCHITECT_SHIFT: u32 = 21
+const DDEVARCH_PRESENT_MASK: u32 = 0x00100000
+const DDEVARCH_PRESENT_SHIFT: u32 = 20
+const DDEVARCH_REVISION_MASK: u32 = 0x000f0000
+const DDEVARCH_REVISION_SHIFT: u32 = 16
+const DDEVARCH_ARCHVER_MASK: u32 = 0x0000f000
+const DDEVARCH_ARCHVER_SHIFT: u32 = 12
+const DDEVARCH_ARCHPART_MASK: u32 = 0x00000fff
+const DDEVARCH_ARCHPART_SHIFT: u32 = 0
+
+// Provides CoreSight discovery information for the SCS
+const DDEVTYPE_OFFSET: u32 = 0x0000efcc
+const DDEVTYPE_SUB_MASK: u32 = 0x000000f0
+const DDEVTYPE_SUB_SHIFT: u32 = 4
+const DDEVTYPE_MAJOR_MASK: u32 = 0x0000000f
+const DDEVTYPE_MAJOR_SHIFT: u32 = 0
+
+// Provides CoreSight discovery information for the SCS
+const DPIDR4_OFFSET: u32 = 0x0000efd0
+const DPIDR4_SIZE_MASK: u32 = 0x000000f0
+const DPIDR4_SIZE_SHIFT: u32 = 4
+const DPIDR4_DES_2_MASK: u32 = 0x0000000f
+const DPIDR4_DES_2_SHIFT: u32 = 0
+
+// Provides CoreSight discovery information for the SCS
+const DPIDR5_OFFSET: u32 = 0x0000efd4
+
+// Provides CoreSight discovery information for the SCS
+const DPIDR6_OFFSET: u32 = 0x0000efd8
+
+// Provides CoreSight discovery information for the SCS
+const DPIDR7_OFFSET: u32 = 0x0000efdc
+
+// Provides CoreSight discovery information for the SCS
+const DPIDR0_OFFSET: u32 = 0x0000efe0
+const DPIDR0_PART_0_MASK: u32 = 0x000000ff
+const DPIDR0_PART_0_SHIFT: u32 = 0
+
+// Provides CoreSight discovery information for the SCS
+const DPIDR1_OFFSET: u32 = 0x0000efe4
+const DPIDR1_DES_0_MASK: u32 = 0x000000f0
+const DPIDR1_DES_0_SHIFT: u32 = 4
+const DPIDR1_PART_1_MASK: u32 = 0x0000000f
+const DPIDR1_PART_1_SHIFT: u32 = 0
+
+// Provides CoreSight discovery information for the SCS
+const DPIDR2_OFFSET: u32 = 0x0000efe8
+const DPIDR2_REVISION_MASK: u32 = 0x000000f0
+const DPIDR2_REVISION_SHIFT: u32 = 4
+const DPIDR2_JEDEC_MASK: u32 = 0x00000008
+const DPIDR2_JEDEC_SHIFT: u32 = 3
+const DPIDR2_DES_1_MASK: u32 = 0x00000007
+const DPIDR2_DES_1_SHIFT: u32 = 0
+
+// Provides CoreSight discovery information for the SCS
+const DPIDR3_OFFSET: u32 = 0x0000efec
+const DPIDR3_REVAND_MASK: u32 = 0x000000f0
+const DPIDR3_REVAND_SHIFT: u32 = 4
+const DPIDR3_CMOD_MASK: u32 = 0x0000000f
+const DPIDR3_CMOD_SHIFT: u32 = 0
+
+// Provides CoreSight discovery information for the SCS
+const DCIDR0_OFFSET: u32 = 0x0000eff0
+const DCIDR0_PRMBL_0_MASK: u32 = 0x000000ff
+const DCIDR0_PRMBL_0_SHIFT: u32 = 0
+
+// Provides CoreSight discovery information for the SCS
+const DCIDR1_OFFSET: u32 = 0x0000eff4
+const DCIDR1_CLASS_MASK: u32 = 0x000000f0
+const DCIDR1_CLASS_SHIFT: u32 = 4
+const DCIDR1_PRMBL_1_MASK: u32 = 0x0000000f
+const DCIDR1_PRMBL_1_SHIFT: u32 = 0
+
+// Provides CoreSight discovery information for the SCS
+const DCIDR2_OFFSET: u32 = 0x0000eff8
+const DCIDR2_PRMBL_2_MASK: u32 = 0x000000ff
+const DCIDR2_PRMBL_2_SHIFT: u32 = 0
+
+// Provides CoreSight discovery information for the SCS
+const DCIDR3_OFFSET: u32 = 0x0000effc
+const DCIDR3_PRMBL_3_MASK: u32 = 0x000000ff
+const DCIDR3_PRMBL_3_SHIFT: u32 = 0
+
+// Programming Control Register
+const TRCPRGCTLR_OFFSET: u32 = 0x00041004
+const TRCPRGCTLR_EN_MASK: u32 = 0x00000001
+const TRCPRGCTLR_EN_SHIFT: u32 = 0
+
+// The TRCSTATR indicates the ETM-Teal status
+const TRCSTATR_OFFSET: u32 = 0x0004100c
+const TRCSTATR_PMSTABLE_MASK: u32 = 0x00000002
+const TRCSTATR_PMSTABLE_SHIFT: u32 = 1
+const TRCSTATR_IDLE_MASK: u32 = 0x00000001
+const TRCSTATR_IDLE_SHIFT: u32 = 0
+
+// The TRCCONFIGR sets the basic tracing options for the trace unit
+const TRCCONFIGR_OFFSET: u32 = 0x00041010
+const TRCCONFIGR_RS_MASK: u32 = 0x00001000
+const TRCCONFIGR_RS_SHIFT: u32 = 12
+const TRCCONFIGR_TS_MASK: u32 = 0x00000800
+const TRCCONFIGR_TS_SHIFT: u32 = 11
+const TRCCONFIGR_COND_MASK: u32 = 0x000007e0
+const TRCCONFIGR_COND_SHIFT: u32 = 5
+const TRCCONFIGR_CCI_MASK: u32 = 0x00000010
+const TRCCONFIGR_CCI_SHIFT: u32 = 4
+const TRCCONFIGR_BB_MASK: u32 = 0x00000008
+const TRCCONFIGR_BB_SHIFT: u32 = 3
+
+// The TRCEVENTCTL0R controls the tracing of events in the trace stream. The events also drive the
+// ETM-Teal external outputs.
+const TRCEVENTCTL0R_OFFSET: u32 = 0x00041020
+const TRCEVENTCTL0R_TYPE1_MASK: u32 = 0x00008000
+const TRCEVENTCTL0R_TYPE1_SHIFT: u32 = 15
+const TRCEVENTCTL0R_SEL1_MASK: u32 = 0x00000700
+const TRCEVENTCTL0R_SEL1_SHIFT: u32 = 8
+const TRCEVENTCTL0R_TYPE0_MASK: u32 = 0x00000080
+const TRCEVENTCTL0R_TYPE0_SHIFT: u32 = 7
+const TRCEVENTCTL0R_SEL0_MASK: u32 = 0x00000007
+const TRCEVENTCTL0R_SEL0_SHIFT: u32 = 0
+
+// The TRCEVENTCTL1R controls how the events selected by TRCEVENTCTL0R behave
+const TRCEVENTCTL1R_OFFSET: u32 = 0x00041024
+const TRCEVENTCTL1R_LPOVERRIDE_MASK: u32 = 0x00001000
+const TRCEVENTCTL1R_LPOVERRIDE_SHIFT: u32 = 12
+const TRCEVENTCTL1R_ATB_MASK: u32 = 0x00000800
+const TRCEVENTCTL1R_ATB_SHIFT: u32 = 11
+const TRCEVENTCTL1R_INSTEN1_MASK: u32 = 0x00000002
+const TRCEVENTCTL1R_INSTEN1_SHIFT: u32 = 1
+const TRCEVENTCTL1R_INSTEN0_MASK: u32 = 0x00000001
+const TRCEVENTCTL1R_INSTEN0_SHIFT: u32 = 0
+
+// The TRCSTALLCTLR enables ETM-Teal to stall the processor if the ETM-Teal FIFO goes over the
+// programmed level to minimize risk of overflow
+const TRCSTALLCTLR_OFFSET: u32 = 0x0004102c
+const TRCSTALLCTLR_INSTPRIORITY_MASK: u32 = 0x00000400
+const TRCSTALLCTLR_INSTPRIORITY_SHIFT: u32 = 10
+const TRCSTALLCTLR_ISTALL_MASK: u32 = 0x00000100
+const TRCSTALLCTLR_ISTALL_SHIFT: u32 = 8
+const TRCSTALLCTLR_LEVEL_MASK: u32 = 0x0000000c
+const TRCSTALLCTLR_LEVEL_SHIFT: u32 = 2
+
+// The TRCTSCTLR controls the insertion of global timestamps into the trace stream. A timestamp is
+// always inserted into the instruction trace stream
+const TRCTSCTLR_OFFSET: u32 = 0x00041030
+const TRCTSCTLR_TYPE0_MASK: u32 = 0x00000080
+const TRCTSCTLR_TYPE0_SHIFT: u32 = 7
+const TRCTSCTLR_SEL0_MASK: u32 = 0x00000003
+const TRCTSCTLR_SEL0_SHIFT: u32 = 0
+
+// The TRCSYNCPR specifies the period of trace synchronization of the trace streams. TRCSYNCPR
+// defines a number of bytes of trace between requests for trace synchronization. This value is
+// always a power of two
+const TRCSYNCPR_OFFSET: u32 = 0x00041034
+const TRCSYNCPR_PERIOD_MASK: u32 = 0x0000001f
+const TRCSYNCPR_PERIOD_SHIFT: u32 = 0
+
+// The TRCCCCTLR sets the threshold value for instruction trace cycle counting. The threshold
+// represents the minimum interval between cycle count trace packets
+const TRCCCCTLR_OFFSET: u32 = 0x00041038
+const TRCCCCTLR_THRESHOLD_MASK: u32 = 0x00000fff
+const TRCCCCTLR_THRESHOLD_SHIFT: u32 = 0
+
+// The TRCVICTLR controls instruction trace filtering
+const TRCVICTLR_OFFSET: u32 = 0x00041080
+const TRCVICTLR_EXLEVEL_S3_MASK: u32 = 0x00080000
+const TRCVICTLR_EXLEVEL_S3_SHIFT: u32 = 19
+const TRCVICTLR_EXLEVEL_S0_MASK: u32 = 0x00010000
+const TRCVICTLR_EXLEVEL_S0_SHIFT: u32 = 16
+const TRCVICTLR_TRCERR_MASK: u32 = 0x00000800
+const TRCVICTLR_TRCERR_SHIFT: u32 = 11
+const TRCVICTLR_TRCRESET_MASK: u32 = 0x00000400
+const TRCVICTLR_TRCRESET_SHIFT: u32 = 10
+const TRCVICTLR_SSSTATUS_MASK: u32 = 0x00000200
+const TRCVICTLR_SSSTATUS_SHIFT: u32 = 9
+const TRCVICTLR_TYPE0_MASK: u32 = 0x00000080
+const TRCVICTLR_TYPE0_SHIFT: u32 = 7
+const TRCVICTLR_SEL0_MASK: u32 = 0x00000003
+const TRCVICTLR_SEL0_SHIFT: u32 = 0
+
+// The TRCCNTRLDVR defines the reload value for the reduced function counter
+const TRCCNTRLDVR0_OFFSET: u32 = 0x00041140
+const TRCCNTRLDVR0_VALUE_MASK: u32 = 0x0000ffff
+const TRCCNTRLDVR0_VALUE_SHIFT: u32 = 0
+
+// TRCIDR8
+const TRCIDR8_OFFSET: u32 = 0x00041180
+const TRCIDR8_MAXSPEC_MASK: u32 = 0xffffffff
+const TRCIDR8_MAXSPEC_SHIFT: u32 = 0
+
+// TRCIDR9
+const TRCIDR9_OFFSET: u32 = 0x00041184
+const TRCIDR9_NUMP0KEY_MASK: u32 = 0xffffffff
+const TRCIDR9_NUMP0KEY_SHIFT: u32 = 0
+
+// TRCIDR10
+const TRCIDR10_OFFSET: u32 = 0x00041188
+const TRCIDR10_NUMP1KEY_MASK: u32 = 0xffffffff
+const TRCIDR10_NUMP1KEY_SHIFT: u32 = 0
+
+// TRCIDR11
+const TRCIDR11_OFFSET: u32 = 0x0004118c
+const TRCIDR11_NUMP1SPC_MASK: u32 = 0xffffffff
+const TRCIDR11_NUMP1SPC_SHIFT: u32 = 0
+
+// TRCIDR12
+const TRCIDR12_OFFSET: u32 = 0x00041190
+const TRCIDR12_NUMCONDKEY_MASK: u32 = 0xffffffff
+const TRCIDR12_NUMCONDKEY_SHIFT: u32 = 0
+
+// TRCIDR13
+const TRCIDR13_OFFSET: u32 = 0x00041194
+const TRCIDR13_NUMCONDSPC_MASK: u32 = 0xffffffff
+const TRCIDR13_NUMCONDSPC_SHIFT: u32 = 0
+
+// The TRCIMSPEC shows the presence of any IMPLEMENTATION SPECIFIC features, and enables any
+// features that are provided
+const TRCIMSPEC_OFFSET: u32 = 0x000411c0
+const TRCIMSPEC_SUPPORT_MASK: u32 = 0x0000000f
+const TRCIMSPEC_SUPPORT_SHIFT: u32 = 0
+
+// TRCIDR0
+const TRCIDR0_OFFSET: u32 = 0x000411e0
+const TRCIDR0_COMMOPT_MASK: u32 = 0x20000000
+const TRCIDR0_COMMOPT_SHIFT: u32 = 29
+const TRCIDR0_TSSIZE_MASK: u32 = 0x1f000000
+const TRCIDR0_TSSIZE_SHIFT: u32 = 24
+const TRCIDR0_TRCEXDATA_MASK: u32 = 0x00020000
+const TRCIDR0_TRCEXDATA_SHIFT: u32 = 17
+const TRCIDR0_QSUPP_MASK: u32 = 0x00018000
+const TRCIDR0_QSUPP_SHIFT: u32 = 15
+const TRCIDR0_QFILT_MASK: u32 = 0x00004000
+const TRCIDR0_QFILT_SHIFT: u32 = 14
+const TRCIDR0_CONDTYPE_MASK: u32 = 0x00003000
+const TRCIDR0_CONDTYPE_SHIFT: u32 = 12
+const TRCIDR0_NUMEVENT_MASK: u32 = 0x00000c00
+const TRCIDR0_NUMEVENT_SHIFT: u32 = 10
+const TRCIDR0_RETSTACK_MASK: u32 = 0x00000200
+const TRCIDR0_RETSTACK_SHIFT: u32 = 9
+const TRCIDR0_TRCCCI_MASK: u32 = 0x00000080
+const TRCIDR0_TRCCCI_SHIFT: u32 = 7
+const TRCIDR0_TRCCOND_MASK: u32 = 0x00000040
+const TRCIDR0_TRCCOND_SHIFT: u32 = 6
+const TRCIDR0_TRCBB_MASK: u32 = 0x00000020
+const TRCIDR0_TRCBB_SHIFT: u32 = 5
+const TRCIDR0_TRCDATA_MASK: u32 = 0x00000018
+const TRCIDR0_TRCDATA_SHIFT: u32 = 3
+const TRCIDR0_INSTP0_MASK: u32 = 0x00000006
+const TRCIDR0_INSTP0_SHIFT: u32 = 1
+const TRCIDR0_RES1_MASK: u32 = 0x00000001
+const TRCIDR0_RES1_SHIFT: u32 = 0
+
+// TRCIDR1
+const TRCIDR1_OFFSET: u32 = 0x000411e4
+const TRCIDR1_DESIGNER_MASK: u32 = 0xff000000
+const TRCIDR1_DESIGNER_SHIFT: u32 = 24
+const TRCIDR1_RES1_MASK: u32 = 0x0000f000
+const TRCIDR1_RES1_SHIFT: u32 = 12
+const TRCIDR1_TRCARCHMAJ_MASK: u32 = 0x00000f00
+const TRCIDR1_TRCARCHMAJ_SHIFT: u32 = 8
+const TRCIDR1_TRCARCHMIN_MASK: u32 = 0x000000f0
+const TRCIDR1_TRCARCHMIN_SHIFT: u32 = 4
+const TRCIDR1_REVISION_MASK: u32 = 0x0000000f
+const TRCIDR1_REVISION_SHIFT: u32 = 0
+
+// TRCIDR2
+const TRCIDR2_OFFSET: u32 = 0x000411e8
+const TRCIDR2_CCSIZE_MASK: u32 = 0x1e000000
+const TRCIDR2_CCSIZE_SHIFT: u32 = 25
+const TRCIDR2_DVSIZE_MASK: u32 = 0x01f00000
+const TRCIDR2_DVSIZE_SHIFT: u32 = 20
+const TRCIDR2_DASIZE_MASK: u32 = 0x000f8000
+const TRCIDR2_DASIZE_SHIFT: u32 = 15
+const TRCIDR2_VMIDSIZE_MASK: u32 = 0x00007c00
+const TRCIDR2_VMIDSIZE_SHIFT: u32 = 10
+const TRCIDR2_CIDSIZE_MASK: u32 = 0x000003e0
+const TRCIDR2_CIDSIZE_SHIFT: u32 = 5
+const TRCIDR2_IASIZE_MASK: u32 = 0x0000001f
+const TRCIDR2_IASIZE_SHIFT: u32 = 0
+
+// TRCIDR3
+const TRCIDR3_OFFSET: u32 = 0x000411ec
+const TRCIDR3_NOOVERFLOW_MASK: u32 = 0x80000000
+const TRCIDR3_NOOVERFLOW_SHIFT: u32 = 31
+const TRCIDR3_NUMPROC_MASK: u32 = 0x70000000
+const TRCIDR3_NUMPROC_SHIFT: u32 = 28
+const TRCIDR3_SYSSTALL_MASK: u32 = 0x08000000
+const TRCIDR3_SYSSTALL_SHIFT: u32 = 27
+const TRCIDR3_STALLCTL_MASK: u32 = 0x04000000
+const TRCIDR3_STALLCTL_SHIFT: u32 = 26
+const TRCIDR3_SYNCPR_MASK: u32 = 0x02000000
+const TRCIDR3_SYNCPR_SHIFT: u32 = 25
+const TRCIDR3_TRCERR_MASK: u32 = 0x01000000
+const TRCIDR3_TRCERR_SHIFT: u32 = 24
+const TRCIDR3_EXLEVEL_NS_MASK: u32 = 0x00f00000
+const TRCIDR3_EXLEVEL_NS_SHIFT: u32 = 20
+const TRCIDR3_EXLEVEL_S_MASK: u32 = 0x000f0000
+const TRCIDR3_EXLEVEL_S_SHIFT: u32 = 16
+const TRCIDR3_CCITMIN_MASK: u32 = 0x00000fff
+const TRCIDR3_CCITMIN_SHIFT: u32 = 0
+
+// TRCIDR4
+const TRCIDR4_OFFSET: u32 = 0x000411f0
+const TRCIDR4_NUMVMIDC_MASK: u32 = 0xf0000000
+const TRCIDR4_NUMVMIDC_SHIFT: u32 = 28
+const TRCIDR4_NUMCIDC_MASK: u32 = 0x0f000000
+const TRCIDR4_NUMCIDC_SHIFT: u32 = 24
+const TRCIDR4_NUMSSCC_MASK: u32 = 0x00f00000
+const TRCIDR4_NUMSSCC_SHIFT: u32 = 20
+const TRCIDR4_NUMRSPAIR_MASK: u32 = 0x000f0000
+const TRCIDR4_NUMRSPAIR_SHIFT: u32 = 16
+const TRCIDR4_NUMPC_MASK: u32 = 0x0000f000
+const TRCIDR4_NUMPC_SHIFT: u32 = 12
+const TRCIDR4_SUPPDAC_MASK: u32 = 0x00000100
+const TRCIDR4_SUPPDAC_SHIFT: u32 = 8
+const TRCIDR4_NUMDVC_MASK: u32 = 0x000000f0
+const TRCIDR4_NUMDVC_SHIFT: u32 = 4
+const TRCIDR4_NUMACPAIRS_MASK: u32 = 0x0000000f
+const TRCIDR4_NUMACPAIRS_SHIFT: u32 = 0
+
+// TRCIDR5
+const TRCIDR5_OFFSET: u32 = 0x000411f4
+const TRCIDR5_REDFUNCNTR_MASK: u32 = 0x80000000
+const TRCIDR5_REDFUNCNTR_SHIFT: u32 = 31
+const TRCIDR5_NUMCNTR_MASK: u32 = 0x70000000
+const TRCIDR5_NUMCNTR_SHIFT: u32 = 28
+const TRCIDR5_NUMSEQSTATE_MASK: u32 = 0x0e000000
+const TRCIDR5_NUMSEQSTATE_SHIFT: u32 = 25
+const TRCIDR5_LPOVERRIDE_MASK: u32 = 0x00800000
+const TRCIDR5_LPOVERRIDE_SHIFT: u32 = 23
+const TRCIDR5_ATBTRIG_MASK: u32 = 0x00400000
+const TRCIDR5_ATBTRIG_SHIFT: u32 = 22
+const TRCIDR5_TRACEIDSIZE_MASK: u32 = 0x003f0000
+const TRCIDR5_TRACEIDSIZE_SHIFT: u32 = 16
+const TRCIDR5_NUMEXTINSEL_MASK: u32 = 0x00000e00
+const TRCIDR5_NUMEXTINSEL_SHIFT: u32 = 9
+const TRCIDR5_NUMEXTIN_MASK: u32 = 0x000001ff
+const TRCIDR5_NUMEXTIN_SHIFT: u32 = 0
+
+// TRCIDR6
+const TRCIDR6_OFFSET: u32 = 0x000411f8
+
+// TRCIDR7
+const TRCIDR7_OFFSET: u32 = 0x000411fc
+
+// The TRCRSCTLR controls the trace resources
+const TRCRSCTLR2_OFFSET: u32 = 0x00041208
+const TRCRSCTLR2_PAIRINV_MASK: u32 = 0x00200000
+const TRCRSCTLR2_PAIRINV_SHIFT: u32 = 21
+const TRCRSCTLR2_INV_MASK: u32 = 0x00100000
+const TRCRSCTLR2_INV_SHIFT: u32 = 20
+const TRCRSCTLR2_GROUP_MASK: u32 = 0x00070000
+const TRCRSCTLR2_GROUP_SHIFT: u32 = 16
+const TRCRSCTLR2_SELECT_MASK: u32 = 0x000000ff
+const TRCRSCTLR2_SELECT_SHIFT: u32 = 0
+
+// The TRCRSCTLR controls the trace resources
+const TRCRSCTLR3_OFFSET: u32 = 0x0004120c
+const TRCRSCTLR3_PAIRINV_MASK: u32 = 0x00200000
+const TRCRSCTLR3_PAIRINV_SHIFT: u32 = 21
+const TRCRSCTLR3_INV_MASK: u32 = 0x00100000
+const TRCRSCTLR3_INV_SHIFT: u32 = 20
+const TRCRSCTLR3_GROUP_MASK: u32 = 0x00070000
+const TRCRSCTLR3_GROUP_SHIFT: u32 = 16
+const TRCRSCTLR3_SELECT_MASK: u32 = 0x000000ff
+const TRCRSCTLR3_SELECT_SHIFT: u32 = 0
+
+// Controls the corresponding single-shot comparator resource
+const TRCSSCSR_OFFSET: u32 = 0x000412a0
+const TRCSSCSR_STATUS_MASK: u32 = 0x80000000
+const TRCSSCSR_STATUS_SHIFT: u32 = 31
+const TRCSSCSR_PC_MASK: u32 = 0x00000008
+const TRCSSCSR_PC_SHIFT: u32 = 3
+const TRCSSCSR_DV_MASK: u32 = 0x00000004
+const TRCSSCSR_DV_SHIFT: u32 = 2
+const TRCSSCSR_DA_MASK: u32 = 0x00000002
+const TRCSSCSR_DA_SHIFT: u32 = 1
+const TRCSSCSR_INST_MASK: u32 = 0x00000001
+const TRCSSCSR_INST_SHIFT: u32 = 0
+
+// Selects the PE comparator inputs for Single-shot control
+const TRCSSPCICR_OFFSET: u32 = 0x000412c0
+const TRCSSPCICR_PC_MASK: u32 = 0x0000000f
+const TRCSSPCICR_PC_SHIFT: u32 = 0
+
+// Requests the system to provide power to the trace unit
+const TRCPDCR_OFFSET: u32 = 0x00041310
+const TRCPDCR_PU_MASK: u32 = 0x00000008
+const TRCPDCR_PU_SHIFT: u32 = 3
+
+// Returns the following information about the trace unit: - OS Lock status. - Core power domain
+// status. - Power interruption status
+const TRCPDSR_OFFSET: u32 = 0x00041314
+const TRCPDSR_OSLK_MASK: u32 = 0x00000020
+const TRCPDSR_OSLK_SHIFT: u32 = 5
+const TRCPDSR_STICKYPD_MASK: u32 = 0x00000002
+const TRCPDSR_STICKYPD_SHIFT: u32 = 1
+const TRCPDSR_POWER_MASK: u32 = 0x00000001
+const TRCPDSR_POWER_SHIFT: u32 = 0
+
+// Trace Integration ATB Identification Register
+const TRCITATBIDR_OFFSET: u32 = 0x00041ee4
+const TRCITATBIDR_ID_MASK: u32 = 0x0000007f
+const TRCITATBIDR_ID_SHIFT: u32 = 0
+
+// Trace Integration Instruction ATB In Register
+const TRCITIATBINR_OFFSET: u32 = 0x00041ef4
+const TRCITIATBINR_AFVALIDM_MASK: u32 = 0x00000002
+const TRCITIATBINR_AFVALIDM_SHIFT: u32 = 1
+const TRCITIATBINR_ATREADYM_MASK: u32 = 0x00000001
+const TRCITIATBINR_ATREADYM_SHIFT: u32 = 0
+
+// Trace Integration Instruction ATB Out Register
+const TRCITIATBOUTR_OFFSET: u32 = 0x00041efc
+const TRCITIATBOUTR_AFREADY_MASK: u32 = 0x00000002
+const TRCITIATBOUTR_AFREADY_SHIFT: u32 = 1
+const TRCITIATBOUTR_ATVALID_MASK: u32 = 0x00000001
+const TRCITIATBOUTR_ATVALID_SHIFT: u32 = 0
+
+// Claim Tag Set Register
+const TRCCLAIMSET_OFFSET: u32 = 0x00041fa0
+const TRCCLAIMSET_SET3_MASK: u32 = 0x00000008
+const TRCCLAIMSET_SET3_SHIFT: u32 = 3
+const TRCCLAIMSET_SET2_MASK: u32 = 0x00000004
+const TRCCLAIMSET_SET2_SHIFT: u32 = 2
+const TRCCLAIMSET_SET1_MASK: u32 = 0x00000002
+const TRCCLAIMSET_SET1_SHIFT: u32 = 1
+const TRCCLAIMSET_SET0_MASK: u32 = 0x00000001
+const TRCCLAIMSET_SET0_SHIFT: u32 = 0
+
+// Claim Tag Clear Register
+const TRCCLAIMCLR_OFFSET: u32 = 0x00041fa4
+const TRCCLAIMCLR_CLR3_MASK: u32 = 0x00000008
+const TRCCLAIMCLR_CLR3_SHIFT: u32 = 3
+const TRCCLAIMCLR_CLR2_MASK: u32 = 0x00000004
+const TRCCLAIMCLR_CLR2_SHIFT: u32 = 2
+const TRCCLAIMCLR_CLR1_MASK: u32 = 0x00000002
+const TRCCLAIMCLR_CLR1_SHIFT: u32 = 1
+const TRCCLAIMCLR_CLR0_MASK: u32 = 0x00000001
+const TRCCLAIMCLR_CLR0_SHIFT: u32 = 0
+
+// Returns the level of tracing that the trace unit can support
+const TRCAUTHSTATUS_OFFSET: u32 = 0x00041fb8
+const TRCAUTHSTATUS_SNID_MASK: u32 = 0x000000c0
+const TRCAUTHSTATUS_SNID_SHIFT: u32 = 6
+const TRCAUTHSTATUS_SID_MASK: u32 = 0x00000030
+const TRCAUTHSTATUS_SID_SHIFT: u32 = 4
+const TRCAUTHSTATUS_NSNID_MASK: u32 = 0x0000000c
+const TRCAUTHSTATUS_NSNID_SHIFT: u32 = 2
+const TRCAUTHSTATUS_NSID_MASK: u32 = 0x00000003
+const TRCAUTHSTATUS_NSID_SHIFT: u32 = 0
+
+// TRCDEVARCH
+const TRCDEVARCH_OFFSET: u32 = 0x00041fbc
+const TRCDEVARCH_ARCHITECT_MASK: u32 = 0xffe00000
+const TRCDEVARCH_ARCHITECT_SHIFT: u32 = 21
+const TRCDEVARCH_PRESENT_MASK: u32 = 0x00100000
+const TRCDEVARCH_PRESENT_SHIFT: u32 = 20
+const TRCDEVARCH_REVISION_MASK: u32 = 0x000f0000
+const TRCDEVARCH_REVISION_SHIFT: u32 = 16
+const TRCDEVARCH_ARCHID_MASK: u32 = 0x0000ffff
+const TRCDEVARCH_ARCHID_SHIFT: u32 = 0
+
+// TRCDEVID
+const TRCDEVID_OFFSET: u32 = 0x00041fc8
+
+// TRCDEVTYPE
+const TRCDEVTYPE_OFFSET: u32 = 0x00041fcc
+const TRCDEVTYPE_SUB_MASK: u32 = 0x000000f0
+const TRCDEVTYPE_SUB_SHIFT: u32 = 4
+const TRCDEVTYPE_MAJOR_MASK: u32 = 0x0000000f
+const TRCDEVTYPE_MAJOR_SHIFT: u32 = 0
+
+// TRCPIDR4
+const TRCPIDR4_OFFSET: u32 = 0x00041fd0
+const TRCPIDR4_SIZE_MASK: u32 = 0x000000f0
+const TRCPIDR4_SIZE_SHIFT: u32 = 4
+const TRCPIDR4_DES_2_MASK: u32 = 0x0000000f
+const TRCPIDR4_DES_2_SHIFT: u32 = 0
+
+// TRCPIDR5
+const TRCPIDR5_OFFSET: u32 = 0x00041fd4
+
+// TRCPIDR6
+const TRCPIDR6_OFFSET: u32 = 0x00041fd8
+
+// TRCPIDR7
+const TRCPIDR7_OFFSET: u32 = 0x00041fdc
+
+// TRCPIDR0
+const TRCPIDR0_OFFSET: u32 = 0x00041fe0
+const TRCPIDR0_PART_0_MASK: u32 = 0x000000ff
+const TRCPIDR0_PART_0_SHIFT: u32 = 0
+
+// TRCPIDR1
+const TRCPIDR1_OFFSET: u32 = 0x00041fe4
+const TRCPIDR1_DES_0_MASK: u32 = 0x000000f0
+const TRCPIDR1_DES_0_SHIFT: u32 = 4
+const TRCPIDR1_PART_0_MASK: u32 = 0x0000000f
+const TRCPIDR1_PART_0_SHIFT: u32 = 0
+
+// TRCPIDR2
+const TRCPIDR2_OFFSET: u32 = 0x00041fe8
+const TRCPIDR2_REVISION_MASK: u32 = 0x000000f0
+const TRCPIDR2_REVISION_SHIFT: u32 = 4
+const TRCPIDR2_JEDEC_MASK: u32 = 0x00000008
+const TRCPIDR2_JEDEC_SHIFT: u32 = 3
+const TRCPIDR2_DES_0_MASK: u32 = 0x00000007
+const TRCPIDR2_DES_0_SHIFT: u32 = 0
+
+// TRCPIDR3
+const TRCPIDR3_OFFSET: u32 = 0x00041fec
+const TRCPIDR3_REVAND_MASK: u32 = 0x000000f0
+const TRCPIDR3_REVAND_SHIFT: u32 = 4
+const TRCPIDR3_CMOD_MASK: u32 = 0x0000000f
+const TRCPIDR3_CMOD_SHIFT: u32 = 0
+
+// TRCCIDR0
+const TRCCIDR0_OFFSET: u32 = 0x00041ff0
+const TRCCIDR0_PRMBL_0_MASK: u32 = 0x000000ff
+const TRCCIDR0_PRMBL_0_SHIFT: u32 = 0
+
+// TRCCIDR1
+const TRCCIDR1_OFFSET: u32 = 0x00041ff4
+const TRCCIDR1_CLASS_MASK: u32 = 0x000000f0
+const TRCCIDR1_CLASS_SHIFT: u32 = 4
+const TRCCIDR1_PRMBL_1_MASK: u32 = 0x0000000f
+const TRCCIDR1_PRMBL_1_SHIFT: u32 = 0
+
+// TRCCIDR2
+const TRCCIDR2_OFFSET: u32 = 0x00041ff8
+const TRCCIDR2_PRMBL_2_MASK: u32 = 0x000000ff
+const TRCCIDR2_PRMBL_2_SHIFT: u32 = 0
+
+// TRCCIDR3
+const TRCCIDR3_OFFSET: u32 = 0x00041ffc
+const TRCCIDR3_PRMBL_3_MASK: u32 = 0x000000ff
+const TRCCIDR3_PRMBL_3_SHIFT: u32 = 0
+
+// CTI Control Register
+const CTICONTROL_OFFSET: u32 = 0x00042000
+const CTICONTROL_GLBEN_MASK: u32 = 0x00000001
+const CTICONTROL_GLBEN_SHIFT: u32 = 0
+
+// CTI Interrupt Acknowledge Register
+const CTIINTACK_OFFSET: u32 = 0x00042010
+const CTIINTACK_INTACK_MASK: u32 = 0x000000ff
+const CTIINTACK_INTACK_SHIFT: u32 = 0
+
+// CTI Application Trigger Set Register
+const CTIAPPSET_OFFSET: u32 = 0x00042014
+const CTIAPPSET_APPSET_MASK: u32 = 0x0000000f
+const CTIAPPSET_APPSET_SHIFT: u32 = 0
+
+// CTI Application Trigger Clear Register
+const CTIAPPCLEAR_OFFSET: u32 = 0x00042018
+const CTIAPPCLEAR_APPCLEAR_MASK: u32 = 0x0000000f
+const CTIAPPCLEAR_APPCLEAR_SHIFT: u32 = 0
+
+// CTI Application Pulse Register
+const CTIAPPPULSE_OFFSET: u32 = 0x0004201c
+const CTIAPPPULSE_APPULSE_MASK: u32 = 0x0000000f
+const CTIAPPPULSE_APPULSE_SHIFT: u32 = 0
+
+// CTI Trigger to Channel Enable Registers
+const CTIINEN0_OFFSET: u32 = 0x00042020
+const CTIINEN0_TRIGINEN_MASK: u32 = 0x0000000f
+const CTIINEN0_TRIGINEN_SHIFT: u32 = 0
+
+// CTI Trigger to Channel Enable Registers
+const CTIINEN1_OFFSET: u32 = 0x00042024
+const CTIINEN1_TRIGINEN_MASK: u32 = 0x0000000f
+const CTIINEN1_TRIGINEN_SHIFT: u32 = 0
+
+// CTI Trigger to Channel Enable Registers
+const CTIINEN2_OFFSET: u32 = 0x00042028
+const CTIINEN2_TRIGINEN_MASK: u32 = 0x0000000f
+const CTIINEN2_TRIGINEN_SHIFT: u32 = 0
+
+// CTI Trigger to Channel Enable Registers
+const CTIINEN3_OFFSET: u32 = 0x0004202c
+const CTIINEN3_TRIGINEN_MASK: u32 = 0x0000000f
+const CTIINEN3_TRIGINEN_SHIFT: u32 = 0
+
+// CTI Trigger to Channel Enable Registers
+const CTIINEN4_OFFSET: u32 = 0x00042030
+const CTIINEN4_TRIGINEN_MASK: u32 = 0x0000000f
+const CTIINEN4_TRIGINEN_SHIFT: u32 = 0
+
+// CTI Trigger to Channel Enable Registers
+const CTIINEN5_OFFSET: u32 = 0x00042034
+const CTIINEN5_TRIGINEN_MASK: u32 = 0x0000000f
+const CTIINEN5_TRIGINEN_SHIFT: u32 = 0
+
+// CTI Trigger to Channel Enable Registers
+const CTIINEN6_OFFSET: u32 = 0x00042038
+const CTIINEN6_TRIGINEN_MASK: u32 = 0x0000000f
+const CTIINEN6_TRIGINEN_SHIFT: u32 = 0
+
+// CTI Trigger to Channel Enable Registers
+const CTIINEN7_OFFSET: u32 = 0x0004203c
+const CTIINEN7_TRIGINEN_MASK: u32 = 0x0000000f
+const CTIINEN7_TRIGINEN_SHIFT: u32 = 0
+
+// CTI Trigger to Channel Enable Registers
+const CTIOUTEN0_OFFSET: u32 = 0x000420a0
+const CTIOUTEN0_TRIGOUTEN_MASK: u32 = 0x0000000f
+const CTIOUTEN0_TRIGOUTEN_SHIFT: u32 = 0
+
+// CTI Trigger to Channel Enable Registers
+const CTIOUTEN1_OFFSET: u32 = 0x000420a4
+const CTIOUTEN1_TRIGOUTEN_MASK: u32 = 0x0000000f
+const CTIOUTEN1_TRIGOUTEN_SHIFT: u32 = 0
+
+// CTI Trigger to Channel Enable Registers
+const CTIOUTEN2_OFFSET: u32 = 0x000420a8
+const CTIOUTEN2_TRIGOUTEN_MASK: u32 = 0x0000000f
+const CTIOUTEN2_TRIGOUTEN_SHIFT: u32 = 0
+
+// CTI Trigger to Channel Enable Registers
+const CTIOUTEN3_OFFSET: u32 = 0x000420ac
+const CTIOUTEN3_TRIGOUTEN_MASK: u32 = 0x0000000f
+const CTIOUTEN3_TRIGOUTEN_SHIFT: u32 = 0
+
+// CTI Trigger to Channel Enable Registers
+const CTIOUTEN4_OFFSET: u32 = 0x000420b0
+const CTIOUTEN4_TRIGOUTEN_MASK: u32 = 0x0000000f
+const CTIOUTEN4_TRIGOUTEN_SHIFT: u32 = 0
+
+// CTI Trigger to Channel Enable Registers
+const CTIOUTEN5_OFFSET: u32 = 0x000420b4
+const CTIOUTEN5_TRIGOUTEN_MASK: u32 = 0x0000000f
+const CTIOUTEN5_TRIGOUTEN_SHIFT: u32 = 0
+
+// CTI Trigger to Channel Enable Registers
+const CTIOUTEN6_OFFSET: u32 = 0x000420b8
+const CTIOUTEN6_TRIGOUTEN_MASK: u32 = 0x0000000f
+const CTIOUTEN6_TRIGOUTEN_SHIFT: u32 = 0
+
+// CTI Trigger to Channel Enable Registers
+const CTIOUTEN7_OFFSET: u32 = 0x000420bc
+const CTIOUTEN7_TRIGOUTEN_MASK: u32 = 0x0000000f
+const CTIOUTEN7_TRIGOUTEN_SHIFT: u32 = 0
+
+// CTI Trigger to Channel Enable Registers
+const CTITRIGINSTATUS_OFFSET: u32 = 0x00042130
+const CTITRIGINSTATUS_TRIGINSTATUS_MASK: u32 = 0x000000ff
+const CTITRIGINSTATUS_TRIGINSTATUS_SHIFT: u32 = 0
+
+// CTI Trigger In Status Register
+const CTITRIGOUTSTATUS_OFFSET: u32 = 0x00042134
+const CTITRIGOUTSTATUS_TRIGOUTSTATUS_MASK: u32 = 0x000000ff
+const CTITRIGOUTSTATUS_TRIGOUTSTATUS_SHIFT: u32 = 0
+
+// CTI Channel In Status Register
+const CTICHINSTATUS_OFFSET: u32 = 0x00042138
+const CTICHINSTATUS_CTICHOUTSTATUS_MASK: u32 = 0x0000000f
+const CTICHINSTATUS_CTICHOUTSTATUS_SHIFT: u32 = 0
+
+// Enable CTI Channel Gate register
+const CTIGATE_OFFSET: u32 = 0x00042140
+const CTIGATE_CTIGATEEN3_MASK: u32 = 0x00000008
+const CTIGATE_CTIGATEEN3_SHIFT: u32 = 3
+const CTIGATE_CTIGATEEN2_MASK: u32 = 0x00000004
+const CTIGATE_CTIGATEEN2_SHIFT: u32 = 2
+const CTIGATE_CTIGATEEN1_MASK: u32 = 0x00000002
+const CTIGATE_CTIGATEEN1_SHIFT: u32 = 1
+const CTIGATE_CTIGATEEN0_MASK: u32 = 0x00000001
+const CTIGATE_CTIGATEEN0_SHIFT: u32 = 0
+
+// External Multiplexer Control register
+const ASICCTL_OFFSET: u32 = 0x00042144
+
+// Integration Test Channel Output register
+const ITCHOUT_OFFSET: u32 = 0x00042ee4
+const ITCHOUT_CTCHOUT_MASK: u32 = 0x0000000f
+const ITCHOUT_CTCHOUT_SHIFT: u32 = 0
+
+// Integration Test Trigger Output register
+const ITTRIGOUT_OFFSET: u32 = 0x00042ee8
+const ITTRIGOUT_CTTRIGOUT_MASK: u32 = 0x000000ff
+const ITTRIGOUT_CTTRIGOUT_SHIFT: u32 = 0
+
+// Integration Test Channel Input register
+const ITCHIN_OFFSET: u32 = 0x00042ef4
+const ITCHIN_CTCHIN_MASK: u32 = 0x0000000f
+const ITCHIN_CTCHIN_SHIFT: u32 = 0
+
+// Integration Mode Control register
+const ITCTRL_OFFSET: u32 = 0x00042f00
+const ITCTRL_IME_MASK: u32 = 0x00000001
+const ITCTRL_IME_SHIFT: u32 = 0
+
+// Device Architecture register
+const DEVARCH_OFFSET: u32 = 0x00042fbc
+const DEVARCH_ARCHITECT_MASK: u32 = 0xffe00000
+const DEVARCH_ARCHITECT_SHIFT: u32 = 21
+const DEVARCH_PRESENT_MASK: u32 = 0x00100000
+const DEVARCH_PRESENT_SHIFT: u32 = 20
+const DEVARCH_REVISION_MASK: u32 = 0x000f0000
+const DEVARCH_REVISION_SHIFT: u32 = 16
+const DEVARCH_ARCHID_MASK: u32 = 0x0000ffff
+const DEVARCH_ARCHID_SHIFT: u32 = 0
+
+// Device Configuration register
+const DEVID_OFFSET: u32 = 0x00042fc8
+const DEVID_NUMCH_MASK: u32 = 0x000f0000
+const DEVID_NUMCH_SHIFT: u32 = 16
+const DEVID_NUMTRIG_MASK: u32 = 0x0000ff00
+const DEVID_NUMTRIG_SHIFT: u32 = 8
+const DEVID_EXTMUXNUM_MASK: u32 = 0x0000001f
+const DEVID_EXTMUXNUM_SHIFT: u32 = 0
+
+// Device Type Identifier register
+const DEVTYPE_OFFSET: u32 = 0x00042fcc
+const DEVTYPE_SUB_MASK: u32 = 0x000000f0
+const DEVTYPE_SUB_SHIFT: u32 = 4
+const DEVTYPE_MAJOR_MASK: u32 = 0x0000000f
+const DEVTYPE_MAJOR_SHIFT: u32 = 0
+
+// CoreSight Peripheral ID4
+const PIDR4_OFFSET: u32 = 0x00042fd0
+const PIDR4_SIZE_MASK: u32 = 0x000000f0
+const PIDR4_SIZE_SHIFT: u32 = 4
+const PIDR4_DES_2_MASK: u32 = 0x0000000f
+const PIDR4_DES_2_SHIFT: u32 = 0
+
+// CoreSight Peripheral ID5
+const PIDR5_OFFSET: u32 = 0x00042fd4
+
+// CoreSight Peripheral ID6
+const PIDR6_OFFSET: u32 = 0x00042fd8
+
+// CoreSight Peripheral ID7
+const PIDR7_OFFSET: u32 = 0x00042fdc
+
+// CoreSight Peripheral ID0
+const PIDR0_OFFSET: u32 = 0x00042fe0
+const PIDR0_PART_0_MASK: u32 = 0x000000ff
+const PIDR0_PART_0_SHIFT: u32 = 0
+
+// CoreSight Peripheral ID1
+const PIDR1_OFFSET: u32 = 0x00042fe4
+const PIDR1_DES_0_MASK: u32 = 0x000000f0
+const PIDR1_DES_0_SHIFT: u32 = 4
+const PIDR1_PART_1_MASK: u32 = 0x0000000f
+const PIDR1_PART_1_SHIFT: u32 = 0
+
+// CoreSight Peripheral ID2
+const PIDR2_OFFSET: u32 = 0x00042fe8
+const PIDR2_REVISION_MASK: u32 = 0x000000f0
+const PIDR2_REVISION_SHIFT: u32 = 4
+const PIDR2_JEDEC_MASK: u32 = 0x00000008
+const PIDR2_JEDEC_SHIFT: u32 = 3
+const PIDR2_DES_1_MASK: u32 = 0x00000007
+const PIDR2_DES_1_SHIFT: u32 = 0
+
+// CoreSight Peripheral ID3
+const PIDR3_OFFSET: u32 = 0x00042fec
+const PIDR3_REVAND_MASK: u32 = 0x000000f0
+const PIDR3_REVAND_SHIFT: u32 = 4
+const PIDR3_CMOD_MASK: u32 = 0x0000000f
+const PIDR3_CMOD_SHIFT: u32 = 0
+
+// CoreSight Component ID0
+const CIDR0_OFFSET: u32 = 0x00042ff0
+const CIDR0_PRMBL_0_MASK: u32 = 0x000000ff
+const CIDR0_PRMBL_0_SHIFT: u32 = 0
+
+// CoreSight Component ID1
+const CIDR1_OFFSET: u32 = 0x00042ff4
+const CIDR1_CLASS_MASK: u32 = 0x000000f0
+const CIDR1_CLASS_SHIFT: u32 = 4
+const CIDR1_PRMBL_1_MASK: u32 = 0x0000000f
+const CIDR1_PRMBL_1_SHIFT: u32 = 0
+
+// CoreSight Component ID2
+const CIDR2_OFFSET: u32 = 0x00042ff8
+const CIDR2_PRMBL_2_MASK: u32 = 0x000000ff
+const CIDR2_PRMBL_2_SHIFT: u32 = 0
+
+// CoreSight Component ID3
+const CIDR3_OFFSET: u32 = 0x00042ffc
+const CIDR3_PRMBL_3_MASK: u32 = 0x000000ff
+const CIDR3_PRMBL_3_SHIFT: u32 = 0

@@ -1,0 +1,107 @@
+module sh.sysl.rp2350.rosc
+
+// The peripheral's base address. Every offset below is from here.
+const BASE: u32 = 0x400e8000
+
+// Ring Oscillator control
+const CTRL_OFFSET: u32 = 0x00000000
+const CTRL_ENABLE_MASK: u32 = 0x00fff000
+const CTRL_ENABLE_SHIFT: u32 = 12
+const CTRL_ENABLE_DISABLE: u32 = 3358
+const CTRL_ENABLE_ENABLE: u32 = 4011
+const CTRL_FREQ_RANGE_MASK: u32 = 0x00000fff
+const CTRL_FREQ_RANGE_SHIFT: u32 = 0
+const CTRL_FREQ_RANGE_LOW: u32 = 4004
+const CTRL_FREQ_RANGE_MEDIUM: u32 = 4005
+const CTRL_FREQ_RANGE_HIGH: u32 = 4007
+const CTRL_FREQ_RANGE_TOOHIGH: u32 = 4006
+
+// The FREQA & FREQB registers control the frequency by controlling the drive strength of each
+// stage The drive strength has 4 levels determined by the number of bits set Increasing the number
+// of bits set increases the drive strength and increases the oscillation frequency 0 bits set is
+// the default drive strength 1 bit set doubles the drive strength 2 bits set triples drive
+// strength 3 bits set quadruples drive strength For frequency randomisation set both DS0_RANDOM=1
+// & DS1_RANDOM=1
+const FREQA_OFFSET: u32 = 0x00000004
+const FREQA_PASSWD_MASK: u32 = 0xffff0000
+const FREQA_PASSWD_SHIFT: u32 = 16
+const FREQA_PASSWD_PASS: u32 = 38550
+const FREQA_DS3_MASK: u32 = 0x00007000
+const FREQA_DS3_SHIFT: u32 = 12
+const FREQA_DS2_MASK: u32 = 0x00000700
+const FREQA_DS2_SHIFT: u32 = 8
+const FREQA_DS1_RANDOM_MASK: u32 = 0x00000080
+const FREQA_DS1_RANDOM_SHIFT: u32 = 7
+const FREQA_DS1_MASK: u32 = 0x00000070
+const FREQA_DS1_SHIFT: u32 = 4
+const FREQA_DS0_RANDOM_MASK: u32 = 0x00000008
+const FREQA_DS0_RANDOM_SHIFT: u32 = 3
+const FREQA_DS0_MASK: u32 = 0x00000007
+const FREQA_DS0_SHIFT: u32 = 0
+
+// For a detailed description see freqa register
+const FREQB_OFFSET: u32 = 0x00000008
+const FREQB_PASSWD_MASK: u32 = 0xffff0000
+const FREQB_PASSWD_SHIFT: u32 = 16
+const FREQB_PASSWD_PASS: u32 = 38550
+const FREQB_DS7_MASK: u32 = 0x00007000
+const FREQB_DS7_SHIFT: u32 = 12
+const FREQB_DS6_MASK: u32 = 0x00000700
+const FREQB_DS6_SHIFT: u32 = 8
+const FREQB_DS5_MASK: u32 = 0x00000070
+const FREQB_DS5_SHIFT: u32 = 4
+const FREQB_DS4_MASK: u32 = 0x00000007
+const FREQB_DS4_SHIFT: u32 = 0
+
+// Loads a value to the LFSR randomiser
+const RANDOM_OFFSET: u32 = 0x0000000c
+const RANDOM_SEED_MASK: u32 = 0xffffffff
+const RANDOM_SEED_SHIFT: u32 = 0
+
+// Ring Oscillator pause control
+const DORMANT_OFFSET: u32 = 0x00000010
+const DORMANT_DORMANT_MASK: u32 = 0xffffffff
+const DORMANT_DORMANT_SHIFT: u32 = 0
+const DORMANT_DORMANT_DORMANT: u32 = 1668246881
+const DORMANT_DORMANT_WAKE: u32 = 2002873189
+
+// Controls the output divider
+const DIV_OFFSET: u32 = 0x00000014
+const DIV_DIV_MASK: u32 = 0x0000ffff
+const DIV_DIV_SHIFT: u32 = 0
+const DIV_DIV_PASS: u32 = 43520
+
+// Controls the phase shifted output
+const PHASE_OFFSET: u32 = 0x00000018
+const PHASE_PASSWD_MASK: u32 = 0x00000ff0
+const PHASE_PASSWD_SHIFT: u32 = 4
+const PHASE_ENABLE_MASK: u32 = 0x00000008
+const PHASE_ENABLE_SHIFT: u32 = 3
+const PHASE_FLIP_MASK: u32 = 0x00000004
+const PHASE_FLIP_SHIFT: u32 = 2
+const PHASE_SHIFT_MASK: u32 = 0x00000003
+const PHASE_SHIFT_SHIFT: u32 = 0
+
+// Ring Oscillator Status
+const STATUS_OFFSET: u32 = 0x0000001c
+const STATUS_STABLE_MASK: u32 = 0x80000000
+const STATUS_STABLE_SHIFT: u32 = 31
+const STATUS_BADWRITE_MASK: u32 = 0x01000000
+const STATUS_BADWRITE_SHIFT: u32 = 24
+const STATUS_DIV_RUNNING_MASK: u32 = 0x00010000
+const STATUS_DIV_RUNNING_SHIFT: u32 = 16
+const STATUS_ENABLED_MASK: u32 = 0x00001000
+const STATUS_ENABLED_SHIFT: u32 = 12
+
+// This just reads the state of the oscillator output so randomness is compromised if the ring
+// oscillator is stopped or run at a harmonic of the bus frequency
+const RANDOMBIT_OFFSET: u32 = 0x00000020
+const RANDOMBIT_RANDOMBIT_MASK: u32 = 0x00000001
+const RANDOMBIT_RANDOMBIT_SHIFT: u32 = 0
+
+// A down counter running at the ROSC frequency which counts to zero and stops. To start the
+// counter write a non-zero value. Can be used for short software pauses when setting up time
+// sensitive hardware.
+const COUNT_OFFSET: u32 = 0x00000024
+const COUNT_COUNT_MASK: u32 = 0x0000ffff
+const COUNT_COUNT_SHIFT: u32 = 0

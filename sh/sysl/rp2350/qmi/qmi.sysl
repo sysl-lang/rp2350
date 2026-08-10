@@ -1,0 +1,458 @@
+// QSPI Memory Interface. Provides a memory-mapped interface to up to two SPI/DSPI/QSPI flash or
+// PSRAM devices. Also provides a serial interface for programming and configuration of the
+// external device.
+
+module sh.sysl.rp2350.qmi
+
+// The peripheral's base address. Every offset below is from here.
+const BASE: u32 = 0x400d0000
+
+// Control and status for direct serial mode Direct serial mode allows the processor to send and
+// receive raw serial frames, for programming, configuration and control of the external memory
+// devices. Only SPI mode 0 (CPOL=0 CPHA=0) is supported.
+const DIRECT_CSR_OFFSET: u32 = 0x00000000
+const DIRECT_CSR_RXDELAY_MASK: u32 = 0xc0000000
+const DIRECT_CSR_RXDELAY_SHIFT: u32 = 30
+const DIRECT_CSR_CLKDIV_MASK: u32 = 0x3fc00000
+const DIRECT_CSR_CLKDIV_SHIFT: u32 = 22
+const DIRECT_CSR_RXLEVEL_MASK: u32 = 0x001c0000
+const DIRECT_CSR_RXLEVEL_SHIFT: u32 = 18
+const DIRECT_CSR_RXFULL_MASK: u32 = 0x00020000
+const DIRECT_CSR_RXFULL_SHIFT: u32 = 17
+const DIRECT_CSR_RXEMPTY_MASK: u32 = 0x00010000
+const DIRECT_CSR_RXEMPTY_SHIFT: u32 = 16
+const DIRECT_CSR_TXLEVEL_MASK: u32 = 0x00007000
+const DIRECT_CSR_TXLEVEL_SHIFT: u32 = 12
+const DIRECT_CSR_TXEMPTY_MASK: u32 = 0x00000800
+const DIRECT_CSR_TXEMPTY_SHIFT: u32 = 11
+const DIRECT_CSR_TXFULL_MASK: u32 = 0x00000400
+const DIRECT_CSR_TXFULL_SHIFT: u32 = 10
+const DIRECT_CSR_AUTO_CS1N_MASK: u32 = 0x00000080
+const DIRECT_CSR_AUTO_CS1N_SHIFT: u32 = 7
+const DIRECT_CSR_AUTO_CS0N_MASK: u32 = 0x00000040
+const DIRECT_CSR_AUTO_CS0N_SHIFT: u32 = 6
+const DIRECT_CSR_ASSERT_CS1N_MASK: u32 = 0x00000008
+const DIRECT_CSR_ASSERT_CS1N_SHIFT: u32 = 3
+const DIRECT_CSR_ASSERT_CS0N_MASK: u32 = 0x00000004
+const DIRECT_CSR_ASSERT_CS0N_SHIFT: u32 = 2
+const DIRECT_CSR_BUSY_MASK: u32 = 0x00000002
+const DIRECT_CSR_BUSY_SHIFT: u32 = 1
+const DIRECT_CSR_EN_MASK: u32 = 0x00000001
+const DIRECT_CSR_EN_SHIFT: u32 = 0
+
+// Transmit FIFO for direct mode
+const DIRECT_TX_OFFSET: u32 = 0x00000004
+const DIRECT_TX_NOPUSH_MASK: u32 = 0x00100000
+const DIRECT_TX_NOPUSH_SHIFT: u32 = 20
+const DIRECT_TX_OE_MASK: u32 = 0x00080000
+const DIRECT_TX_OE_SHIFT: u32 = 19
+const DIRECT_TX_DWIDTH_MASK: u32 = 0x00040000
+const DIRECT_TX_DWIDTH_SHIFT: u32 = 18
+const DIRECT_TX_IWIDTH_MASK: u32 = 0x00030000
+const DIRECT_TX_IWIDTH_SHIFT: u32 = 16
+const DIRECT_TX_IWIDTH_S: u32 = 0
+const DIRECT_TX_IWIDTH_D: u32 = 1
+const DIRECT_TX_IWIDTH_Q: u32 = 2
+const DIRECT_TX_DATA_MASK: u32 = 0x0000ffff
+const DIRECT_TX_DATA_SHIFT: u32 = 0
+
+// Receive FIFO for direct mode
+const DIRECT_RX_OFFSET: u32 = 0x00000008
+const DIRECT_RX_DIRECT_RX_MASK: u32 = 0x0000ffff
+const DIRECT_RX_DIRECT_RX_SHIFT: u32 = 0
+
+// Timing configuration register for memory address window 0.
+const M0_TIMING_OFFSET: u32 = 0x0000000c
+const M0_TIMING_COOLDOWN_MASK: u32 = 0xc0000000
+const M0_TIMING_COOLDOWN_SHIFT: u32 = 30
+const M0_TIMING_PAGEBREAK_MASK: u32 = 0x30000000
+const M0_TIMING_PAGEBREAK_SHIFT: u32 = 28
+const M0_TIMING_PAGEBREAK_NONE: u32 = 0
+const M0_TIMING_PAGEBREAK_256: u32 = 1
+const M0_TIMING_PAGEBREAK_1024: u32 = 2
+const M0_TIMING_PAGEBREAK_4096: u32 = 3
+const M0_TIMING_SELECT_SETUP_MASK: u32 = 0x02000000
+const M0_TIMING_SELECT_SETUP_SHIFT: u32 = 25
+const M0_TIMING_SELECT_HOLD_MASK: u32 = 0x01800000
+const M0_TIMING_SELECT_HOLD_SHIFT: u32 = 23
+const M0_TIMING_MAX_SELECT_MASK: u32 = 0x007e0000
+const M0_TIMING_MAX_SELECT_SHIFT: u32 = 17
+const M0_TIMING_MIN_DESELECT_MASK: u32 = 0x0001f000
+const M0_TIMING_MIN_DESELECT_SHIFT: u32 = 12
+const M0_TIMING_RXDELAY_MASK: u32 = 0x00000700
+const M0_TIMING_RXDELAY_SHIFT: u32 = 8
+const M0_TIMING_CLKDIV_MASK: u32 = 0x000000ff
+const M0_TIMING_CLKDIV_SHIFT: u32 = 0
+
+// Read transfer format configuration for memory address window 0. Configure the bus width of each
+// transfer phase individually, and configure the length or presence of the command prefix, command
+// suffix and dummy/turnaround transfer phases. Only 24-bit addresses are supported. The reset
+// value of the M0_RFMT register is configured to support a basic 03h serial read transfer with no
+// additional configuration.
+const M0_RFMT_OFFSET: u32 = 0x00000010
+const M0_RFMT_DTR_MASK: u32 = 0x10000000
+const M0_RFMT_DTR_SHIFT: u32 = 28
+const M0_RFMT_DUMMY_LEN_MASK: u32 = 0x00070000
+const M0_RFMT_DUMMY_LEN_SHIFT: u32 = 16
+const M0_RFMT_DUMMY_LEN_NONE: u32 = 0
+const M0_RFMT_DUMMY_LEN_4: u32 = 1
+const M0_RFMT_DUMMY_LEN_8: u32 = 2
+const M0_RFMT_DUMMY_LEN_12: u32 = 3
+const M0_RFMT_DUMMY_LEN_16: u32 = 4
+const M0_RFMT_DUMMY_LEN_20: u32 = 5
+const M0_RFMT_DUMMY_LEN_24: u32 = 6
+const M0_RFMT_DUMMY_LEN_28: u32 = 7
+const M0_RFMT_SUFFIX_LEN_MASK: u32 = 0x0000c000
+const M0_RFMT_SUFFIX_LEN_SHIFT: u32 = 14
+const M0_RFMT_SUFFIX_LEN_NONE: u32 = 0
+const M0_RFMT_SUFFIX_LEN_8: u32 = 2
+const M0_RFMT_PREFIX_LEN_MASK: u32 = 0x00001000
+const M0_RFMT_PREFIX_LEN_SHIFT: u32 = 12
+const M0_RFMT_PREFIX_LEN_NONE: u32 = 0
+const M0_RFMT_PREFIX_LEN_8: u32 = 1
+const M0_RFMT_DATA_WIDTH_MASK: u32 = 0x00000300
+const M0_RFMT_DATA_WIDTH_SHIFT: u32 = 8
+const M0_RFMT_DATA_WIDTH_S: u32 = 0
+const M0_RFMT_DATA_WIDTH_D: u32 = 1
+const M0_RFMT_DATA_WIDTH_Q: u32 = 2
+const M0_RFMT_DUMMY_WIDTH_MASK: u32 = 0x000000c0
+const M0_RFMT_DUMMY_WIDTH_SHIFT: u32 = 6
+const M0_RFMT_DUMMY_WIDTH_S: u32 = 0
+const M0_RFMT_DUMMY_WIDTH_D: u32 = 1
+const M0_RFMT_DUMMY_WIDTH_Q: u32 = 2
+const M0_RFMT_SUFFIX_WIDTH_MASK: u32 = 0x00000030
+const M0_RFMT_SUFFIX_WIDTH_SHIFT: u32 = 4
+const M0_RFMT_SUFFIX_WIDTH_S: u32 = 0
+const M0_RFMT_SUFFIX_WIDTH_D: u32 = 1
+const M0_RFMT_SUFFIX_WIDTH_Q: u32 = 2
+const M0_RFMT_ADDR_WIDTH_MASK: u32 = 0x0000000c
+const M0_RFMT_ADDR_WIDTH_SHIFT: u32 = 2
+const M0_RFMT_ADDR_WIDTH_S: u32 = 0
+const M0_RFMT_ADDR_WIDTH_D: u32 = 1
+const M0_RFMT_ADDR_WIDTH_Q: u32 = 2
+const M0_RFMT_PREFIX_WIDTH_MASK: u32 = 0x00000003
+const M0_RFMT_PREFIX_WIDTH_SHIFT: u32 = 0
+const M0_RFMT_PREFIX_WIDTH_S: u32 = 0
+const M0_RFMT_PREFIX_WIDTH_D: u32 = 1
+const M0_RFMT_PREFIX_WIDTH_Q: u32 = 2
+
+// Command constants used for reads from memory address window 0. The reset value of the M0_RCMD
+// register is configured to support a basic 03h serial read transfer with no additional
+// configuration.
+const M0_RCMD_OFFSET: u32 = 0x00000014
+const M0_RCMD_SUFFIX_MASK: u32 = 0x0000ff00
+const M0_RCMD_SUFFIX_SHIFT: u32 = 8
+const M0_RCMD_PREFIX_MASK: u32 = 0x000000ff
+const M0_RCMD_PREFIX_SHIFT: u32 = 0
+
+// Write transfer format configuration for memory address window 0. Configure the bus width of each
+// transfer phase individually, and configure the length or presence of the command prefix, command
+// suffix and dummy/turnaround transfer phases. Only 24-bit addresses are supported. The reset
+// value of the M0_WFMT register is configured to support a basic 02h serial write transfer.
+// However, writes to this window must first be enabled via the XIP_CTRL_WRITABLE_M0 bit, as XIP
+// memory is read-only by default.
+const M0_WFMT_OFFSET: u32 = 0x00000018
+const M0_WFMT_DTR_MASK: u32 = 0x10000000
+const M0_WFMT_DTR_SHIFT: u32 = 28
+const M0_WFMT_DUMMY_LEN_MASK: u32 = 0x00070000
+const M0_WFMT_DUMMY_LEN_SHIFT: u32 = 16
+const M0_WFMT_DUMMY_LEN_NONE: u32 = 0
+const M0_WFMT_DUMMY_LEN_4: u32 = 1
+const M0_WFMT_DUMMY_LEN_8: u32 = 2
+const M0_WFMT_DUMMY_LEN_12: u32 = 3
+const M0_WFMT_DUMMY_LEN_16: u32 = 4
+const M0_WFMT_DUMMY_LEN_20: u32 = 5
+const M0_WFMT_DUMMY_LEN_24: u32 = 6
+const M0_WFMT_DUMMY_LEN_28: u32 = 7
+const M0_WFMT_SUFFIX_LEN_MASK: u32 = 0x0000c000
+const M0_WFMT_SUFFIX_LEN_SHIFT: u32 = 14
+const M0_WFMT_SUFFIX_LEN_NONE: u32 = 0
+const M0_WFMT_SUFFIX_LEN_8: u32 = 2
+const M0_WFMT_PREFIX_LEN_MASK: u32 = 0x00001000
+const M0_WFMT_PREFIX_LEN_SHIFT: u32 = 12
+const M0_WFMT_PREFIX_LEN_NONE: u32 = 0
+const M0_WFMT_PREFIX_LEN_8: u32 = 1
+const M0_WFMT_DATA_WIDTH_MASK: u32 = 0x00000300
+const M0_WFMT_DATA_WIDTH_SHIFT: u32 = 8
+const M0_WFMT_DATA_WIDTH_S: u32 = 0
+const M0_WFMT_DATA_WIDTH_D: u32 = 1
+const M0_WFMT_DATA_WIDTH_Q: u32 = 2
+const M0_WFMT_DUMMY_WIDTH_MASK: u32 = 0x000000c0
+const M0_WFMT_DUMMY_WIDTH_SHIFT: u32 = 6
+const M0_WFMT_DUMMY_WIDTH_S: u32 = 0
+const M0_WFMT_DUMMY_WIDTH_D: u32 = 1
+const M0_WFMT_DUMMY_WIDTH_Q: u32 = 2
+const M0_WFMT_SUFFIX_WIDTH_MASK: u32 = 0x00000030
+const M0_WFMT_SUFFIX_WIDTH_SHIFT: u32 = 4
+const M0_WFMT_SUFFIX_WIDTH_S: u32 = 0
+const M0_WFMT_SUFFIX_WIDTH_D: u32 = 1
+const M0_WFMT_SUFFIX_WIDTH_Q: u32 = 2
+const M0_WFMT_ADDR_WIDTH_MASK: u32 = 0x0000000c
+const M0_WFMT_ADDR_WIDTH_SHIFT: u32 = 2
+const M0_WFMT_ADDR_WIDTH_S: u32 = 0
+const M0_WFMT_ADDR_WIDTH_D: u32 = 1
+const M0_WFMT_ADDR_WIDTH_Q: u32 = 2
+const M0_WFMT_PREFIX_WIDTH_MASK: u32 = 0x00000003
+const M0_WFMT_PREFIX_WIDTH_SHIFT: u32 = 0
+const M0_WFMT_PREFIX_WIDTH_S: u32 = 0
+const M0_WFMT_PREFIX_WIDTH_D: u32 = 1
+const M0_WFMT_PREFIX_WIDTH_Q: u32 = 2
+
+// Command constants used for writes to memory address window 0. The reset value of the M0_WCMD
+// register is configured to support a basic 02h serial write transfer with no additional
+// configuration.
+const M0_WCMD_OFFSET: u32 = 0x0000001c
+const M0_WCMD_SUFFIX_MASK: u32 = 0x0000ff00
+const M0_WCMD_SUFFIX_SHIFT: u32 = 8
+const M0_WCMD_PREFIX_MASK: u32 = 0x000000ff
+const M0_WCMD_PREFIX_SHIFT: u32 = 0
+
+// Timing configuration register for memory address window 1.
+const M1_TIMING_OFFSET: u32 = 0x00000020
+const M1_TIMING_COOLDOWN_MASK: u32 = 0xc0000000
+const M1_TIMING_COOLDOWN_SHIFT: u32 = 30
+const M1_TIMING_PAGEBREAK_MASK: u32 = 0x30000000
+const M1_TIMING_PAGEBREAK_SHIFT: u32 = 28
+const M1_TIMING_PAGEBREAK_NONE: u32 = 0
+const M1_TIMING_PAGEBREAK_256: u32 = 1
+const M1_TIMING_PAGEBREAK_1024: u32 = 2
+const M1_TIMING_PAGEBREAK_4096: u32 = 3
+const M1_TIMING_SELECT_SETUP_MASK: u32 = 0x02000000
+const M1_TIMING_SELECT_SETUP_SHIFT: u32 = 25
+const M1_TIMING_SELECT_HOLD_MASK: u32 = 0x01800000
+const M1_TIMING_SELECT_HOLD_SHIFT: u32 = 23
+const M1_TIMING_MAX_SELECT_MASK: u32 = 0x007e0000
+const M1_TIMING_MAX_SELECT_SHIFT: u32 = 17
+const M1_TIMING_MIN_DESELECT_MASK: u32 = 0x0001f000
+const M1_TIMING_MIN_DESELECT_SHIFT: u32 = 12
+const M1_TIMING_RXDELAY_MASK: u32 = 0x00000700
+const M1_TIMING_RXDELAY_SHIFT: u32 = 8
+const M1_TIMING_CLKDIV_MASK: u32 = 0x000000ff
+const M1_TIMING_CLKDIV_SHIFT: u32 = 0
+
+// Read transfer format configuration for memory address window 1. Configure the bus width of each
+// transfer phase individually, and configure the length or presence of the command prefix, command
+// suffix and dummy/turnaround transfer phases. Only 24-bit addresses are supported. The reset
+// value of the M1_RFMT register is configured to support a basic 03h serial read transfer with no
+// additional configuration.
+const M1_RFMT_OFFSET: u32 = 0x00000024
+const M1_RFMT_DTR_MASK: u32 = 0x10000000
+const M1_RFMT_DTR_SHIFT: u32 = 28
+const M1_RFMT_DUMMY_LEN_MASK: u32 = 0x00070000
+const M1_RFMT_DUMMY_LEN_SHIFT: u32 = 16
+const M1_RFMT_DUMMY_LEN_NONE: u32 = 0
+const M1_RFMT_DUMMY_LEN_4: u32 = 1
+const M1_RFMT_DUMMY_LEN_8: u32 = 2
+const M1_RFMT_DUMMY_LEN_12: u32 = 3
+const M1_RFMT_DUMMY_LEN_16: u32 = 4
+const M1_RFMT_DUMMY_LEN_20: u32 = 5
+const M1_RFMT_DUMMY_LEN_24: u32 = 6
+const M1_RFMT_DUMMY_LEN_28: u32 = 7
+const M1_RFMT_SUFFIX_LEN_MASK: u32 = 0x0000c000
+const M1_RFMT_SUFFIX_LEN_SHIFT: u32 = 14
+const M1_RFMT_SUFFIX_LEN_NONE: u32 = 0
+const M1_RFMT_SUFFIX_LEN_8: u32 = 2
+const M1_RFMT_PREFIX_LEN_MASK: u32 = 0x00001000
+const M1_RFMT_PREFIX_LEN_SHIFT: u32 = 12
+const M1_RFMT_PREFIX_LEN_NONE: u32 = 0
+const M1_RFMT_PREFIX_LEN_8: u32 = 1
+const M1_RFMT_DATA_WIDTH_MASK: u32 = 0x00000300
+const M1_RFMT_DATA_WIDTH_SHIFT: u32 = 8
+const M1_RFMT_DATA_WIDTH_S: u32 = 0
+const M1_RFMT_DATA_WIDTH_D: u32 = 1
+const M1_RFMT_DATA_WIDTH_Q: u32 = 2
+const M1_RFMT_DUMMY_WIDTH_MASK: u32 = 0x000000c0
+const M1_RFMT_DUMMY_WIDTH_SHIFT: u32 = 6
+const M1_RFMT_DUMMY_WIDTH_S: u32 = 0
+const M1_RFMT_DUMMY_WIDTH_D: u32 = 1
+const M1_RFMT_DUMMY_WIDTH_Q: u32 = 2
+const M1_RFMT_SUFFIX_WIDTH_MASK: u32 = 0x00000030
+const M1_RFMT_SUFFIX_WIDTH_SHIFT: u32 = 4
+const M1_RFMT_SUFFIX_WIDTH_S: u32 = 0
+const M1_RFMT_SUFFIX_WIDTH_D: u32 = 1
+const M1_RFMT_SUFFIX_WIDTH_Q: u32 = 2
+const M1_RFMT_ADDR_WIDTH_MASK: u32 = 0x0000000c
+const M1_RFMT_ADDR_WIDTH_SHIFT: u32 = 2
+const M1_RFMT_ADDR_WIDTH_S: u32 = 0
+const M1_RFMT_ADDR_WIDTH_D: u32 = 1
+const M1_RFMT_ADDR_WIDTH_Q: u32 = 2
+const M1_RFMT_PREFIX_WIDTH_MASK: u32 = 0x00000003
+const M1_RFMT_PREFIX_WIDTH_SHIFT: u32 = 0
+const M1_RFMT_PREFIX_WIDTH_S: u32 = 0
+const M1_RFMT_PREFIX_WIDTH_D: u32 = 1
+const M1_RFMT_PREFIX_WIDTH_Q: u32 = 2
+
+// Command constants used for reads from memory address window 1. The reset value of the M1_RCMD
+// register is configured to support a basic 03h serial read transfer with no additional
+// configuration.
+const M1_RCMD_OFFSET: u32 = 0x00000028
+const M1_RCMD_SUFFIX_MASK: u32 = 0x0000ff00
+const M1_RCMD_SUFFIX_SHIFT: u32 = 8
+const M1_RCMD_PREFIX_MASK: u32 = 0x000000ff
+const M1_RCMD_PREFIX_SHIFT: u32 = 0
+
+// Write transfer format configuration for memory address window 1. Configure the bus width of each
+// transfer phase individually, and configure the length or presence of the command prefix, command
+// suffix and dummy/turnaround transfer phases. Only 24-bit addresses are supported. The reset
+// value of the M1_WFMT register is configured to support a basic 02h serial write transfer.
+// However, writes to this window must first be enabled via the XIP_CTRL_WRITABLE_M1 bit, as XIP
+// memory is read-only by default.
+const M1_WFMT_OFFSET: u32 = 0x0000002c
+const M1_WFMT_DTR_MASK: u32 = 0x10000000
+const M1_WFMT_DTR_SHIFT: u32 = 28
+const M1_WFMT_DUMMY_LEN_MASK: u32 = 0x00070000
+const M1_WFMT_DUMMY_LEN_SHIFT: u32 = 16
+const M1_WFMT_DUMMY_LEN_NONE: u32 = 0
+const M1_WFMT_DUMMY_LEN_4: u32 = 1
+const M1_WFMT_DUMMY_LEN_8: u32 = 2
+const M1_WFMT_DUMMY_LEN_12: u32 = 3
+const M1_WFMT_DUMMY_LEN_16: u32 = 4
+const M1_WFMT_DUMMY_LEN_20: u32 = 5
+const M1_WFMT_DUMMY_LEN_24: u32 = 6
+const M1_WFMT_DUMMY_LEN_28: u32 = 7
+const M1_WFMT_SUFFIX_LEN_MASK: u32 = 0x0000c000
+const M1_WFMT_SUFFIX_LEN_SHIFT: u32 = 14
+const M1_WFMT_SUFFIX_LEN_NONE: u32 = 0
+const M1_WFMT_SUFFIX_LEN_8: u32 = 2
+const M1_WFMT_PREFIX_LEN_MASK: u32 = 0x00001000
+const M1_WFMT_PREFIX_LEN_SHIFT: u32 = 12
+const M1_WFMT_PREFIX_LEN_NONE: u32 = 0
+const M1_WFMT_PREFIX_LEN_8: u32 = 1
+const M1_WFMT_DATA_WIDTH_MASK: u32 = 0x00000300
+const M1_WFMT_DATA_WIDTH_SHIFT: u32 = 8
+const M1_WFMT_DATA_WIDTH_S: u32 = 0
+const M1_WFMT_DATA_WIDTH_D: u32 = 1
+const M1_WFMT_DATA_WIDTH_Q: u32 = 2
+const M1_WFMT_DUMMY_WIDTH_MASK: u32 = 0x000000c0
+const M1_WFMT_DUMMY_WIDTH_SHIFT: u32 = 6
+const M1_WFMT_DUMMY_WIDTH_S: u32 = 0
+const M1_WFMT_DUMMY_WIDTH_D: u32 = 1
+const M1_WFMT_DUMMY_WIDTH_Q: u32 = 2
+const M1_WFMT_SUFFIX_WIDTH_MASK: u32 = 0x00000030
+const M1_WFMT_SUFFIX_WIDTH_SHIFT: u32 = 4
+const M1_WFMT_SUFFIX_WIDTH_S: u32 = 0
+const M1_WFMT_SUFFIX_WIDTH_D: u32 = 1
+const M1_WFMT_SUFFIX_WIDTH_Q: u32 = 2
+const M1_WFMT_ADDR_WIDTH_MASK: u32 = 0x0000000c
+const M1_WFMT_ADDR_WIDTH_SHIFT: u32 = 2
+const M1_WFMT_ADDR_WIDTH_S: u32 = 0
+const M1_WFMT_ADDR_WIDTH_D: u32 = 1
+const M1_WFMT_ADDR_WIDTH_Q: u32 = 2
+const M1_WFMT_PREFIX_WIDTH_MASK: u32 = 0x00000003
+const M1_WFMT_PREFIX_WIDTH_SHIFT: u32 = 0
+const M1_WFMT_PREFIX_WIDTH_S: u32 = 0
+const M1_WFMT_PREFIX_WIDTH_D: u32 = 1
+const M1_WFMT_PREFIX_WIDTH_Q: u32 = 2
+
+// Command constants used for writes to memory address window 1. The reset value of the M1_WCMD
+// register is configured to support a basic 02h serial write transfer with no additional
+// configuration.
+const M1_WCMD_OFFSET: u32 = 0x00000030
+const M1_WCMD_SUFFIX_MASK: u32 = 0x0000ff00
+const M1_WCMD_SUFFIX_SHIFT: u32 = 8
+const M1_WCMD_PREFIX_MASK: u32 = 0x000000ff
+const M1_WCMD_PREFIX_SHIFT: u32 = 0
+
+// Configure address translation for XIP virtual addresses 0x000000 through 0x3fffff (a 4 MiB
+// window starting at +0 MiB). Address translation allows a program image to be executed in place
+// at multiple physical flash addresses (for example, a double-buffered flash image for
+// over-the-air updates), without the overhead of position-independent code. At reset, the address
+// translation registers are initialised to an identity mapping, so that they can be ignored if
+// address translation is not required. Note that the XIP cache is fully virtually addressed, so a
+// cache flush is required after changing the address translation.
+const ATRANS0_OFFSET: u32 = 0x00000034
+const ATRANS0_SIZE_MASK: u32 = 0x07ff0000
+const ATRANS0_SIZE_SHIFT: u32 = 16
+const ATRANS0_BASE_MASK: u32 = 0x00000fff
+const ATRANS0_BASE_SHIFT: u32 = 0
+
+// Configure address translation for XIP virtual addresses 0x400000 through 0x7fffff (a 4 MiB
+// window starting at +4 MiB). Address translation allows a program image to be executed in place
+// at multiple physical flash addresses (for example, a double-buffered flash image for
+// over-the-air updates), without the overhead of position-independent code. At reset, the address
+// translation registers are initialised to an identity mapping, so that they can be ignored if
+// address translation is not required. Note that the XIP cache is fully virtually addressed, so a
+// cache flush is required after changing the address translation.
+const ATRANS1_OFFSET: u32 = 0x00000038
+const ATRANS1_SIZE_MASK: u32 = 0x07ff0000
+const ATRANS1_SIZE_SHIFT: u32 = 16
+const ATRANS1_BASE_MASK: u32 = 0x00000fff
+const ATRANS1_BASE_SHIFT: u32 = 0
+
+// Configure address translation for XIP virtual addresses 0x800000 through 0xbfffff (a 4 MiB
+// window starting at +8 MiB). Address translation allows a program image to be executed in place
+// at multiple physical flash addresses (for example, a double-buffered flash image for
+// over-the-air updates), without the overhead of position-independent code. At reset, the address
+// translation registers are initialised to an identity mapping, so that they can be ignored if
+// address translation is not required. Note that the XIP cache is fully virtually addressed, so a
+// cache flush is required after changing the address translation.
+const ATRANS2_OFFSET: u32 = 0x0000003c
+const ATRANS2_SIZE_MASK: u32 = 0x07ff0000
+const ATRANS2_SIZE_SHIFT: u32 = 16
+const ATRANS2_BASE_MASK: u32 = 0x00000fff
+const ATRANS2_BASE_SHIFT: u32 = 0
+
+// Configure address translation for XIP virtual addresses 0xc00000 through 0xffffff (a 4 MiB
+// window starting at +12 MiB). Address translation allows a program image to be executed in place
+// at multiple physical flash addresses (for example, a double-buffered flash image for
+// over-the-air updates), without the overhead of position-independent code. At reset, the address
+// translation registers are initialised to an identity mapping, so that they can be ignored if
+// address translation is not required. Note that the XIP cache is fully virtually addressed, so a
+// cache flush is required after changing the address translation.
+const ATRANS3_OFFSET: u32 = 0x00000040
+const ATRANS3_SIZE_MASK: u32 = 0x07ff0000
+const ATRANS3_SIZE_SHIFT: u32 = 16
+const ATRANS3_BASE_MASK: u32 = 0x00000fff
+const ATRANS3_BASE_SHIFT: u32 = 0
+
+// Configure address translation for XIP virtual addresses 0x1000000 through 0x13fffff (a 4 MiB
+// window starting at +16 MiB). Address translation allows a program image to be executed in place
+// at multiple physical flash addresses (for example, a double-buffered flash image for
+// over-the-air updates), without the overhead of position-independent code. At reset, the address
+// translation registers are initialised to an identity mapping, so that they can be ignored if
+// address translation is not required. Note that the XIP cache is fully virtually addressed, so a
+// cache flush is required after changing the address translation.
+const ATRANS4_OFFSET: u32 = 0x00000044
+const ATRANS4_SIZE_MASK: u32 = 0x07ff0000
+const ATRANS4_SIZE_SHIFT: u32 = 16
+const ATRANS4_BASE_MASK: u32 = 0x00000fff
+const ATRANS4_BASE_SHIFT: u32 = 0
+
+// Configure address translation for XIP virtual addresses 0x1400000 through 0x17fffff (a 4 MiB
+// window starting at +20 MiB). Address translation allows a program image to be executed in place
+// at multiple physical flash addresses (for example, a double-buffered flash image for
+// over-the-air updates), without the overhead of position-independent code. At reset, the address
+// translation registers are initialised to an identity mapping, so that they can be ignored if
+// address translation is not required. Note that the XIP cache is fully virtually addressed, so a
+// cache flush is required after changing the address translation.
+const ATRANS5_OFFSET: u32 = 0x00000048
+const ATRANS5_SIZE_MASK: u32 = 0x07ff0000
+const ATRANS5_SIZE_SHIFT: u32 = 16
+const ATRANS5_BASE_MASK: u32 = 0x00000fff
+const ATRANS5_BASE_SHIFT: u32 = 0
+
+// Configure address translation for XIP virtual addresses 0x1800000 through 0x1bfffff (a 4 MiB
+// window starting at +24 MiB). Address translation allows a program image to be executed in place
+// at multiple physical flash addresses (for example, a double-buffered flash image for
+// over-the-air updates), without the overhead of position-independent code. At reset, the address
+// translation registers are initialised to an identity mapping, so that they can be ignored if
+// address translation is not required. Note that the XIP cache is fully virtually addressed, so a
+// cache flush is required after changing the address translation.
+const ATRANS6_OFFSET: u32 = 0x0000004c
+const ATRANS6_SIZE_MASK: u32 = 0x07ff0000
+const ATRANS6_SIZE_SHIFT: u32 = 16
+const ATRANS6_BASE_MASK: u32 = 0x00000fff
+const ATRANS6_BASE_SHIFT: u32 = 0
+
+// Configure address translation for XIP virtual addresses 0x1c00000 through 0x1ffffff (a 4 MiB
+// window starting at +28 MiB). Address translation allows a program image to be executed in place
+// at multiple physical flash addresses (for example, a double-buffered flash image for
+// over-the-air updates), without the overhead of position-independent code. At reset, the address
+// translation registers are initialised to an identity mapping, so that they can be ignored if
+// address translation is not required. Note that the XIP cache is fully virtually addressed, so a
+// cache flush is required after changing the address translation.
+const ATRANS7_OFFSET: u32 = 0x00000050
+const ATRANS7_SIZE_MASK: u32 = 0x07ff0000
+const ATRANS7_SIZE_SHIFT: u32 = 16
+const ATRANS7_BASE_MASK: u32 = 0x00000fff
+const ATRANS7_BASE_SHIFT: u32 = 0

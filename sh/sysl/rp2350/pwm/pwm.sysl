@@ -1,0 +1,777 @@
+// Simple PWM
+
+module sh.sysl.rp2350.pwm
+
+// The peripheral's base address. Every offset below is from here.
+const BASE: u32 = 0x400a8000
+
+// Control and status register
+const CH0_CSR_OFFSET: u32 = 0x00000000
+const CH0_CSR_PH_ADV_MASK: u32 = 0x00000080
+const CH0_CSR_PH_ADV_SHIFT: u32 = 7
+const CH0_CSR_PH_RET_MASK: u32 = 0x00000040
+const CH0_CSR_PH_RET_SHIFT: u32 = 6
+const CH0_CSR_DIVMODE_MASK: u32 = 0x00000030
+const CH0_CSR_DIVMODE_SHIFT: u32 = 4
+const CH0_CSR_DIVMODE_DIV: u32 = 0
+const CH0_CSR_DIVMODE_LEVEL: u32 = 1
+const CH0_CSR_DIVMODE_RISE: u32 = 2
+const CH0_CSR_DIVMODE_FALL: u32 = 3
+const CH0_CSR_B_INV_MASK: u32 = 0x00000008
+const CH0_CSR_B_INV_SHIFT: u32 = 3
+const CH0_CSR_A_INV_MASK: u32 = 0x00000004
+const CH0_CSR_A_INV_SHIFT: u32 = 2
+const CH0_CSR_PH_CORRECT_MASK: u32 = 0x00000002
+const CH0_CSR_PH_CORRECT_SHIFT: u32 = 1
+const CH0_CSR_EN_MASK: u32 = 0x00000001
+const CH0_CSR_EN_SHIFT: u32 = 0
+
+// INT and FRAC form a fixed-point fractional number. Counting rate is system clock frequency
+// divided by this number. Fractional division uses simple 1st-order sigma-delta.
+const CH0_DIV_OFFSET: u32 = 0x00000004
+const CH0_DIV_INT_MASK: u32 = 0x00000ff0
+const CH0_DIV_INT_SHIFT: u32 = 4
+const CH0_DIV_FRAC_MASK: u32 = 0x0000000f
+const CH0_DIV_FRAC_SHIFT: u32 = 0
+
+// Direct access to the PWM counter
+const CH0_CTR_OFFSET: u32 = 0x00000008
+const CH0_CTR_CH0_CTR_MASK: u32 = 0x0000ffff
+const CH0_CTR_CH0_CTR_SHIFT: u32 = 0
+
+// Counter compare values
+const CH0_CC_OFFSET: u32 = 0x0000000c
+const CH0_CC_B_MASK: u32 = 0xffff0000
+const CH0_CC_B_SHIFT: u32 = 16
+const CH0_CC_A_MASK: u32 = 0x0000ffff
+const CH0_CC_A_SHIFT: u32 = 0
+
+// Counter wrap value
+const CH0_TOP_OFFSET: u32 = 0x00000010
+const CH0_TOP_CH0_TOP_MASK: u32 = 0x0000ffff
+const CH0_TOP_CH0_TOP_SHIFT: u32 = 0
+
+// Control and status register
+const CH1_CSR_OFFSET: u32 = 0x00000014
+const CH1_CSR_PH_ADV_MASK: u32 = 0x00000080
+const CH1_CSR_PH_ADV_SHIFT: u32 = 7
+const CH1_CSR_PH_RET_MASK: u32 = 0x00000040
+const CH1_CSR_PH_RET_SHIFT: u32 = 6
+const CH1_CSR_DIVMODE_MASK: u32 = 0x00000030
+const CH1_CSR_DIVMODE_SHIFT: u32 = 4
+const CH1_CSR_DIVMODE_DIV: u32 = 0
+const CH1_CSR_DIVMODE_LEVEL: u32 = 1
+const CH1_CSR_DIVMODE_RISE: u32 = 2
+const CH1_CSR_DIVMODE_FALL: u32 = 3
+const CH1_CSR_B_INV_MASK: u32 = 0x00000008
+const CH1_CSR_B_INV_SHIFT: u32 = 3
+const CH1_CSR_A_INV_MASK: u32 = 0x00000004
+const CH1_CSR_A_INV_SHIFT: u32 = 2
+const CH1_CSR_PH_CORRECT_MASK: u32 = 0x00000002
+const CH1_CSR_PH_CORRECT_SHIFT: u32 = 1
+const CH1_CSR_EN_MASK: u32 = 0x00000001
+const CH1_CSR_EN_SHIFT: u32 = 0
+
+// INT and FRAC form a fixed-point fractional number. Counting rate is system clock frequency
+// divided by this number. Fractional division uses simple 1st-order sigma-delta.
+const CH1_DIV_OFFSET: u32 = 0x00000018
+const CH1_DIV_INT_MASK: u32 = 0x00000ff0
+const CH1_DIV_INT_SHIFT: u32 = 4
+const CH1_DIV_FRAC_MASK: u32 = 0x0000000f
+const CH1_DIV_FRAC_SHIFT: u32 = 0
+
+// Direct access to the PWM counter
+const CH1_CTR_OFFSET: u32 = 0x0000001c
+const CH1_CTR_CH1_CTR_MASK: u32 = 0x0000ffff
+const CH1_CTR_CH1_CTR_SHIFT: u32 = 0
+
+// Counter compare values
+const CH1_CC_OFFSET: u32 = 0x00000020
+const CH1_CC_B_MASK: u32 = 0xffff0000
+const CH1_CC_B_SHIFT: u32 = 16
+const CH1_CC_A_MASK: u32 = 0x0000ffff
+const CH1_CC_A_SHIFT: u32 = 0
+
+// Counter wrap value
+const CH1_TOP_OFFSET: u32 = 0x00000024
+const CH1_TOP_CH1_TOP_MASK: u32 = 0x0000ffff
+const CH1_TOP_CH1_TOP_SHIFT: u32 = 0
+
+// Control and status register
+const CH2_CSR_OFFSET: u32 = 0x00000028
+const CH2_CSR_PH_ADV_MASK: u32 = 0x00000080
+const CH2_CSR_PH_ADV_SHIFT: u32 = 7
+const CH2_CSR_PH_RET_MASK: u32 = 0x00000040
+const CH2_CSR_PH_RET_SHIFT: u32 = 6
+const CH2_CSR_DIVMODE_MASK: u32 = 0x00000030
+const CH2_CSR_DIVMODE_SHIFT: u32 = 4
+const CH2_CSR_DIVMODE_DIV: u32 = 0
+const CH2_CSR_DIVMODE_LEVEL: u32 = 1
+const CH2_CSR_DIVMODE_RISE: u32 = 2
+const CH2_CSR_DIVMODE_FALL: u32 = 3
+const CH2_CSR_B_INV_MASK: u32 = 0x00000008
+const CH2_CSR_B_INV_SHIFT: u32 = 3
+const CH2_CSR_A_INV_MASK: u32 = 0x00000004
+const CH2_CSR_A_INV_SHIFT: u32 = 2
+const CH2_CSR_PH_CORRECT_MASK: u32 = 0x00000002
+const CH2_CSR_PH_CORRECT_SHIFT: u32 = 1
+const CH2_CSR_EN_MASK: u32 = 0x00000001
+const CH2_CSR_EN_SHIFT: u32 = 0
+
+// INT and FRAC form a fixed-point fractional number. Counting rate is system clock frequency
+// divided by this number. Fractional division uses simple 1st-order sigma-delta.
+const CH2_DIV_OFFSET: u32 = 0x0000002c
+const CH2_DIV_INT_MASK: u32 = 0x00000ff0
+const CH2_DIV_INT_SHIFT: u32 = 4
+const CH2_DIV_FRAC_MASK: u32 = 0x0000000f
+const CH2_DIV_FRAC_SHIFT: u32 = 0
+
+// Direct access to the PWM counter
+const CH2_CTR_OFFSET: u32 = 0x00000030
+const CH2_CTR_CH2_CTR_MASK: u32 = 0x0000ffff
+const CH2_CTR_CH2_CTR_SHIFT: u32 = 0
+
+// Counter compare values
+const CH2_CC_OFFSET: u32 = 0x00000034
+const CH2_CC_B_MASK: u32 = 0xffff0000
+const CH2_CC_B_SHIFT: u32 = 16
+const CH2_CC_A_MASK: u32 = 0x0000ffff
+const CH2_CC_A_SHIFT: u32 = 0
+
+// Counter wrap value
+const CH2_TOP_OFFSET: u32 = 0x00000038
+const CH2_TOP_CH2_TOP_MASK: u32 = 0x0000ffff
+const CH2_TOP_CH2_TOP_SHIFT: u32 = 0
+
+// Control and status register
+const CH3_CSR_OFFSET: u32 = 0x0000003c
+const CH3_CSR_PH_ADV_MASK: u32 = 0x00000080
+const CH3_CSR_PH_ADV_SHIFT: u32 = 7
+const CH3_CSR_PH_RET_MASK: u32 = 0x00000040
+const CH3_CSR_PH_RET_SHIFT: u32 = 6
+const CH3_CSR_DIVMODE_MASK: u32 = 0x00000030
+const CH3_CSR_DIVMODE_SHIFT: u32 = 4
+const CH3_CSR_DIVMODE_DIV: u32 = 0
+const CH3_CSR_DIVMODE_LEVEL: u32 = 1
+const CH3_CSR_DIVMODE_RISE: u32 = 2
+const CH3_CSR_DIVMODE_FALL: u32 = 3
+const CH3_CSR_B_INV_MASK: u32 = 0x00000008
+const CH3_CSR_B_INV_SHIFT: u32 = 3
+const CH3_CSR_A_INV_MASK: u32 = 0x00000004
+const CH3_CSR_A_INV_SHIFT: u32 = 2
+const CH3_CSR_PH_CORRECT_MASK: u32 = 0x00000002
+const CH3_CSR_PH_CORRECT_SHIFT: u32 = 1
+const CH3_CSR_EN_MASK: u32 = 0x00000001
+const CH3_CSR_EN_SHIFT: u32 = 0
+
+// INT and FRAC form a fixed-point fractional number. Counting rate is system clock frequency
+// divided by this number. Fractional division uses simple 1st-order sigma-delta.
+const CH3_DIV_OFFSET: u32 = 0x00000040
+const CH3_DIV_INT_MASK: u32 = 0x00000ff0
+const CH3_DIV_INT_SHIFT: u32 = 4
+const CH3_DIV_FRAC_MASK: u32 = 0x0000000f
+const CH3_DIV_FRAC_SHIFT: u32 = 0
+
+// Direct access to the PWM counter
+const CH3_CTR_OFFSET: u32 = 0x00000044
+const CH3_CTR_CH3_CTR_MASK: u32 = 0x0000ffff
+const CH3_CTR_CH3_CTR_SHIFT: u32 = 0
+
+// Counter compare values
+const CH3_CC_OFFSET: u32 = 0x00000048
+const CH3_CC_B_MASK: u32 = 0xffff0000
+const CH3_CC_B_SHIFT: u32 = 16
+const CH3_CC_A_MASK: u32 = 0x0000ffff
+const CH3_CC_A_SHIFT: u32 = 0
+
+// Counter wrap value
+const CH3_TOP_OFFSET: u32 = 0x0000004c
+const CH3_TOP_CH3_TOP_MASK: u32 = 0x0000ffff
+const CH3_TOP_CH3_TOP_SHIFT: u32 = 0
+
+// Control and status register
+const CH4_CSR_OFFSET: u32 = 0x00000050
+const CH4_CSR_PH_ADV_MASK: u32 = 0x00000080
+const CH4_CSR_PH_ADV_SHIFT: u32 = 7
+const CH4_CSR_PH_RET_MASK: u32 = 0x00000040
+const CH4_CSR_PH_RET_SHIFT: u32 = 6
+const CH4_CSR_DIVMODE_MASK: u32 = 0x00000030
+const CH4_CSR_DIVMODE_SHIFT: u32 = 4
+const CH4_CSR_DIVMODE_DIV: u32 = 0
+const CH4_CSR_DIVMODE_LEVEL: u32 = 1
+const CH4_CSR_DIVMODE_RISE: u32 = 2
+const CH4_CSR_DIVMODE_FALL: u32 = 3
+const CH4_CSR_B_INV_MASK: u32 = 0x00000008
+const CH4_CSR_B_INV_SHIFT: u32 = 3
+const CH4_CSR_A_INV_MASK: u32 = 0x00000004
+const CH4_CSR_A_INV_SHIFT: u32 = 2
+const CH4_CSR_PH_CORRECT_MASK: u32 = 0x00000002
+const CH4_CSR_PH_CORRECT_SHIFT: u32 = 1
+const CH4_CSR_EN_MASK: u32 = 0x00000001
+const CH4_CSR_EN_SHIFT: u32 = 0
+
+// INT and FRAC form a fixed-point fractional number. Counting rate is system clock frequency
+// divided by this number. Fractional division uses simple 1st-order sigma-delta.
+const CH4_DIV_OFFSET: u32 = 0x00000054
+const CH4_DIV_INT_MASK: u32 = 0x00000ff0
+const CH4_DIV_INT_SHIFT: u32 = 4
+const CH4_DIV_FRAC_MASK: u32 = 0x0000000f
+const CH4_DIV_FRAC_SHIFT: u32 = 0
+
+// Direct access to the PWM counter
+const CH4_CTR_OFFSET: u32 = 0x00000058
+const CH4_CTR_CH4_CTR_MASK: u32 = 0x0000ffff
+const CH4_CTR_CH4_CTR_SHIFT: u32 = 0
+
+// Counter compare values
+const CH4_CC_OFFSET: u32 = 0x0000005c
+const CH4_CC_B_MASK: u32 = 0xffff0000
+const CH4_CC_B_SHIFT: u32 = 16
+const CH4_CC_A_MASK: u32 = 0x0000ffff
+const CH4_CC_A_SHIFT: u32 = 0
+
+// Counter wrap value
+const CH4_TOP_OFFSET: u32 = 0x00000060
+const CH4_TOP_CH4_TOP_MASK: u32 = 0x0000ffff
+const CH4_TOP_CH4_TOP_SHIFT: u32 = 0
+
+// Control and status register
+const CH5_CSR_OFFSET: u32 = 0x00000064
+const CH5_CSR_PH_ADV_MASK: u32 = 0x00000080
+const CH5_CSR_PH_ADV_SHIFT: u32 = 7
+const CH5_CSR_PH_RET_MASK: u32 = 0x00000040
+const CH5_CSR_PH_RET_SHIFT: u32 = 6
+const CH5_CSR_DIVMODE_MASK: u32 = 0x00000030
+const CH5_CSR_DIVMODE_SHIFT: u32 = 4
+const CH5_CSR_DIVMODE_DIV: u32 = 0
+const CH5_CSR_DIVMODE_LEVEL: u32 = 1
+const CH5_CSR_DIVMODE_RISE: u32 = 2
+const CH5_CSR_DIVMODE_FALL: u32 = 3
+const CH5_CSR_B_INV_MASK: u32 = 0x00000008
+const CH5_CSR_B_INV_SHIFT: u32 = 3
+const CH5_CSR_A_INV_MASK: u32 = 0x00000004
+const CH5_CSR_A_INV_SHIFT: u32 = 2
+const CH5_CSR_PH_CORRECT_MASK: u32 = 0x00000002
+const CH5_CSR_PH_CORRECT_SHIFT: u32 = 1
+const CH5_CSR_EN_MASK: u32 = 0x00000001
+const CH5_CSR_EN_SHIFT: u32 = 0
+
+// INT and FRAC form a fixed-point fractional number. Counting rate is system clock frequency
+// divided by this number. Fractional division uses simple 1st-order sigma-delta.
+const CH5_DIV_OFFSET: u32 = 0x00000068
+const CH5_DIV_INT_MASK: u32 = 0x00000ff0
+const CH5_DIV_INT_SHIFT: u32 = 4
+const CH5_DIV_FRAC_MASK: u32 = 0x0000000f
+const CH5_DIV_FRAC_SHIFT: u32 = 0
+
+// Direct access to the PWM counter
+const CH5_CTR_OFFSET: u32 = 0x0000006c
+const CH5_CTR_CH5_CTR_MASK: u32 = 0x0000ffff
+const CH5_CTR_CH5_CTR_SHIFT: u32 = 0
+
+// Counter compare values
+const CH5_CC_OFFSET: u32 = 0x00000070
+const CH5_CC_B_MASK: u32 = 0xffff0000
+const CH5_CC_B_SHIFT: u32 = 16
+const CH5_CC_A_MASK: u32 = 0x0000ffff
+const CH5_CC_A_SHIFT: u32 = 0
+
+// Counter wrap value
+const CH5_TOP_OFFSET: u32 = 0x00000074
+const CH5_TOP_CH5_TOP_MASK: u32 = 0x0000ffff
+const CH5_TOP_CH5_TOP_SHIFT: u32 = 0
+
+// Control and status register
+const CH6_CSR_OFFSET: u32 = 0x00000078
+const CH6_CSR_PH_ADV_MASK: u32 = 0x00000080
+const CH6_CSR_PH_ADV_SHIFT: u32 = 7
+const CH6_CSR_PH_RET_MASK: u32 = 0x00000040
+const CH6_CSR_PH_RET_SHIFT: u32 = 6
+const CH6_CSR_DIVMODE_MASK: u32 = 0x00000030
+const CH6_CSR_DIVMODE_SHIFT: u32 = 4
+const CH6_CSR_DIVMODE_DIV: u32 = 0
+const CH6_CSR_DIVMODE_LEVEL: u32 = 1
+const CH6_CSR_DIVMODE_RISE: u32 = 2
+const CH6_CSR_DIVMODE_FALL: u32 = 3
+const CH6_CSR_B_INV_MASK: u32 = 0x00000008
+const CH6_CSR_B_INV_SHIFT: u32 = 3
+const CH6_CSR_A_INV_MASK: u32 = 0x00000004
+const CH6_CSR_A_INV_SHIFT: u32 = 2
+const CH6_CSR_PH_CORRECT_MASK: u32 = 0x00000002
+const CH6_CSR_PH_CORRECT_SHIFT: u32 = 1
+const CH6_CSR_EN_MASK: u32 = 0x00000001
+const CH6_CSR_EN_SHIFT: u32 = 0
+
+// INT and FRAC form a fixed-point fractional number. Counting rate is system clock frequency
+// divided by this number. Fractional division uses simple 1st-order sigma-delta.
+const CH6_DIV_OFFSET: u32 = 0x0000007c
+const CH6_DIV_INT_MASK: u32 = 0x00000ff0
+const CH6_DIV_INT_SHIFT: u32 = 4
+const CH6_DIV_FRAC_MASK: u32 = 0x0000000f
+const CH6_DIV_FRAC_SHIFT: u32 = 0
+
+// Direct access to the PWM counter
+const CH6_CTR_OFFSET: u32 = 0x00000080
+const CH6_CTR_CH6_CTR_MASK: u32 = 0x0000ffff
+const CH6_CTR_CH6_CTR_SHIFT: u32 = 0
+
+// Counter compare values
+const CH6_CC_OFFSET: u32 = 0x00000084
+const CH6_CC_B_MASK: u32 = 0xffff0000
+const CH6_CC_B_SHIFT: u32 = 16
+const CH6_CC_A_MASK: u32 = 0x0000ffff
+const CH6_CC_A_SHIFT: u32 = 0
+
+// Counter wrap value
+const CH6_TOP_OFFSET: u32 = 0x00000088
+const CH6_TOP_CH6_TOP_MASK: u32 = 0x0000ffff
+const CH6_TOP_CH6_TOP_SHIFT: u32 = 0
+
+// Control and status register
+const CH7_CSR_OFFSET: u32 = 0x0000008c
+const CH7_CSR_PH_ADV_MASK: u32 = 0x00000080
+const CH7_CSR_PH_ADV_SHIFT: u32 = 7
+const CH7_CSR_PH_RET_MASK: u32 = 0x00000040
+const CH7_CSR_PH_RET_SHIFT: u32 = 6
+const CH7_CSR_DIVMODE_MASK: u32 = 0x00000030
+const CH7_CSR_DIVMODE_SHIFT: u32 = 4
+const CH7_CSR_DIVMODE_DIV: u32 = 0
+const CH7_CSR_DIVMODE_LEVEL: u32 = 1
+const CH7_CSR_DIVMODE_RISE: u32 = 2
+const CH7_CSR_DIVMODE_FALL: u32 = 3
+const CH7_CSR_B_INV_MASK: u32 = 0x00000008
+const CH7_CSR_B_INV_SHIFT: u32 = 3
+const CH7_CSR_A_INV_MASK: u32 = 0x00000004
+const CH7_CSR_A_INV_SHIFT: u32 = 2
+const CH7_CSR_PH_CORRECT_MASK: u32 = 0x00000002
+const CH7_CSR_PH_CORRECT_SHIFT: u32 = 1
+const CH7_CSR_EN_MASK: u32 = 0x00000001
+const CH7_CSR_EN_SHIFT: u32 = 0
+
+// INT and FRAC form a fixed-point fractional number. Counting rate is system clock frequency
+// divided by this number. Fractional division uses simple 1st-order sigma-delta.
+const CH7_DIV_OFFSET: u32 = 0x00000090
+const CH7_DIV_INT_MASK: u32 = 0x00000ff0
+const CH7_DIV_INT_SHIFT: u32 = 4
+const CH7_DIV_FRAC_MASK: u32 = 0x0000000f
+const CH7_DIV_FRAC_SHIFT: u32 = 0
+
+// Direct access to the PWM counter
+const CH7_CTR_OFFSET: u32 = 0x00000094
+const CH7_CTR_CH7_CTR_MASK: u32 = 0x0000ffff
+const CH7_CTR_CH7_CTR_SHIFT: u32 = 0
+
+// Counter compare values
+const CH7_CC_OFFSET: u32 = 0x00000098
+const CH7_CC_B_MASK: u32 = 0xffff0000
+const CH7_CC_B_SHIFT: u32 = 16
+const CH7_CC_A_MASK: u32 = 0x0000ffff
+const CH7_CC_A_SHIFT: u32 = 0
+
+// Counter wrap value
+const CH7_TOP_OFFSET: u32 = 0x0000009c
+const CH7_TOP_CH7_TOP_MASK: u32 = 0x0000ffff
+const CH7_TOP_CH7_TOP_SHIFT: u32 = 0
+
+// Control and status register
+const CH8_CSR_OFFSET: u32 = 0x000000a0
+const CH8_CSR_PH_ADV_MASK: u32 = 0x00000080
+const CH8_CSR_PH_ADV_SHIFT: u32 = 7
+const CH8_CSR_PH_RET_MASK: u32 = 0x00000040
+const CH8_CSR_PH_RET_SHIFT: u32 = 6
+const CH8_CSR_DIVMODE_MASK: u32 = 0x00000030
+const CH8_CSR_DIVMODE_SHIFT: u32 = 4
+const CH8_CSR_DIVMODE_DIV: u32 = 0
+const CH8_CSR_DIVMODE_LEVEL: u32 = 1
+const CH8_CSR_DIVMODE_RISE: u32 = 2
+const CH8_CSR_DIVMODE_FALL: u32 = 3
+const CH8_CSR_B_INV_MASK: u32 = 0x00000008
+const CH8_CSR_B_INV_SHIFT: u32 = 3
+const CH8_CSR_A_INV_MASK: u32 = 0x00000004
+const CH8_CSR_A_INV_SHIFT: u32 = 2
+const CH8_CSR_PH_CORRECT_MASK: u32 = 0x00000002
+const CH8_CSR_PH_CORRECT_SHIFT: u32 = 1
+const CH8_CSR_EN_MASK: u32 = 0x00000001
+const CH8_CSR_EN_SHIFT: u32 = 0
+
+// INT and FRAC form a fixed-point fractional number. Counting rate is system clock frequency
+// divided by this number. Fractional division uses simple 1st-order sigma-delta.
+const CH8_DIV_OFFSET: u32 = 0x000000a4
+const CH8_DIV_INT_MASK: u32 = 0x00000ff0
+const CH8_DIV_INT_SHIFT: u32 = 4
+const CH8_DIV_FRAC_MASK: u32 = 0x0000000f
+const CH8_DIV_FRAC_SHIFT: u32 = 0
+
+// Direct access to the PWM counter
+const CH8_CTR_OFFSET: u32 = 0x000000a8
+const CH8_CTR_CH8_CTR_MASK: u32 = 0x0000ffff
+const CH8_CTR_CH8_CTR_SHIFT: u32 = 0
+
+// Counter compare values
+const CH8_CC_OFFSET: u32 = 0x000000ac
+const CH8_CC_B_MASK: u32 = 0xffff0000
+const CH8_CC_B_SHIFT: u32 = 16
+const CH8_CC_A_MASK: u32 = 0x0000ffff
+const CH8_CC_A_SHIFT: u32 = 0
+
+// Counter wrap value
+const CH8_TOP_OFFSET: u32 = 0x000000b0
+const CH8_TOP_CH8_TOP_MASK: u32 = 0x0000ffff
+const CH8_TOP_CH8_TOP_SHIFT: u32 = 0
+
+// Control and status register
+const CH9_CSR_OFFSET: u32 = 0x000000b4
+const CH9_CSR_PH_ADV_MASK: u32 = 0x00000080
+const CH9_CSR_PH_ADV_SHIFT: u32 = 7
+const CH9_CSR_PH_RET_MASK: u32 = 0x00000040
+const CH9_CSR_PH_RET_SHIFT: u32 = 6
+const CH9_CSR_DIVMODE_MASK: u32 = 0x00000030
+const CH9_CSR_DIVMODE_SHIFT: u32 = 4
+const CH9_CSR_DIVMODE_DIV: u32 = 0
+const CH9_CSR_DIVMODE_LEVEL: u32 = 1
+const CH9_CSR_DIVMODE_RISE: u32 = 2
+const CH9_CSR_DIVMODE_FALL: u32 = 3
+const CH9_CSR_B_INV_MASK: u32 = 0x00000008
+const CH9_CSR_B_INV_SHIFT: u32 = 3
+const CH9_CSR_A_INV_MASK: u32 = 0x00000004
+const CH9_CSR_A_INV_SHIFT: u32 = 2
+const CH9_CSR_PH_CORRECT_MASK: u32 = 0x00000002
+const CH9_CSR_PH_CORRECT_SHIFT: u32 = 1
+const CH9_CSR_EN_MASK: u32 = 0x00000001
+const CH9_CSR_EN_SHIFT: u32 = 0
+
+// INT and FRAC form a fixed-point fractional number. Counting rate is system clock frequency
+// divided by this number. Fractional division uses simple 1st-order sigma-delta.
+const CH9_DIV_OFFSET: u32 = 0x000000b8
+const CH9_DIV_INT_MASK: u32 = 0x00000ff0
+const CH9_DIV_INT_SHIFT: u32 = 4
+const CH9_DIV_FRAC_MASK: u32 = 0x0000000f
+const CH9_DIV_FRAC_SHIFT: u32 = 0
+
+// Direct access to the PWM counter
+const CH9_CTR_OFFSET: u32 = 0x000000bc
+const CH9_CTR_CH9_CTR_MASK: u32 = 0x0000ffff
+const CH9_CTR_CH9_CTR_SHIFT: u32 = 0
+
+// Counter compare values
+const CH9_CC_OFFSET: u32 = 0x000000c0
+const CH9_CC_B_MASK: u32 = 0xffff0000
+const CH9_CC_B_SHIFT: u32 = 16
+const CH9_CC_A_MASK: u32 = 0x0000ffff
+const CH9_CC_A_SHIFT: u32 = 0
+
+// Counter wrap value
+const CH9_TOP_OFFSET: u32 = 0x000000c4
+const CH9_TOP_CH9_TOP_MASK: u32 = 0x0000ffff
+const CH9_TOP_CH9_TOP_SHIFT: u32 = 0
+
+// Control and status register
+const CH10_CSR_OFFSET: u32 = 0x000000c8
+const CH10_CSR_PH_ADV_MASK: u32 = 0x00000080
+const CH10_CSR_PH_ADV_SHIFT: u32 = 7
+const CH10_CSR_PH_RET_MASK: u32 = 0x00000040
+const CH10_CSR_PH_RET_SHIFT: u32 = 6
+const CH10_CSR_DIVMODE_MASK: u32 = 0x00000030
+const CH10_CSR_DIVMODE_SHIFT: u32 = 4
+const CH10_CSR_DIVMODE_DIV: u32 = 0
+const CH10_CSR_DIVMODE_LEVEL: u32 = 1
+const CH10_CSR_DIVMODE_RISE: u32 = 2
+const CH10_CSR_DIVMODE_FALL: u32 = 3
+const CH10_CSR_B_INV_MASK: u32 = 0x00000008
+const CH10_CSR_B_INV_SHIFT: u32 = 3
+const CH10_CSR_A_INV_MASK: u32 = 0x00000004
+const CH10_CSR_A_INV_SHIFT: u32 = 2
+const CH10_CSR_PH_CORRECT_MASK: u32 = 0x00000002
+const CH10_CSR_PH_CORRECT_SHIFT: u32 = 1
+const CH10_CSR_EN_MASK: u32 = 0x00000001
+const CH10_CSR_EN_SHIFT: u32 = 0
+
+// INT and FRAC form a fixed-point fractional number. Counting rate is system clock frequency
+// divided by this number. Fractional division uses simple 1st-order sigma-delta.
+const CH10_DIV_OFFSET: u32 = 0x000000cc
+const CH10_DIV_INT_MASK: u32 = 0x00000ff0
+const CH10_DIV_INT_SHIFT: u32 = 4
+const CH10_DIV_FRAC_MASK: u32 = 0x0000000f
+const CH10_DIV_FRAC_SHIFT: u32 = 0
+
+// Direct access to the PWM counter
+const CH10_CTR_OFFSET: u32 = 0x000000d0
+const CH10_CTR_CH10_CTR_MASK: u32 = 0x0000ffff
+const CH10_CTR_CH10_CTR_SHIFT: u32 = 0
+
+// Counter compare values
+const CH10_CC_OFFSET: u32 = 0x000000d4
+const CH10_CC_B_MASK: u32 = 0xffff0000
+const CH10_CC_B_SHIFT: u32 = 16
+const CH10_CC_A_MASK: u32 = 0x0000ffff
+const CH10_CC_A_SHIFT: u32 = 0
+
+// Counter wrap value
+const CH10_TOP_OFFSET: u32 = 0x000000d8
+const CH10_TOP_CH10_TOP_MASK: u32 = 0x0000ffff
+const CH10_TOP_CH10_TOP_SHIFT: u32 = 0
+
+// Control and status register
+const CH11_CSR_OFFSET: u32 = 0x000000dc
+const CH11_CSR_PH_ADV_MASK: u32 = 0x00000080
+const CH11_CSR_PH_ADV_SHIFT: u32 = 7
+const CH11_CSR_PH_RET_MASK: u32 = 0x00000040
+const CH11_CSR_PH_RET_SHIFT: u32 = 6
+const CH11_CSR_DIVMODE_MASK: u32 = 0x00000030
+const CH11_CSR_DIVMODE_SHIFT: u32 = 4
+const CH11_CSR_DIVMODE_DIV: u32 = 0
+const CH11_CSR_DIVMODE_LEVEL: u32 = 1
+const CH11_CSR_DIVMODE_RISE: u32 = 2
+const CH11_CSR_DIVMODE_FALL: u32 = 3
+const CH11_CSR_B_INV_MASK: u32 = 0x00000008
+const CH11_CSR_B_INV_SHIFT: u32 = 3
+const CH11_CSR_A_INV_MASK: u32 = 0x00000004
+const CH11_CSR_A_INV_SHIFT: u32 = 2
+const CH11_CSR_PH_CORRECT_MASK: u32 = 0x00000002
+const CH11_CSR_PH_CORRECT_SHIFT: u32 = 1
+const CH11_CSR_EN_MASK: u32 = 0x00000001
+const CH11_CSR_EN_SHIFT: u32 = 0
+
+// INT and FRAC form a fixed-point fractional number. Counting rate is system clock frequency
+// divided by this number. Fractional division uses simple 1st-order sigma-delta.
+const CH11_DIV_OFFSET: u32 = 0x000000e0
+const CH11_DIV_INT_MASK: u32 = 0x00000ff0
+const CH11_DIV_INT_SHIFT: u32 = 4
+const CH11_DIV_FRAC_MASK: u32 = 0x0000000f
+const CH11_DIV_FRAC_SHIFT: u32 = 0
+
+// Direct access to the PWM counter
+const CH11_CTR_OFFSET: u32 = 0x000000e4
+const CH11_CTR_CH11_CTR_MASK: u32 = 0x0000ffff
+const CH11_CTR_CH11_CTR_SHIFT: u32 = 0
+
+// Counter compare values
+const CH11_CC_OFFSET: u32 = 0x000000e8
+const CH11_CC_B_MASK: u32 = 0xffff0000
+const CH11_CC_B_SHIFT: u32 = 16
+const CH11_CC_A_MASK: u32 = 0x0000ffff
+const CH11_CC_A_SHIFT: u32 = 0
+
+// Counter wrap value
+const CH11_TOP_OFFSET: u32 = 0x000000ec
+const CH11_TOP_CH11_TOP_MASK: u32 = 0x0000ffff
+const CH11_TOP_CH11_TOP_SHIFT: u32 = 0
+
+// This register aliases the CSR_EN bits for all channels. Writing to this register allows multiple
+// channels to be enabled or disabled simultaneously, so they can run in perfect sync. For each
+// channel, there is only one physical EN register bit, which can be accessed through here or
+// CHx_CSR.
+const EN_OFFSET: u32 = 0x000000f0
+const EN_CH11_MASK: u32 = 0x00000800
+const EN_CH11_SHIFT: u32 = 11
+const EN_CH10_MASK: u32 = 0x00000400
+const EN_CH10_SHIFT: u32 = 10
+const EN_CH9_MASK: u32 = 0x00000200
+const EN_CH9_SHIFT: u32 = 9
+const EN_CH8_MASK: u32 = 0x00000100
+const EN_CH8_SHIFT: u32 = 8
+const EN_CH7_MASK: u32 = 0x00000080
+const EN_CH7_SHIFT: u32 = 7
+const EN_CH6_MASK: u32 = 0x00000040
+const EN_CH6_SHIFT: u32 = 6
+const EN_CH5_MASK: u32 = 0x00000020
+const EN_CH5_SHIFT: u32 = 5
+const EN_CH4_MASK: u32 = 0x00000010
+const EN_CH4_SHIFT: u32 = 4
+const EN_CH3_MASK: u32 = 0x00000008
+const EN_CH3_SHIFT: u32 = 3
+const EN_CH2_MASK: u32 = 0x00000004
+const EN_CH2_SHIFT: u32 = 2
+const EN_CH1_MASK: u32 = 0x00000002
+const EN_CH1_SHIFT: u32 = 1
+const EN_CH0_MASK: u32 = 0x00000001
+const EN_CH0_SHIFT: u32 = 0
+
+// Raw Interrupts
+const INTR_OFFSET: u32 = 0x000000f4
+const INTR_CH11_MASK: u32 = 0x00000800
+const INTR_CH11_SHIFT: u32 = 11
+const INTR_CH10_MASK: u32 = 0x00000400
+const INTR_CH10_SHIFT: u32 = 10
+const INTR_CH9_MASK: u32 = 0x00000200
+const INTR_CH9_SHIFT: u32 = 9
+const INTR_CH8_MASK: u32 = 0x00000100
+const INTR_CH8_SHIFT: u32 = 8
+const INTR_CH7_MASK: u32 = 0x00000080
+const INTR_CH7_SHIFT: u32 = 7
+const INTR_CH6_MASK: u32 = 0x00000040
+const INTR_CH6_SHIFT: u32 = 6
+const INTR_CH5_MASK: u32 = 0x00000020
+const INTR_CH5_SHIFT: u32 = 5
+const INTR_CH4_MASK: u32 = 0x00000010
+const INTR_CH4_SHIFT: u32 = 4
+const INTR_CH3_MASK: u32 = 0x00000008
+const INTR_CH3_SHIFT: u32 = 3
+const INTR_CH2_MASK: u32 = 0x00000004
+const INTR_CH2_SHIFT: u32 = 2
+const INTR_CH1_MASK: u32 = 0x00000002
+const INTR_CH1_SHIFT: u32 = 1
+const INTR_CH0_MASK: u32 = 0x00000001
+const INTR_CH0_SHIFT: u32 = 0
+
+// Interrupt Enable for irq0
+const IRQ0_INTE_OFFSET: u32 = 0x000000f8
+const IRQ0_INTE_CH11_MASK: u32 = 0x00000800
+const IRQ0_INTE_CH11_SHIFT: u32 = 11
+const IRQ0_INTE_CH10_MASK: u32 = 0x00000400
+const IRQ0_INTE_CH10_SHIFT: u32 = 10
+const IRQ0_INTE_CH9_MASK: u32 = 0x00000200
+const IRQ0_INTE_CH9_SHIFT: u32 = 9
+const IRQ0_INTE_CH8_MASK: u32 = 0x00000100
+const IRQ0_INTE_CH8_SHIFT: u32 = 8
+const IRQ0_INTE_CH7_MASK: u32 = 0x00000080
+const IRQ0_INTE_CH7_SHIFT: u32 = 7
+const IRQ0_INTE_CH6_MASK: u32 = 0x00000040
+const IRQ0_INTE_CH6_SHIFT: u32 = 6
+const IRQ0_INTE_CH5_MASK: u32 = 0x00000020
+const IRQ0_INTE_CH5_SHIFT: u32 = 5
+const IRQ0_INTE_CH4_MASK: u32 = 0x00000010
+const IRQ0_INTE_CH4_SHIFT: u32 = 4
+const IRQ0_INTE_CH3_MASK: u32 = 0x00000008
+const IRQ0_INTE_CH3_SHIFT: u32 = 3
+const IRQ0_INTE_CH2_MASK: u32 = 0x00000004
+const IRQ0_INTE_CH2_SHIFT: u32 = 2
+const IRQ0_INTE_CH1_MASK: u32 = 0x00000002
+const IRQ0_INTE_CH1_SHIFT: u32 = 1
+const IRQ0_INTE_CH0_MASK: u32 = 0x00000001
+const IRQ0_INTE_CH0_SHIFT: u32 = 0
+
+// Interrupt Force for irq0
+const IRQ0_INTF_OFFSET: u32 = 0x000000fc
+const IRQ0_INTF_CH11_MASK: u32 = 0x00000800
+const IRQ0_INTF_CH11_SHIFT: u32 = 11
+const IRQ0_INTF_CH10_MASK: u32 = 0x00000400
+const IRQ0_INTF_CH10_SHIFT: u32 = 10
+const IRQ0_INTF_CH9_MASK: u32 = 0x00000200
+const IRQ0_INTF_CH9_SHIFT: u32 = 9
+const IRQ0_INTF_CH8_MASK: u32 = 0x00000100
+const IRQ0_INTF_CH8_SHIFT: u32 = 8
+const IRQ0_INTF_CH7_MASK: u32 = 0x00000080
+const IRQ0_INTF_CH7_SHIFT: u32 = 7
+const IRQ0_INTF_CH6_MASK: u32 = 0x00000040
+const IRQ0_INTF_CH6_SHIFT: u32 = 6
+const IRQ0_INTF_CH5_MASK: u32 = 0x00000020
+const IRQ0_INTF_CH5_SHIFT: u32 = 5
+const IRQ0_INTF_CH4_MASK: u32 = 0x00000010
+const IRQ0_INTF_CH4_SHIFT: u32 = 4
+const IRQ0_INTF_CH3_MASK: u32 = 0x00000008
+const IRQ0_INTF_CH3_SHIFT: u32 = 3
+const IRQ0_INTF_CH2_MASK: u32 = 0x00000004
+const IRQ0_INTF_CH2_SHIFT: u32 = 2
+const IRQ0_INTF_CH1_MASK: u32 = 0x00000002
+const IRQ0_INTF_CH1_SHIFT: u32 = 1
+const IRQ0_INTF_CH0_MASK: u32 = 0x00000001
+const IRQ0_INTF_CH0_SHIFT: u32 = 0
+
+// Interrupt status after masking & forcing for irq0
+const IRQ0_INTS_OFFSET: u32 = 0x00000100
+const IRQ0_INTS_CH11_MASK: u32 = 0x00000800
+const IRQ0_INTS_CH11_SHIFT: u32 = 11
+const IRQ0_INTS_CH10_MASK: u32 = 0x00000400
+const IRQ0_INTS_CH10_SHIFT: u32 = 10
+const IRQ0_INTS_CH9_MASK: u32 = 0x00000200
+const IRQ0_INTS_CH9_SHIFT: u32 = 9
+const IRQ0_INTS_CH8_MASK: u32 = 0x00000100
+const IRQ0_INTS_CH8_SHIFT: u32 = 8
+const IRQ0_INTS_CH7_MASK: u32 = 0x00000080
+const IRQ0_INTS_CH7_SHIFT: u32 = 7
+const IRQ0_INTS_CH6_MASK: u32 = 0x00000040
+const IRQ0_INTS_CH6_SHIFT: u32 = 6
+const IRQ0_INTS_CH5_MASK: u32 = 0x00000020
+const IRQ0_INTS_CH5_SHIFT: u32 = 5
+const IRQ0_INTS_CH4_MASK: u32 = 0x00000010
+const IRQ0_INTS_CH4_SHIFT: u32 = 4
+const IRQ0_INTS_CH3_MASK: u32 = 0x00000008
+const IRQ0_INTS_CH3_SHIFT: u32 = 3
+const IRQ0_INTS_CH2_MASK: u32 = 0x00000004
+const IRQ0_INTS_CH2_SHIFT: u32 = 2
+const IRQ0_INTS_CH1_MASK: u32 = 0x00000002
+const IRQ0_INTS_CH1_SHIFT: u32 = 1
+const IRQ0_INTS_CH0_MASK: u32 = 0x00000001
+const IRQ0_INTS_CH0_SHIFT: u32 = 0
+
+// Interrupt Enable for irq1
+const IRQ1_INTE_OFFSET: u32 = 0x00000104
+const IRQ1_INTE_CH11_MASK: u32 = 0x00000800
+const IRQ1_INTE_CH11_SHIFT: u32 = 11
+const IRQ1_INTE_CH10_MASK: u32 = 0x00000400
+const IRQ1_INTE_CH10_SHIFT: u32 = 10
+const IRQ1_INTE_CH9_MASK: u32 = 0x00000200
+const IRQ1_INTE_CH9_SHIFT: u32 = 9
+const IRQ1_INTE_CH8_MASK: u32 = 0x00000100
+const IRQ1_INTE_CH8_SHIFT: u32 = 8
+const IRQ1_INTE_CH7_MASK: u32 = 0x00000080
+const IRQ1_INTE_CH7_SHIFT: u32 = 7
+const IRQ1_INTE_CH6_MASK: u32 = 0x00000040
+const IRQ1_INTE_CH6_SHIFT: u32 = 6
+const IRQ1_INTE_CH5_MASK: u32 = 0x00000020
+const IRQ1_INTE_CH5_SHIFT: u32 = 5
+const IRQ1_INTE_CH4_MASK: u32 = 0x00000010
+const IRQ1_INTE_CH4_SHIFT: u32 = 4
+const IRQ1_INTE_CH3_MASK: u32 = 0x00000008
+const IRQ1_INTE_CH3_SHIFT: u32 = 3
+const IRQ1_INTE_CH2_MASK: u32 = 0x00000004
+const IRQ1_INTE_CH2_SHIFT: u32 = 2
+const IRQ1_INTE_CH1_MASK: u32 = 0x00000002
+const IRQ1_INTE_CH1_SHIFT: u32 = 1
+const IRQ1_INTE_CH0_MASK: u32 = 0x00000001
+const IRQ1_INTE_CH0_SHIFT: u32 = 0
+
+// Interrupt Force for irq1
+const IRQ1_INTF_OFFSET: u32 = 0x00000108
+const IRQ1_INTF_CH11_MASK: u32 = 0x00000800
+const IRQ1_INTF_CH11_SHIFT: u32 = 11
+const IRQ1_INTF_CH10_MASK: u32 = 0x00000400
+const IRQ1_INTF_CH10_SHIFT: u32 = 10
+const IRQ1_INTF_CH9_MASK: u32 = 0x00000200
+const IRQ1_INTF_CH9_SHIFT: u32 = 9
+const IRQ1_INTF_CH8_MASK: u32 = 0x00000100
+const IRQ1_INTF_CH8_SHIFT: u32 = 8
+const IRQ1_INTF_CH7_MASK: u32 = 0x00000080
+const IRQ1_INTF_CH7_SHIFT: u32 = 7
+const IRQ1_INTF_CH6_MASK: u32 = 0x00000040
+const IRQ1_INTF_CH6_SHIFT: u32 = 6
+const IRQ1_INTF_CH5_MASK: u32 = 0x00000020
+const IRQ1_INTF_CH5_SHIFT: u32 = 5
+const IRQ1_INTF_CH4_MASK: u32 = 0x00000010
+const IRQ1_INTF_CH4_SHIFT: u32 = 4
+const IRQ1_INTF_CH3_MASK: u32 = 0x00000008
+const IRQ1_INTF_CH3_SHIFT: u32 = 3
+const IRQ1_INTF_CH2_MASK: u32 = 0x00000004
+const IRQ1_INTF_CH2_SHIFT: u32 = 2
+const IRQ1_INTF_CH1_MASK: u32 = 0x00000002
+const IRQ1_INTF_CH1_SHIFT: u32 = 1
+const IRQ1_INTF_CH0_MASK: u32 = 0x00000001
+const IRQ1_INTF_CH0_SHIFT: u32 = 0
+
+// Interrupt status after masking & forcing for irq1
+const IRQ1_INTS_OFFSET: u32 = 0x0000010c
+const IRQ1_INTS_CH11_MASK: u32 = 0x00000800
+const IRQ1_INTS_CH11_SHIFT: u32 = 11
+const IRQ1_INTS_CH10_MASK: u32 = 0x00000400
+const IRQ1_INTS_CH10_SHIFT: u32 = 10
+const IRQ1_INTS_CH9_MASK: u32 = 0x00000200
+const IRQ1_INTS_CH9_SHIFT: u32 = 9
+const IRQ1_INTS_CH8_MASK: u32 = 0x00000100
+const IRQ1_INTS_CH8_SHIFT: u32 = 8
+const IRQ1_INTS_CH7_MASK: u32 = 0x00000080
+const IRQ1_INTS_CH7_SHIFT: u32 = 7
+const IRQ1_INTS_CH6_MASK: u32 = 0x00000040
+const IRQ1_INTS_CH6_SHIFT: u32 = 6
+const IRQ1_INTS_CH5_MASK: u32 = 0x00000020
+const IRQ1_INTS_CH5_SHIFT: u32 = 5
+const IRQ1_INTS_CH4_MASK: u32 = 0x00000010
+const IRQ1_INTS_CH4_SHIFT: u32 = 4
+const IRQ1_INTS_CH3_MASK: u32 = 0x00000008
+const IRQ1_INTS_CH3_SHIFT: u32 = 3
+const IRQ1_INTS_CH2_MASK: u32 = 0x00000004
+const IRQ1_INTS_CH2_SHIFT: u32 = 2
+const IRQ1_INTS_CH1_MASK: u32 = 0x00000002
+const IRQ1_INTS_CH1_SHIFT: u32 = 1
+const IRQ1_INTS_CH0_MASK: u32 = 0x00000001
+const IRQ1_INTS_CH0_SHIFT: u32 = 0

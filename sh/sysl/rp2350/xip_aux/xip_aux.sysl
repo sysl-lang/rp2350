@@ -1,0 +1,32 @@
+// Auxiliary DMA access to XIP FIFOs, via fast AHB bus access
+
+module sh.sysl.rp2350.xip_aux
+
+// The peripheral's base address. Every offset below is from here.
+const BASE: u32 = 0x50500000
+
+// Read the XIP stream FIFO (fast bus access to XIP_CTRL_STREAM_FIFO)
+const STREAM_OFFSET: u32 = 0x00000000
+const STREAM_STREAM_MASK: u32 = 0xffffffff
+const STREAM_STREAM_SHIFT: u32 = 0
+
+// Write to the QMI direct-mode TX FIFO (fast bus access to QMI_DIRECT_TX)
+const QMI_DIRECT_TX_OFFSET: u32 = 0x00000004
+const QMI_DIRECT_TX_NOPUSH_MASK: u32 = 0x00100000
+const QMI_DIRECT_TX_NOPUSH_SHIFT: u32 = 20
+const QMI_DIRECT_TX_OE_MASK: u32 = 0x00080000
+const QMI_DIRECT_TX_OE_SHIFT: u32 = 19
+const QMI_DIRECT_TX_DWIDTH_MASK: u32 = 0x00040000
+const QMI_DIRECT_TX_DWIDTH_SHIFT: u32 = 18
+const QMI_DIRECT_TX_IWIDTH_MASK: u32 = 0x00030000
+const QMI_DIRECT_TX_IWIDTH_SHIFT: u32 = 16
+const QMI_DIRECT_TX_IWIDTH_S: u32 = 0
+const QMI_DIRECT_TX_IWIDTH_D: u32 = 1
+const QMI_DIRECT_TX_IWIDTH_Q: u32 = 2
+const QMI_DIRECT_TX_DATA_MASK: u32 = 0x0000ffff
+const QMI_DIRECT_TX_DATA_SHIFT: u32 = 0
+
+// Read from the QMI direct-mode RX FIFO (fast bus access to QMI_DIRECT_RX)
+const QMI_DIRECT_RX_OFFSET: u32 = 0x00000008
+const QMI_DIRECT_RX_QMI_DIRECT_RX_MASK: u32 = 0x0000ffff
+const QMI_DIRECT_RX_QMI_DIRECT_RX_SHIFT: u32 = 0
