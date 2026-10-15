@@ -2,6 +2,8 @@
 
 The RP2350's register map, as sysl constants — the chip on a Raspberry Pi Pico 2.
 
+*An independent sysl package for the RP2350. It is not affiliated with or endorsed by Raspberry Pi Ltd.*
+
 Base addresses, register offsets, field masks and shifts, and the vendor's own names for the values a
 field takes. One module per peripheral, 54 of them, 32,980 constants.
 
