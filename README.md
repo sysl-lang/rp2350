@@ -9,7 +9,7 @@ field takes. One module per peripheral, 54 of them, 32,980 constants.
 
 ```
 dependencies {
-  rp2350 { git = "github.com/sysl-lang/rp2350", version = "0.1.1" }
+  rp2350 { git = "github.com/sysl-lang/rp2350", version = "0.1.2" }
 }
 ```
 

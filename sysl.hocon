@@ -13,16 +13,16 @@
 // arrived against `sysl.sum`, and compiles it as more modules.
 //
 //     dependencies {
-//       rp2350 { git = "github.com/sysl-lang/rp2350", version = "0.1.1" }
+//       rp2350 { git = "github.com/sysl-lang/rp2350", version = "0.1.2" }
 //     }
 //
 // The coordinate is identity rather than a URL, so it carries no `https://`, and the version is the
-// tag `v0.1.1` on this repository.
+// tag `v0.1.2` on this repository.
 
 package {
   name    = "rp2350"
-  version = "0.1.1"
-  sysl    = "0.6.0"
+  version = "0.1.2"
+  sysl    = "0.7.7"
 }
 
 // **There is no `requires` block, and here that is trivially true rather than hard won.**
